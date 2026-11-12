@@ -97,9 +97,11 @@
     html,body{overflow:hidden}
     .app{display:block;height:100dvh}
     .stage{position:fixed;inset:0;height:auto}
-    .panel{position:fixed;left:0;right:0;bottom:0;z-index:6;max-height:58dvh;overflow-y:auto;border-width:0;border-radius:16px 16px 0 0;
-      box-shadow:0 -10px 34px rgba(20,30,25,.3);padding:0 16px 24px;transform:translateY(106%);transition:transform .22s ease;visibility:hidden}
-    .panel.open{transform:none;visibility:visible}
+    .panel{position:fixed;left:0;right:0;bottom:0;z-index:6;height:58vh;height:58dvh;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;
+      border-width:0;border-radius:16px 16px 0 0;box-shadow:0 -10px 34px rgba(20,30,25,.3);padding:0 16px calc(24px + env(safe-area-inset-bottom))}
+    .panel.open{display:block}
+    body.sheet-open .stage{bottom:58vh;bottom:58dvh}
+    body.sheet-open .dock{display:none}
     .sheet-x{display:block;position:sticky;top:0;z-index:2;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;font:inherit;font-weight:600;color:var(--ink);
       background:var(--panel);border:0;border-bottom:1px solid var(--line);text-align:center;cursor:pointer}
     .status{top:8px;left:8px;right:8px;padding:7px 10px}
@@ -117,7 +119,6 @@
     .tools{position:static;order:3;padding:0}
     .tools button{padding:7px 9px}
   }
-  @media (prefers-reduced-motion: reduce){ .panel{transition:none} }
 </style>
 </head>
 <body>
@@ -1015,6 +1016,8 @@ if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElemen
 function sheet(w){
   var l=document.querySelector('.panel.left'),r=document.querySelector('.panel.right'),lo=w==='l'&&!l.classList.contains('open'),ro=w==='r'&&!r.classList.contains('open');
   l.classList.toggle('open',lo); r.classList.toggle('open',ro);
+  var was=document.body.classList.contains('sheet-open'); document.body.classList.toggle('sheet-open',lo||ro);
+  if(was!==(lo||ro)) setTimeout(function(){ resize(); fitCam(); redraw(); },40);
 }
 $('qTent').addEventListener('click',function(){ sheet('l'); });
 $('qSite').addEventListener('click',function(){ sheet('r'); });
