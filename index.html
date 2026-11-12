@@ -193,7 +193,11 @@
     <h2>顯示</h2>
     <label class="check"><input type="checkbox" id="xray"> 透視外帳（看內帳位置）</label>
     <label class="check"><input type="checkbox" id="ropes" checked> 營繩與營釘</label>
-    <label class="check"><input type="checkbox" id="person" checked> 170 cm 人物比例尺</label>
+    <label class="check"><input type="checkbox" id="person" checked> 人物比例尺</label>
+    <div class="row" id="personBox" style="margin:0 0 8px 24px">
+      <label class="f"><span>性別</span><select id="pg"><option value="m">男性</option><option value="f">女性</option></select></label>
+      <label class="f"><span>身高 cm</span><input type="number" id="ph" min="90" max="210" step="1" value="170"></label>
+    </div>
     <label class="check"><input type="checkbox" id="labels" checked> 尺寸標示</label>
   </aside>
 </div>
@@ -224,7 +228,7 @@ var SITE_TYPES=[
 ];
 var PRESETS=[[3,3],[4,4],[4,6],[5,5],[6,5],[8,5],[8,6],[8,8]];
 
-var S={tent:TENTS[1],rot:0,tx:0,tz:0,siteType:'grass',sL:8,sW:6,roofH:2.8,margin:50,xray:false,person:true,labels:true,ropes:true,car:'suv',env:'meadow',wx:'sunny',tarp:null,trot:0,ttx:0,ttz:0,active:'tent'};
+var S={tent:TENTS[1],rot:0,tx:0,tz:0,siteType:'grass',sL:8,sW:6,roofH:2.8,margin:50,xray:false,person:true,labels:true,ropes:true,car:'suv',pg:'m',ph:170,env:'meadow',wx:'sunny',tarp:null,trot:0,ttx:0,ttz:0,active:'tent'};
 
 /* ---------- three setup ---------- */
 var canvas=$('c');
@@ -415,28 +419,36 @@ function tick(dt){
   waterTex.forEach(function(w){ w.t.offset.x+=dt*w.vx; w.t.offset.y+=dt*w.vy; });
 }
 
-/* person, 170 cm */
-(function person(){
-  var skin=std(0xe0b08c,{roughness:.8}),hair=std(0x2b2320),jk=std(0xd9793a,{roughness:.85}),pt=std(0x2f3b4c,{roughness:.9}),sh=std(0x393939);
+/* scale figure: gender and height are selectable */
+function buildPerson(){
+  while(personG.children.length){ var o=personG.children[0]; personG.remove(o); dispose(o); }
+  var f=S.pg==='f',skin=std(0xe0b08c,{roughness:.8}),hair=std(f?0x3a2a22:0x2b2320),jk=std(f?0x2f8f8a:0xd9793a,{roughness:.85}),pt=std(f?0x4a4f63:0x2f3b4c,{roughness:.9}),sh=std(0x393939);
+  var sw=f?.172:.2,hipX=f?.095:.09;
   function add(o){ o.castShadow=true; personG.add(o); return o; }
   [1,-1].forEach(function(s){
-    var f=add(new THREE.Mesh(new THREE.BoxGeometry(.095,.07,.25),sh)); f.position.set(s*.09,.035,.045);
-    add(limb(P(s*.09,.06,0),P(s*.09,.48,0),.045,.058,pt,10));
-    add(limb(P(s*.09,.48,0),P(s*.085,.92,0),.058,.082,pt,10));
-    var kn=add(new THREE.Mesh(new THREE.SphereGeometry(.058,10,8),pt)); kn.position.set(s*.09,.48,0);
-    var so=add(new THREE.Mesh(new THREE.SphereGeometry(.072,12,10),jk)); so.position.set(s*.2,1.365,0);
-    add(limb(P(s*.205,1.365,0),P(s*.245,1.09,.015),.052,.045,jk,10));
-    var el=add(new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),jk)); el.position.set(s*.245,1.09,.015);
-    add(limb(P(s*.245,1.09,.015),P(s*.235,.85,.075),.043,.036,jk,10));
-    var hd=add(new THREE.Mesh(new THREE.SphereGeometry(.042,10,8),skin)); hd.position.set(s*.233,.805,.085); hd.scale.set(.8,1.15,1);
+    var ft=add(new THREE.Mesh(new THREE.BoxGeometry(f?.085:.095,.07,f?.23:.25),sh)); ft.position.set(s*hipX,.035,.045);
+    add(limb(P(s*hipX,.06,0),P(s*hipX,.48,0),f?.04:.045,f?.053:.058,pt,10));
+    add(limb(P(s*hipX,.48,0),P(s*(hipX-.005),.92,0),f?.055:.058,f?.085:.082,pt,10));
+    var kn=add(new THREE.Mesh(new THREE.SphereGeometry(f?.054:.058,10,8),pt)); kn.position.set(s*hipX,.48,0);
+    var so=add(new THREE.Mesh(new THREE.SphereGeometry(f?.062:.072,12,10),jk)); so.position.set(s*sw,1.365,0);
+    add(limb(P(s*(sw+.005),1.365,0),P(s*(sw+.04),1.09,.015),f?.045:.052,f?.04:.045,jk,10));
+    var el=add(new THREE.Mesh(new THREE.SphereGeometry(f?.04:.045,10,8),jk)); el.position.set(s*(sw+.04),1.09,.015);
+    add(limb(P(s*(sw+.04),1.09,.015),P(s*(sw+.03),.85,.075),f?.038:.043,f?.032:.036,jk,10));
+    var hd=add(new THREE.Mesh(new THREE.SphereGeometry(f?.038:.042,10,8),skin)); hd.position.set(s*(sw+.028),.805,.085); hd.scale.set(.8,1.15,1);
   });
-  var pel=add(new THREE.Mesh(new THREE.SphereGeometry(.15,14,10),pt)); pel.position.y=.93; pel.scale.set(1.12,.72,.78);
-  var tor=add(new THREE.Mesh(new THREE.CylinderGeometry(.19,.155,.5,16),jk)); tor.position.y=1.17; tor.scale.z=.62;
-  var top=add(new THREE.Mesh(new THREE.SphereGeometry(.19,16,8,0,Math.PI*2,0,Math.PI/2),jk)); top.position.y=1.42; top.scale.set(1,.32,.62);
-  add(limb(P(0,1.42,0),P(0,1.52,0),.05,.046,skin,10));
-  var head=add(new THREE.Mesh(new THREE.SphereGeometry(.105,18,14),skin)); head.position.y=1.5845; head.scale.set(.9,1.1,1);
+  var pel=add(new THREE.Mesh(new THREE.SphereGeometry(.15,14,10),pt)); pel.position.y=.93; pel.scale.set(f?1.2:1.12,.72,.78);
+  var tor=add(new THREE.Mesh(new THREE.CylinderGeometry(f?.162:.19,f?.132:.155,.5,16),jk)); tor.position.y=1.17; tor.scale.z=.62;
+  if(f){ var hem=add(new THREE.Mesh(new THREE.CylinderGeometry(.136,.2,.2,16),jk)); hem.position.y=.9; hem.scale.z=.72; }
+  var top=add(new THREE.Mesh(new THREE.SphereGeometry(f?.162:.19,16,8,0,Math.PI*2,0,Math.PI/2),jk)); top.position.y=1.42; top.scale.set(1,.32,.62);
+  add(limb(P(0,1.42,0),P(0,1.52,0),f?.043:.05,f?.04:.046,skin,10));
+  var head=add(new THREE.Mesh(new THREE.SphereGeometry(.105,18,14),skin)); head.position.y=1.5845; head.scale.set(f?.86:.9,1.1,f?.96:1);
   var hr=add(new THREE.Mesh(new THREE.SphereGeometry(.111,18,10,0,Math.PI*2,0,Math.PI*.56),hair)); hr.position.set(0,1.588,-.008); hr.scale.set(.93,1.1,1.03); hr.rotation.x=-.28;
-})();
+  if(f){
+    var bk=add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.075,.3,12),hair)); bk.position.set(0,1.46,-.05); bk.scale.z=.55;
+    [1,-1].forEach(function(s){ var sd=add(new THREE.Mesh(new THREE.CylinderGeometry(.03,.024,.2,8),hair)); sd.position.set(s*.085,1.5,-.005); });
+  }
+  personG.scale.setScalar(S.ph/170);
+}
 
 /* campground around the site */
 var envG=new THREE.Group(),carG=null; scene.add(envG);
@@ -792,7 +804,7 @@ function buildLabels(){
   var a=label('長 '+fmt(S.sL)+' m',1,'rgba(47,107,79,.92)'); a.position.set(0,siteY+.25,S.sW/2+.45); labelG.add(a);
   var b=label('寬 '+fmt(S.sW)+' m',1,'rgba(47,107,79,.92)'); b.position.set(S.sL/2+.45,siteY+.25,0); labelG.add(b);
   if(S.siteType==='roof'){ var c=label('淨高 '+fmt(S.roofH)+' m',.85,'rgba(92,102,96,.92)'); c.position.set(-S.sL/2,S.roofH+.4,-S.sW/2); labelG.add(c); }
-  if(S.person){ var p=label('170 cm',.7,'rgba(61,90,128,.92)'); p.position.set(personG.position.x,1.98,personG.position.z); labelG.add(p); }
+  if(S.person){ var p=label(S.ph+' cm',.7,'rgba(61,90,128,.92)'); p.position.set(personG.position.x,S.ph/100+.28,personG.position.z); labelG.add(p); }
 }
 function fmt(n){ return (Math.round(n*10)/10).toString(); }
 
@@ -1053,7 +1065,9 @@ function siteChanged(){ renderSiteUI(); buildSite(); placeTent(); placeTarp(); b
 $('roofH').addEventListener('input',function(){ S.roofH=parseFloat(this.value); $('roofHv').textContent=fmt(S.roofH)+' m'; buildSite(); buildLabels(); updateFit(); });
 $('margin').addEventListener('input',function(){ S.margin=parseInt(this.value,10); $('marginV').textContent='每邊 '+S.margin+' cm'; buildTent(); updateFit(); });
 $('xray').addEventListener('change',function(){ S.xray=this.checked; buildTent(); updateFit(); });
-$('person').addEventListener('change',function(){ S.person=this.checked; buildLabels(); redraw(); });
+$('person').addEventListener('change',function(){ S.person=this.checked; $('personBox').style.display=S.person?'grid':'none'; buildLabels(); redraw(); });
+$('pg').addEventListener('change',function(){ S.pg=this.value; buildPerson(); redraw(); });
+$('ph').addEventListener('change',function(){ S.ph=Math.round(num(this,90,210,S.ph)); this.value=S.ph; buildPerson(); buildLabels(); redraw(); });
 $('ropes').addEventListener('change',function(){ S.ropes=this.checked; buildTent(); buildTarp(); updateFit(); });
 $('car').addEventListener('change',function(){ S.car=this.value; buildEnv(); redraw(); });
 $('labels').addEventListener('change',function(){ S.labels=this.checked; buildTent(); buildTarp(); buildLabels(); updateFit(); });
@@ -1074,7 +1088,7 @@ $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCa
 })();
 
 /* ---------- go ---------- */
-initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); fitCam(); resize(); updateFit();
+buildPerson(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); fitCam(); resize(); updateFit();
 var lastT=0;
 (function loop(t){ if(anim){ tick(Math.min(.05,((t||0)-lastT)/1000)); dirty=true; } lastT=t||0; if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
 })();
