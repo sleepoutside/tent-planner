@@ -90,19 +90,41 @@
   .src a{color:var(--accent)}
   .note{font-size:12px;color:var(--muted);margin:8px 0 0}
   .err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--warn)}
+  .dock{display:contents}
+  .quick,.sheet-x{display:none}
+  .act button[hidden]{display:none}
   @media (max-width: 900px){
-    .app{grid-template-columns:1fr;height:auto}
-    .stage{order:-1;height:62vh;position:sticky;top:0;z-index:2}
-    .panel{overflow:visible;border-width:0;border-top-width:1px}
-    .hint,.credit{display:none}
-    .credit-p{display:block}
+    html,body{overflow:hidden}
+    .app{display:block;height:100dvh}
+    .stage{position:fixed;inset:0;height:auto}
+    .panel{position:fixed;left:0;right:0;bottom:0;z-index:6;max-height:58dvh;overflow-y:auto;border-width:0;border-radius:16px 16px 0 0;
+      box-shadow:0 -10px 34px rgba(20,30,25,.3);padding:0 16px 24px;transform:translateY(106%);transition:transform .22s ease;visibility:hidden}
+    .panel.open{transform:none;visibility:visible}
+    .sheet-x{display:block;position:sticky;top:0;z-index:2;width:calc(100% + 32px);margin:0 -16px 10px;padding:10px 16px;font:inherit;font-weight:600;color:var(--ink);
+      background:var(--panel);border:0;border-bottom:1px solid var(--line);text-align:center;cursor:pointer}
+    .status{top:8px;left:8px;right:8px;padding:7px 10px}
+    .status .d{font-size:11px}
+    .hint,.credit-p{display:none}
+    .dock{display:flex;flex-direction:column;align-items:center;gap:6px;position:absolute;left:0;right:0;bottom:calc(8px + env(safe-area-inset-bottom));padding:0 8px;pointer-events:none}
+    .dock>*{pointer-events:auto}
+    .credit{position:static;order:1;font-size:11px;padding:3px 9px}
+    .quick{display:flex;order:2;gap:6px;max-width:100%}
+    .quick button{display:flex;align-items:center;gap:7px;min-width:0;font:inherit;font-weight:600;color:var(--ink);background:rgba(251,249,243,.96);
+      border:1px solid var(--line);border-radius:999px;padding:8px 13px;box-shadow:0 2px 10px rgba(30,45,38,.16);cursor:pointer}
+    .quick button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .quick .dot{flex:none;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2)}
+    .quick button::after{content:"▴";font-size:10px;color:var(--muted)}
+    .tools{position:static;order:3;padding:0}
+    .tools button{padding:7px 9px}
   }
+  @media (prefers-reduced-motion: reduce){ .panel{transition:none} }
 </style>
 </head>
 <body>
 <div class="app">
 
   <aside class="panel left" aria-label="帳篷">
+    <button type="button" class="sheet-x">收合 ▾</button>
     <h1>帳篷</h1>
     <p class="sub">選一頂帳篷，尺寸為原廠公布的搭設外尺寸。</p>
     <input type="search" id="q" placeholder="搜尋品牌或型號" aria-label="搜尋品牌或型號">
@@ -156,9 +178,11 @@
   <main class="stage">
     <canvas id="c" aria-label="3D 搭設預覽，可拖曳旋轉視角、拖曳帳篷移動位置"></canvas>
     <div class="status" id="status" role="status" aria-live="polite"><div class="t"></div><div class="d"></div></div>
-    <div class="hint">拖曳空白處旋轉視角 · 滾輪縮放 · 直接拖曳帳篷可移動位置</div>
+    <div class="hint">拖曳空白處旋轉視角 · 滾輪縮放 · 帳篷、天幕、車輛都可直接拖曳</div>
+    <div class="dock">
+    <div class="quick"><button type="button" id="qTent" aria-label="展開帳篷與天幕選項"><i class="dot" id="qDot"></i><span id="qTentT"></span></button><button type="button" id="qSite" aria-label="展開營位與環境選項"><span id="qSiteT"></span></button></div>
     <div class="tools">
-      <span class="act" id="actSeg" hidden><button type="button" id="actTent" aria-pressed="true">帳篷</button><button type="button" id="actTarp" aria-pressed="false">天幕</button></span>
+      <span class="act" id="actSeg" hidden><button type="button" id="actTent" aria-pressed="true">帳篷</button><button type="button" id="actTarp" aria-pressed="false">天幕</button><button type="button" id="actCar" aria-pressed="false" hidden>車輛</button></span>
       <button type="button" id="bRot">轉 90°</button>
       <button type="button" id="bRot15">轉 15°</button>
       <button type="button" id="bCenter">置中</button>
@@ -166,10 +190,12 @@
       <button type="button" id="bPersp">斜視</button>
     </div>
     <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" aria-live="polite"></span></div>
+    </div>
     <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
   </main>
 
   <aside class="panel right" aria-label="營位">
+    <button type="button" class="sheet-x">收合 ▾</button>
     <h1>營位</h1>
     <p class="sub">選營位地面與大小，再選營區環境和天氣。</p>
     <h2>營位地面</h2>
@@ -234,7 +260,7 @@ var SITE_TYPES=[
 ];
 var PRESETS=[[3,3],[4,4],[4,6],[5,5],[6,5],[8,5],[8,6],[8,8]];
 
-var S={tent:TENTS[1],rot:0,tx:0,tz:0,siteType:'grass',sL:8,sW:6,roofH:2.8,margin:50,xray:false,person:true,labels:true,ropes:true,car:'suv',pg:'m',ph:170,env:'meadow',wx:'sunny',tarp:null,trot:0,ttx:0,ttz:0,active:'tent'};
+var S={tent:TENTS[1],rot:0,tx:0,tz:0,siteType:'grass',sL:8,sW:6,roofH:2.8,margin:50,xray:false,person:true,labels:true,ropes:true,car:'suv',cx:null,cz:null,crot:0,cdx:0,cdz:0,pg:'m',ph:170,env:'meadow',wx:'sunny',tarp:null,trot:0,ttx:0,ttz:0,active:'tent'};
 
 /* ---------- three setup ---------- */
 var canvas=$('c');
@@ -546,6 +572,7 @@ function water(wd,dp,col,vx,vy,rep){
   var t=tex2('water'); t.repeat.set(rep[0],rep[1]); waterTex.push({t:t,vx:vx,vy:vy});
   var m=new THREE.Mesh(new THREE.PlaneGeometry(wd,dp),new THREE.MeshStandardMaterial({color:col,map:t,roughness:.12,metalness:.35,transparent:true,opacity:.93})); m.rotation.x=-Math.PI/2; m.receiveShadow=true; return m;
 }
+function placeCar(){ if(!carG) return; var x=S.cx==null?S.cdx:S.cx,z=S.cz==null?S.cdz:S.cz,ins=Math.abs(x)<S.sL/2&&Math.abs(z)<S.sW/2; carG.position.set(x,ins?siteY-.02:0,z); carG.rotation.y=-S.crot; }
 function buildEnv(){
   while(envG.children.length){ var o=envG.children[0]; envG.remove(o); dispose(o); }
   buildWorld();
@@ -606,7 +633,8 @@ function buildEnv(){
   var lamp=add(new THREE.Mesh(new THREE.SphereGeometry(.16,14,10),std(0xfff3cf,{emissive:0xffe2a0,emissiveIntensity:night?1.6:.7}))); lamp.position.set(lx,2.62,lz);
   var cap=add(new THREE.Mesh(new THREE.ConeGeometry(.24,.14,12),std(0x3d4441))); cap.position.set(lx,2.82,lz);
   if(night){ var pl=add(new THREE.PointLight(0xffd9a0,1.3,16,1.6)); pl.position.set(lx,2.55,lz); }
-  carG=null; if(S.car!=='none'){ carG=add(car(S.car)); carG.position.set(Math.min(-hl+2.3,0),0,roadZ+.1); }
+  carG=null; S.cdx=Math.min(-hl+2.3,0); S.cdz=roadZ+.1; if(S.car!=='none'){ carG=add(car(S.car)); placeCar(); }
+  setActive(S.active);
   personG.position.set(hl+.5,0,hw+.75); personG.rotation.y=Math.atan2(-personG.position.x,-personG.position.z);
   applyWeather();
 }
@@ -880,7 +908,12 @@ function tarpCheck(){
   r.ok=!r.msgs.length; if(tarpOutMat) tarpOutMat.color.setHex(body?0xb8472a:0x2f6b4f);
   return r;
 }
-function setActive(a){ S.active=(a==='tarp'&&S.tarp)?'tarp':'tent'; $('actSeg').hidden=!S.tarp; $('actTent').setAttribute('aria-pressed',String(S.active==='tent')); $('actTarp').setAttribute('aria-pressed',String(S.active==='tarp')); }
+function setActive(a){
+  if(a==='tarp'&&!S.tarp) a='tent'; if(a==='car'&&!carG) a='tent'; S.active=a||'tent';
+  $('actTarp').hidden=!S.tarp; $('actCar').hidden=!carG; $('actSeg').hidden=!S.tarp&&!carG;
+  ['Tent','Tarp','Car'].forEach(function(k){ $('act'+k).setAttribute('aria-pressed',String(S.active===k.toLowerCase())); });
+}
+function actPos(){ return S.active==='car'&&carG?{x:carG.position.x,z:carG.position.z}:S.active==='tarp'?{x:S.ttx,z:S.ttz}:{x:S.tx,z:S.tz}; }
 function renderTarpUI(){
   var sel=$('tarpSel'),t=S.tarp,i; sel.textContent='';
   var o0=document.createElement('option'); o0.value=''; o0.textContent='不使用天幕'; sel.appendChild(o0);
@@ -917,6 +950,7 @@ function initTarpUI(){
   $('tarpH').addEventListener('input',function(){ setTarpH(parseInt(this.value,10)); });
   $('tarpHReset').addEventListener('click',function(){ var t=S.tarp; if(!t) return; t.H=t.H0; t.H2=t.H02; renderTarpUI(); buildTarp(); updateFit(); });
   $('actTent').addEventListener('click',function(){ setActive('tent'); });
+  $('actCar').addEventListener('click',function(){ setActive('car'); });
   $('actTarp').addEventListener('click',function(){ setActive('tarp'); });
   renderTarpUI();
 }
@@ -954,6 +988,7 @@ function updateFit(){
       if(fitC&&(S.tx||S.tz)) msg.push('按「置中」即可放下'); else if(fit9) msg.push('轉 90° 可放下');
     }
   }
+  $('qDot').style.background=hex(t.color); $('qTentT').textContent=(t.id==='custom'?'自訂帳篷':t.name)+(S.tarp?' ＋天幕':''); $('qSiteT').textContent=fmt(S.sL)+' × '+fmt(S.sW)+' m '+typeName;
   D.textContent=head+' · '+msg.join('，')+(S.margin>0?'（含每邊 '+S.margin+' cm 營繩預留）':'');
   var col=tentOk?0x2f6b4f:0xb8472a;
   if(outlineMat) outlineMat.color.setHex(col);
@@ -964,7 +999,7 @@ function updateFit(){
 
 /* ---------- camera ---------- */
 var cam={az:0.78,el:0.44,r:14,target:new THREE.Vector3(0,0.9,0)};
-function fitCam(){ cam.r=Math.max(9,Math.max(S.sL,S.sW,S.tent.L/100,S.tarp?S.tarp.L/100+2:0)*1.9+3); }
+function fitCam(){ cam.r=(camera.aspect<1?1.5:1)*Math.max(9,Math.max(S.sL,S.sW,S.tent.L/100,S.tarp?S.tarp.L/100+2:0)*1.9+3); }
 function applyCam(){
   var ce=Math.cos(cam.el);
   camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az));
@@ -976,6 +1011,15 @@ function resize(){
 }
 if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElement); else window.addEventListener('resize',resize);
 
+/* ---------- mobile sheets ---------- */
+function sheet(w){
+  var l=document.querySelector('.panel.left'),r=document.querySelector('.panel.right'),lo=w==='l'&&!l.classList.contains('open'),ro=w==='r'&&!r.classList.contains('open');
+  l.classList.toggle('open',lo); r.classList.toggle('open',ro);
+}
+$('qTent').addEventListener('click',function(){ sheet('l'); });
+$('qSite').addEventListener('click',function(){ sheet('r'); });
+Array.prototype.forEach.call(document.querySelectorAll('.sheet-x'),function(b){ b.addEventListener('click',function(){ sheet(null); }); });
+
 /* ---------- pointer ---------- */
 var ptrs=new Map(),mode=null,last={x:0,y:0},dragOff={x:0,z:0},pinch={d:1,r:1};
 var ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
@@ -986,8 +1030,8 @@ canvas.addEventListener('pointerdown',function(e){
   try{canvas.setPointerCapture(e.pointerId)}catch(_){}
   ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===1){
-    setRay(e); var hit=ray.intersectObjects(tentMeshes.concat(tarpMeshes),false);
-    if(hit.length){ var g=groundPt(e); setActive(tarpMeshes.indexOf(hit[0].object)>=0?'tarp':'tent'); if(g){ mode='drag'; dragOff.x=g.x-(S.active==='tarp'?S.ttx:S.tx); dragOff.z=g.z-(S.active==='tarp'?S.ttz:S.tz); } else mode='orbit'; }
+    sheet(null); setRay(e); var hit=ray.intersectObjects(tentMeshes.concat(tarpMeshes),false),ch=carG?ray.intersectObject(carG,true):[];
+    if(hit.length||ch.length){ var g=groundPt(e); setActive((ch.length&&(!hit.length||ch[0].distance<hit[0].distance))?'car':(tarpMeshes.indexOf(hit[0].object)>=0?'tarp':'tent')); var ap=actPos(); if(g){ mode='drag'; dragOff.x=g.x-ap.x; dragOff.z=g.z-ap.z; } else mode='orbit'; }
     else mode='orbit';
     last.x=e.clientX; last.y=e.clientY; canvas.classList.add('moving');
   }else if(ptrs.size===2){ mode='pinch'; pinch.d=pdist(); pinch.r=cam.r; }
@@ -1000,7 +1044,8 @@ canvas.addEventListener('pointermove',function(e){
     last.x=e.clientX; last.y=e.clientY; redraw();
   }else if(mode==='drag'){
     var g=groundPt(e); if(!g) return;
-    var lim=12,nx=Math.max(-lim,Math.min(lim,Math.round((g.x-dragOff.x)*20)/20)),nz=Math.max(-lim,Math.min(lim,Math.round((g.z-dragOff.z)*20)/20));
+    var lim=22,nx=Math.max(-lim,Math.min(lim,Math.round((g.x-dragOff.x)*20)/20)),nz=Math.max(-lim,Math.min(lim,Math.round((g.z-dragOff.z)*20)/20));
+    if(S.active==='car'&&carG){ S.cx=nx; S.cz=nz; placeCar(); redraw(); return; }
     if(S.active==='tarp'&&S.tarp){ S.ttx=nx; S.ttz=nz; placeTarp(); } else { S.tx=nx; S.tz=nz; placeTent(); }
     updateFit();
   }else if(mode==='pinch'&&ptrs.size===2){
@@ -1082,10 +1127,10 @@ $('ph').addEventListener('change',function(){ S.ph=Math.round(num(this,90,210,S.
 $('ropes').addEventListener('change',function(){ S.ropes=this.checked; buildTent(); buildTarp(); updateFit(); });
 $('car').addEventListener('change',function(){ S.car=this.value; buildEnv(); redraw(); });
 $('labels').addEventListener('change',function(){ S.labels=this.checked; buildTent(); buildTarp(); buildLabels(); updateFit(); });
-function turn(a){ if(S.active==='tarp'&&S.tarp){ S.trot=(S.trot+a)%(Math.PI*2); placeTarp(); } else { S.rot=(S.rot+a)%(Math.PI*2); placeTent(); } updateFit(); }
+function turn(a){ if(S.active==='car'&&carG){ S.crot=(S.crot+a)%(Math.PI*2); placeCar(); redraw(); return; } if(S.active==='tarp'&&S.tarp){ S.trot=(S.trot+a)%(Math.PI*2); placeTarp(); } else { S.rot=(S.rot+a)%(Math.PI*2); placeTent(); } updateFit(); }
 $('bRot').addEventListener('click',function(){ turn(Math.PI/2); });
 $('bRot15').addEventListener('click',function(){ turn(Math.PI/12); });
-$('bCenter').addEventListener('click',function(){ if(S.active==='tarp'&&S.tarp){ S.ttx=0; S.ttz=0; placeTarp(); } else { S.tx=0; S.tz=0; placeTent(); } updateFit(); });
+$('bCenter').addEventListener('click',function(){ if(S.active==='car'&&carG){ S.cx=null; S.cz=null; S.crot=0; placeCar(); redraw(); return; } if(S.active==='tarp'&&S.tarp){ S.ttx=0; S.ttz=0; placeTarp(); } else { S.tx=0; S.tz=0; placeTent(); } updateFit(); });
 $('bTop').addEventListener('click',function(){ cam.el=1.56; cam.az=0; redraw(); });
 $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCam(); redraw(); });
 
@@ -1099,7 +1144,7 @@ $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCa
 })();
 
 /* ---------- go ---------- */
-buildPerson(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); fitCam(); resize(); updateFit();
+buildPerson(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit();
 var lastT=0;
 (function loop(t){ if(anim){ tick(Math.min(.05,((t||0)-lastT)/1000)); dirty=true; } lastT=t||0; if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
 })();
