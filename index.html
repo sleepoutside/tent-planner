@@ -80,6 +80,7 @@
   .tools .act button{border:0;border-radius:0;box-shadow:none}
   .tools .act button[aria-pressed=true]{background:var(--accent);color:#fff;font-weight:600}
   .note a{color:var(--accent)}
+  .linkbtn{font:inherit;font-size:12px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
   .hint{text-shadow:0 0 3px #fbf9f3,0 0 3px #fbf9f3,0 0 6px #fbf9f3;position:absolute;bottom:60px;left:340px;right:20px;text-align:center;font-size:12px;color:#4d5a52;pointer-events:none}
   .credit{position:absolute;left:14px;bottom:58px;font-size:12px;font-weight:600;letter-spacing:.04em;color:#22302a;background:rgba(251,249,243,.9);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
   .credit span,.credit-p span{font-weight:400;color:var(--muted);margin-left:4px}
@@ -141,6 +142,11 @@
       </label>
     </div>
     <p class="note" id="tarpInfo"></p>
+    <div id="tarpHBox" style="display:none;margin-top:10px">
+      <div class="rng"><span>主營柱高度</span><b id="tarpHv"></b></div>
+      <input type="range" id="tarpH" min="150" max="320" step="5" value="230" aria-label="天幕主營柱高度">
+      <div class="rng"><span>150</span><button type="button" id="tarpHReset" class="linkbtn">還原預設高度</button><span>320</span></div>
+    </div>
     <div class="f" id="tarpColBox" style="display:none;margin-top:8px"><span>顏色</span><div class="sw" id="tSw"></div></div>
     <p class="credit-p">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views"></span></p>
     <p class="note">資訊僅供參考，請依官方資訊為準。</p>
@@ -881,7 +887,8 @@ function renderTarpUI(){
   TARPS.forEach(function(x){ var o=document.createElement('option'); o.value=x.id; o.textContent=(x.brand==='通用'||x.brand==='自訂'?'':x.brand+' ')+x.name+(x.id==='tcustom'?'':'（'+x.L+' × '+x.W+'）'); sel.appendChild(o); });
   sel.value=t?t.id:'';
   $('tarpBox').classList.toggle('on',!!t&&t.id==='tcustom');
-  $('tarpColBox').style.display=t?'block':'none';
+  $('tarpColBox').style.display=t?'block':'none'; $('tarpHBox').style.display=t?'block':'none';
+  if(t){ $('tarpH').value=t.H; $('tarpHv').textContent=(t.H2?t.H+' / '+t.H2:t.H)+' cm'; if(t.id==='tcustom') $('tH').value=t.H; }
   var info=$('tarpInfo'); info.textContent='';
   if(t){
     info.appendChild(document.createTextNode(t.L+' × '+t.W+' cm，主營柱高 '+(t.H2?t.H+' / '+t.H2:t.H)+' cm。'));
@@ -905,6 +912,10 @@ function initTarpUI(){
     var c=TARPS[TARPS.length-1]; c.L=num($('tL'),150,900,c.L); c.W=num($('tW'),150,900,c.W); c.H=num($('tH'),120,350,c.H); c.shape=$('tShape').value;
     if(S.tarp===c){ renderTarpUI(); buildTarp(); updateFit(); }
   }); });
+  TARPS.forEach(function(x){ x.H0=x.H; x.H02=x.H2; });
+  function setTarpH(v){ var t=S.tarp; if(!t) return; var d=t.H2?t.H-t.H2:0; t.H=v; if(t.H2) t.H2=Math.max(120,v-d); renderTarpUI(); buildTarp(); updateFit(); }
+  $('tarpH').addEventListener('input',function(){ setTarpH(parseInt(this.value,10)); });
+  $('tarpHReset').addEventListener('click',function(){ var t=S.tarp; if(!t) return; t.H=t.H0; t.H2=t.H02; renderTarpUI(); buildTarp(); updateFit(); });
   $('actTent').addEventListener('click',function(){ setActive('tent'); });
   $('actTarp').addEventListener('click',function(){ setActive('tarp'); });
   renderTarpUI();
