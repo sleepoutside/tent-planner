@@ -999,7 +999,7 @@ function updateFit(){
 
 /* ---------- camera ---------- */
 var cam={az:0.78,el:0.44,r:14,target:new THREE.Vector3(0,0.9,0)};
-function fitCam(){ cam.r=(camera.aspect<1?1.5:1)*Math.max(9,Math.max(S.sL,S.sW,S.tent.L/100,S.tarp?S.tarp.L/100+2:0)*1.9+3); }
+function fitCam(){ cam.r=(camera.aspect<.75?1.5:1)*Math.max(9,Math.max(S.sL,S.sW,S.tent.L/100,S.tarp?S.tarp.L/100+2:0)*1.9+3); }
 function applyCam(){
   var ce=Math.cos(cam.el);
   camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az));
