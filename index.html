@@ -83,6 +83,7 @@
   .hint{position:absolute;bottom:60px;left:250px;right:20px;text-align:center;font-size:12px;color:#4d5a52;pointer-events:none}
   .credit{position:absolute;left:14px;bottom:58px;font-size:12px;font-weight:600;letter-spacing:.04em;color:#22302a;background:rgba(251,249,243,.9);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
   .credit span,.credit-p span{font-weight:400;color:var(--muted);margin-left:4px}
+  .views[hidden]{display:none}
   .credit-p{display:none;font-size:12px;font-weight:600;letter-spacing:.04em;margin:16px 0 0}
   .src{font-size:12px;color:var(--muted);margin-top:16px}
   .src a{color:var(--accent)}
@@ -141,7 +142,7 @@
     </div>
     <p class="note" id="tarpInfo"></p>
     <div class="f" id="tarpColBox" style="display:none;margin-top:8px"><span>顏色</span><div class="sw" id="tSw"></div></div>
-    <p class="credit-p">設計/Sleepoutside Camp <span>*非營利使用</span></p>
+    <p class="credit-p">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" hidden></span></p>
     <p class="note">資訊僅供參考，請依官方資訊為準。</p>
     <p class="note">3D 外型是依結構類型做的通用造型（營柱、門窗、營繩），長寬高為原廠數字，不是該型號的複刻。</p>
   </aside>
@@ -158,7 +159,7 @@
       <button type="button" id="bTop">俯視</button>
       <button type="button" id="bPersp">斜視</button>
     </div>
-    <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span></div>
+    <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" hidden></span></div>
     <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
   </main>
 
@@ -194,6 +195,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script data-goatcounter="https://tent-planner.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <script>
 (function(){
 'use strict';
@@ -960,6 +962,18 @@ $('bRot15').addEventListener('click',function(){ turn(Math.PI/12); });
 $('bCenter').addEventListener('click',function(){ if(S.active==='tarp'&&S.tarp){ S.ttx=0; S.ttz=0; placeTarp(); } else { S.tx=0; S.tz=0; placeTent(); } updateFit(); });
 $('bTop').addEventListener('click',function(){ cam.el=1.56; cam.az=0; redraw(); });
 $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCam(); redraw(); });
+
+/* ---------- view counter (GoatCounter); stays hidden where it cannot load ---------- */
+(function(){
+  if(!/\.github\.io$/.test(location.hostname)) return;
+  function show(){
+    fetch('https://tent-planner.goatcounter.com/counter/TOTAL.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){
+      if(!d||!d.count) return;
+      Array.prototype.forEach.call(document.querySelectorAll('.views'),function(el){ el.textContent='點閱 '+d.count+' 次'; el.hidden=false; });
+    }).catch(function(){});
+  }
+  setTimeout(show,1500);
+})();
 
 /* ---------- go ---------- */
 initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); buildSite(); buildTent(); buildLabels(); fitCam(); resize(); updateFit();
