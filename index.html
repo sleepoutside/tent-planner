@@ -1196,19 +1196,22 @@ $('bCenter').addEventListener('click',function(){ if(S.active==='tent2'&&slot2.t
 $('bTop').addEventListener('click',function(){ cam.el=1.56; cam.az=0; redraw(); });
 $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCam(); redraw(); });
 
-/* ---------- view counter (GoatCounter): always on screen, shows a dash until a number arrives ---------- */
+/* ---------- counters: visitors from GoatCounter, page views from Abacus; a dash until a number arrives ---------- */
 (function(){
-  var els=document.querySelectorAll('.views'),base='https://tent-planner.goatcounter.com/counter/';
-  function put(t){ Array.prototype.forEach.call(els,function(el){ el.textContent='瀏覽 '+t+' 次'; }); }
-  function get(path){ return fetch(base+path+'.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){ if(!d||!d.count) throw 0; return d.count; }); }
+  var els=document.querySelectorAll('.views'),base='https://tent-planner.goatcounter.com/counter/',vis='—',pv='—',live=/\.github\.io$/.test(location.hostname);
+  function put(){ Array.prototype.forEach.call(els,function(el){ el.textContent='人次 '+vis+' · 瀏覽 '+pv; }); }
   function num0(s){ return parseInt(String(s).replace(/[^0-9]/g,''),10)||0; }
-  var best=null;
-  function load(){
+  function get(path){ return fetch(base+path+'.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){ if(!d||!d.count) throw 0; return d.count; }); }
+  function visitors(){
     ['TOTAL',encodeURIComponent(location.pathname)].forEach(function(p){
-      get(p).then(function(c){ if(best===null||num0(c)>num0(best)){ best=c; put(c); } }).catch(function(){});
+      get(p).then(function(c){ if(vis==='—'||num0(c)>num0(vis)){ vis=c; put(); } }).catch(function(){});
     });
   }
-  put('—'); setTimeout(load,1200); setTimeout(load,6000);
+  function views(){
+    fetch('https://abacus.jasoncameron.dev/'+(live?'hit':'get')+'/sleepoutside-tent-planner/views').then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(d){ if(d&&typeof d.value==='number'){ pv=d.value.toLocaleString('en-US'); put(); } }).catch(function(){});
+  }
+  put(); views(); setTimeout(visitors,1200); setTimeout(visitors,6000);
 })();
 
 /* ---------- go ---------- */
