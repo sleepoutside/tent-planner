@@ -80,10 +80,10 @@
   .tools .act button{border:0;border-radius:0;box-shadow:none}
   .tools .act button[aria-pressed=true]{background:var(--accent);color:#fff;font-weight:600}
   .note a{color:var(--accent)}
-  .hint{position:absolute;bottom:60px;left:250px;right:20px;text-align:center;font-size:12px;color:#4d5a52;pointer-events:none}
+  .hint{position:absolute;bottom:60px;left:340px;right:20px;text-align:center;font-size:12px;color:#4d5a52;pointer-events:none}
   .credit{position:absolute;left:14px;bottom:58px;font-size:12px;font-weight:600;letter-spacing:.04em;color:#22302a;background:rgba(251,249,243,.9);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
   .credit span,.credit-p span{font-weight:400;color:var(--muted);margin-left:4px}
-  .views[hidden]{display:none}
+  .credit .views,.credit-p .views{color:var(--ink);font-weight:600;margin-left:8px;padding-left:8px;border-left:1px solid var(--line);font-variant-numeric:tabular-nums}
   .credit-p{display:none;font-size:12px;font-weight:600;letter-spacing:.04em;margin:16px 0 0}
   .src{font-size:12px;color:var(--muted);margin-top:16px}
   .src a{color:var(--accent)}
@@ -142,7 +142,7 @@
     </div>
     <p class="note" id="tarpInfo"></p>
     <div class="f" id="tarpColBox" style="display:none;margin-top:8px"><span>顏色</span><div class="sw" id="tSw"></div></div>
-    <p class="credit-p">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" hidden></span></p>
+    <p class="credit-p">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views"></span></p>
     <p class="note">資訊僅供參考，請依官方資訊為準。</p>
     <p class="note">3D 外型是依結構類型做的通用造型（營柱、門窗、營繩），長寬高為原廠數字，不是該型號的複刻。</p>
   </aside>
@@ -159,7 +159,7 @@
       <button type="button" id="bTop">俯視</button>
       <button type="button" id="bPersp">斜視</button>
     </div>
-    <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" hidden></span></div>
+    <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" aria-live="polite"></span></div>
     <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
   </main>
 
@@ -184,7 +184,7 @@
     <div class="rng"><span>0</span><b id="marginV">每邊 50 cm</b><span>150</span></div>
     <p class="note">原廠尺寸不含營繩。橘色是營繩，黃色地帶是營繩與營釘佔用的範圍，會一起檢查是否超出營位；營釘落在營位外會變紅。設為 0 則只看帳體。</p>
     <h2>車輛</h2>
-    <select id="car" aria-label="車型"><option value="none">不顯示</option><option value="hatch">小型車（約 4.0 m）</option><option value="sedan">轎車（約 4.7 m）</option><option value="suv" selected>休旅車（約 4.6 m）</option><option value="van">廂型車（約 5.0 m）</option><option value="pickup">皮卡（約 5.3 m）</option></select>
+    <select id="car" aria-label="車型"><option value="none">不顯示</option><option value="hatch">小型車（約 4.0 m）</option><option value="sedan">轎車（約 4.7 m）</option><option value="suv" selected>休旅車（約 4.6 m）</option><option value="van">MPV（約 4.8 m）</option><option value="pickup">皮卡（約 5.3 m）</option></select>
     <p class="note">車身長度為各車型的常見尺寸，僅供比例參考。</p>
     <h2>顯示</h2>
     <label class="check"><input type="checkbox" id="xray"> 透視外帳（看內帳位置）</label>
@@ -393,64 +393,66 @@ function tree(kind,sc,r){
   g.rotation.y=r()*6; return g;
 }
 var CARS={
-  hatch:{name:'小型車',len:4.0,w:1.72,wr:.31,fo:.8,ro:.72,col:0xc94f3d,
-    top:[[-2.0,.5],[-1.98,.9],[-1.88,.95],[.78,.93],[1.8,.8],[1.98,.66],[2.0,.45]],
-    cab:[[-1.86,.94],[-1.55,1.44],[-.1,1.5],[.15,1.47],[.9,.92]],pil:[-.5]},
-  sedan:{name:'轎車',len:4.7,w:1.82,wr:.32,fo:.92,ro:.95,col:0x9aa3ab,
-    top:[[-2.35,.5],[-2.33,.9],[-2.2,.96],[.85,.93],[2.1,.78],[2.33,.66],[2.35,.45]],
-    cab:[[-1.55,.95],[-.8,1.4],[0,1.45],[.25,1.42],[1.05,.92]],pil:[-.25]},
-  suv:{name:'休旅車',len:4.6,w:1.85,wr:.36,fo:.9,ro:.88,col:0xe4e7e9,rails:true,
-    top:[[-2.3,.55],[-2.28,1.05],[-2.2,1.1],[.85,1.06],[2.05,.96],[2.28,.82],[2.3,.5]],
-    cab:[[-2.2,1.09],[-1.95,1.65],[0,1.7],[.25,1.66],[1.0,1.05]],pil:[-.3,-1.4]},
-  van:{name:'廂型車',len:5.0,w:1.9,wr:.34,fo:.85,ro:.95,col:0xf0ead8,rails:true,
-    top:[[-2.5,.55],[-2.48,1.1],[-2.42,1.16],[1.6,1.12],[2.3,.98],[2.48,.8],[2.5,.5]],
-    cab:[[-2.42,1.15],[-2.36,1.9],[.9,1.95],[1.1,1.88],[1.78,1.11]],pil:[.75,-.45,-1.55]},
-  pickup:{name:'皮卡',len:5.3,w:1.88,wr:.38,fo:.95,ro:1.15,col:0x4a5a66,
-    top:[[-2.65,.6],[-2.64,1.14],[-2.6,1.18],[-.62,1.18],[1.05,1.12],[2.4,1.02],[2.63,.86],[2.65,.55]],
-    cab:[[-.62,1.15],[-.52,1.76],[.5,1.8],[.7,1.76],[1.25,1.1]],pil:[.1]}
+  hatch:{name:'小型車',len:4.0,w:1.74,wr:.32,fo:.8,ro:.72,col:0x3f7f8c,
+    top:[[-2.0,.48],[-1.99,.8],[-1.9,.98],[-1.0,1.0],[.7,.97],[1.45,.9],[1.9,.76],[2.0,.5]],
+    cab:[[-1.9,.98],[-1.72,1.3],[-1.2,1.47],[-.3,1.52],[.3,1.42],[.95,.97]],pil:[-.55]},
+  sedan:{name:'轎車',len:4.7,w:1.84,wr:.34,fo:.92,ro:.95,col:0x5b6168,
+    top:[[-2.35,.5],[-2.34,.82],[-2.2,.98],[-1.2,1.0],[.9,.96],[1.7,.88],[2.25,.74],[2.35,.5]],
+    cab:[[-2.0,.99],[-1.3,1.3],[-.6,1.42],[.1,1.44],[.55,1.33],[1.2,.96]],pil:[-.2]},
+  suv:{name:'休旅車',len:4.6,w:1.87,wr:.38,fo:.9,ro:.88,col:0xeceeed,rails:true,clad:true,darkRoof:true,
+    top:[[-2.3,.55],[-2.29,.95],[-2.18,1.12],[-1.0,1.14],[.85,1.1],[1.6,1.04],[2.2,.9],[2.3,.58]],
+    cab:[[-2.18,1.12],[-1.95,1.48],[-1.3,1.66],[-.2,1.7],[.35,1.6],[1.05,1.1]],pil:[-.3,-1.35]},
+  van:{name:'MPV',len:4.8,w:1.88,wr:.35,fo:.85,ro:.9,col:0xcfd3d6,
+    top:[[-2.4,.55],[-2.39,1.0],[-2.3,1.15],[-1.0,1.16],[1.45,1.1],[2.0,.98],[2.34,.8],[2.4,.55]],
+    cab:[[-2.32,1.15],[-2.25,1.62],[-1.6,1.78],[.3,1.8],[1.0,1.6],[1.7,1.1]],pil:[.7,-.5,-1.5]},
+  pickup:{name:'皮卡',len:5.3,w:1.9,wr:.4,fo:.95,ro:1.15,col:0x3f4d44,clad:true,
+    top:[[-2.65,.62],[-2.64,1.05],[-2.58,1.2],[-.7,1.2],[1.0,1.18],[1.9,1.14],[2.55,1.02],[2.65,.62]],
+    cab:[[-.72,1.18],[-.62,1.62],[-.2,1.8],[.45,1.8],[.85,1.66],[1.35,1.16]],pil:[.15]}
 };
 function car(type){
   var c=CARS[type]||CARS.suv,g=new THREE.Group(),i;
-  var body=std(c.col,{roughness:.32,metalness:.35}),glass=std(0x1d2a31,{roughness:.15,metalness:.5}),dark=std(0x25282a,{roughness:.7}),tyre=std(0x1b1b1b),rim=std(0xc3c7ca,{metalness:.7,roughness:.35});
-  var hl=c.len/2,w=c.w,r=c.wr,ra=r+.07,xf=hl-c.fo,xr=-hl+c.ro,by=.24,cc=Math.sqrt(ra*ra-(r-by)*(r-by)),a0=Math.asin((by-r)/ra);
+  var body=std(c.col,{roughness:.28,metalness:.45}),glass=std(0x141d23,{roughness:.1,metalness:.6}),dark=std(0x202325,{roughness:.75}),tyre=std(0x161616),alloy=std(0xc9cdd0,{metalness:.8,roughness:.3});
+  var hl=c.len/2,w=c.w,r=c.wr,ra=r+.06,xf=hl-c.fo,xr=-hl+c.ro,by=.22,cc=Math.sqrt(ra*ra-(r-by)*(r-by)),a0=Math.asin((by-r)/ra);
   function ext(shape,depth,bt,bs,mat,z){
-    var geo=new THREE.ExtrudeGeometry(shape,{depth:depth,bevelEnabled:bt>0,bevelThickness:bt,bevelSize:bs,bevelSegments:2,curveSegments:14,steps:1});
+    var geo=new THREE.ExtrudeGeometry(shape,{depth:depth,bevelEnabled:bt>0,bevelThickness:bt,bevelSize:bs,bevelSegments:3,curveSegments:16,steps:1});
     geo.translate(0,0,-depth/2); var m=new THREE.Mesh(geo,mat); m.position.z=z||0; m.castShadow=true; g.add(m); return m;
   }
   function bx(sx,sy,sz,m,x,y,z){ var o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m); o.position.set(x,y,z); g.add(o); return o; }
+  function smooth(pts,n){ return new THREE.SplineCurve(pts.map(function(p){return new THREE.Vector2(p[0],p[1])})).getPoints(n).map(function(v){return [v.x,v.y]}); }
   function poly(pts){ var s=new THREE.Shape(); s.moveTo(pts[0][0],pts[0][1]); for(var k=1;k<pts.length;k++) s.lineTo(pts[k][0],pts[k][1]); s.closePath(); return s; }
-  /* lower body with wheel arches */
-  var s=new THREE.Shape(); s.moveTo(-hl+.1,by); s.lineTo(xr-cc,by); s.absarc(xr,r,ra,Math.PI-a0,a0,true); s.lineTo(xf-cc,by); s.absarc(xf,r,ra,Math.PI-a0,a0,true); s.lineTo(hl-.1,by);
-  for(i=c.top.length-1;i>=0;i--) s.lineTo(c.top[i][0],c.top[i][1]); s.closePath();
-  ext(s,w-.1,.05,.03,body);
-  /* glasshouse, roof, pillars */
-  var cab=c.cab,n=cab.length,gw=w-.26,cx=0,cy=0,roofY=0;
+  /* lower body: smooth shoulder line, wheel arches */
+  var top=smooth(c.top,48),s=new THREE.Shape(); s.moveTo(-hl+.12,by); s.lineTo(xr-cc,by); s.absarc(xr,r,ra,Math.PI-a0,a0,true); s.lineTo(xf-cc,by); s.absarc(xf,r,ra,Math.PI-a0,a0,true); s.lineTo(hl-.12,by);
+  for(i=top.length-1;i>=0;i--) s.lineTo(top[i][0],top[i][1]); s.closePath();
+  ext(s,w-.12,.06,.03,body);
+  /* glasshouse with a curved roofline */
+  var cab=smooth(c.cab,36),n=cab.length,gw=w-.3,cx=0,cy=0,roofY=0,baseY=c.cab[0][1];
   cab.forEach(function(p){ cx+=p[0]/n; cy+=p[1]/n; roofY=Math.max(roofY,p[1]); });
-  ext(poly(cab),gw,.02,.01,glass);
-  var rf=cab.slice(1,n-1),rp=rf.map(function(p){return [p[0],p[1]+.02]}).concat(rf.slice().reverse().map(function(p){return [p[0],p[1]-.05]}));
-  ext(poly(rp),w-.2,.02,.015,body);
-  var plate=poly(cab),hole=new THREE.Path(),hp=cab.map(function(p){return [cx+(p[0]-cx)*.86,cy+.01+(p[1]-cy)*.7]});
-  hole.moveTo(hp[0][0],hp[0][1]); for(i=1;i<n;i++) hole.lineTo(hp[i][0],hp[i][1]); hole.closePath(); plate.holes.push(hole);
+  ext(poly(cab),gw,.03,.012,glass);
+  var rf=cab.filter(function(p){ return p[1]>=roofY-.16; }),rp=rf.map(function(p){return [p[0],p[1]+.02]}).concat(rf.slice().reverse().map(function(p){return [p[0],p[1]-.05]}));
+  ext(poly(rp),w-.24,.03,.015,c.darkRoof?glass:body);
+  var fy=c.top[c.top.length-2][1]-.07,ry=c.top[2][1]-.14,led=std(0xffffff,{emissive:0xdfe8ff,emissiveIntensity:.9}),red=std(0xd0241c,{emissive:0x8a100c,emissiveIntensity:.8});
   [1,-1].forEach(function(sg){
-    ext(plate,.03,0,0,body,sg*(gw/2+.02));
-    c.pil.forEach(function(px){ bx(.09,roofY-.04-cab[0][1],.045,body,px,(roofY-.04+cab[0][1])/2,sg*(gw/2+.025)); });
-    bx(.09,.1,.17,body,cab[n-1][0]-.14,cab[n-1][1]+.09,sg*(w/2+.07));
-    if(c.rails) g.add(limb(P(rf[0][0]+.25,roofY+.07,sg*(w/2-.28)),P(rf[rf.length-1][0]-.25,roofY+.07,sg*(w/2-.28)),.016,.016,dark,6));
-    /* lights */
-    var fy=c.top[c.top.length-2][1]-.06,ry=c.top[1][1]-.12;
-    bx(.06,.12,.36,std(0xfff6d0,{emissive:0x6a5c28}),hl+.012,fy,sg*(w/2-.3));
-    bx(.06,.14,.3,std(0xb3261e,{emissive:0x3a0806}),-hl-.012,ry,sg*(w/2-.26));
-    /* wheels */
+    c.pil.forEach(function(px){ bx(.09,roofY-.07-baseY,.05,body,px,(roofY-.07+baseY)/2,sg*(gw/2+.035)); });
+    bx(.1,.09,.2,body,c.cab[c.cab.length-1][0]-.18,baseY+.1,sg*(w/2+.06));
+    if(c.rails) g.add(limb(P(rf[0][0]+.2,roofY+.07,sg*(w/2-.3)),P(rf[rf.length-1][0]-.2,roofY+.07,sg*(w/2-.3)),.016,.016,dark,6));
+    bx(.05,.045,.5,led,hl+.01,fy,sg*(w/2-.36)); bx(.05,.1,.26,glass,hl+.008,fy-.09,sg*(w/2-.3));
+    bx(.05,.06,.34,red,-hl-.01,ry,sg*(w/2-.24));
     [xf,xr].forEach(function(wx){
-      var t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.22,20),tyre); t.rotation.x=Math.PI/2; t.position.set(wx,r,sg*(w/2-.1)); t.castShadow=true; g.add(t);
-      var rm=new THREE.Mesh(new THREE.CylinderGeometry(r*.62,r*.62,.235,16),rim); rm.rotation.x=Math.PI/2; rm.position.copy(t.position); g.add(rm);
-      var hb=new THREE.Mesh(new THREE.CylinderGeometry(r*.2,r*.2,.25,10),dark); hb.rotation.x=Math.PI/2; hb.position.copy(t.position); g.add(hb);
+      var z=sg*(w/2-.11),t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.23,24),tyre); t.rotation.x=Math.PI/2; t.position.set(wx,r,z); t.castShadow=true; g.add(t);
+      var well=new THREE.Mesh(new THREE.CylinderGeometry(r*.74,r*.74,.235,20),dark); well.rotation.x=Math.PI/2; well.position.copy(t.position); g.add(well);
+      for(var k=0;k<5;k++){ var a=k/5*Math.PI*2,sp=bx(r*.66,.06,.02,alloy,wx+Math.cos(a)*r*.36,r+Math.sin(a)*r*.36,z+sg*.115); sp.rotation.z=a; }
+      var hub=new THREE.Mesh(new THREE.CylinderGeometry(r*.17,r*.17,.26,12),alloy); hub.rotation.x=Math.PI/2; hub.position.copy(t.position); g.add(hub);
+      var rim=new THREE.Mesh(new THREE.TorusGeometry(r*.72,.018,6,24),alloy); rim.position.set(wx,r,z+sg*.115); g.add(rim);
     });
   });
-  [xf,xr].forEach(function(wx){ bx(ra*2,ra*1.1,w-.5,dark,wx,r+ra*.4,0); });
-  bx(.12,.2,w-.08,dark,hl-.01,.37,0); bx(.12,.2,w-.08,dark,-hl+.01,.37,0);
-  bx(.05,.13,w*.42,dark,hl+.01,c.top[c.top.length-2][1]-.08,0);
-  bx(.02,.11,.42,std(0xf4f4f0),hl+.055,.4,0); bx(.02,.11,.42,std(0xf4f4f0),-hl-.055,.4,0);
+  [xf,xr].forEach(function(wx){
+    bx(ra*2,ra*1.1,w-.52,dark,wx,r+ra*.4,0);
+    if(c.clad){ var cs=new THREE.Shape(); cs.absarc(wx,r,ra+.07,a0,Math.PI-a0,false); cs.absarc(wx,r,ra,Math.PI-a0,a0,true); cs.closePath(); ext(cs,w+.02,0,0,dark); }
+  });
+  if(c.clad) bx(xf-xr-ra*2,.12,w+.02,dark,(xf+xr)/2,by+.06,0);
+  bx(.14,.2,w-.16,dark,hl-.03,.36,0); bx(.14,.2,w-.16,dark,-hl+.03,.36,0);
+  bx(.04,.04,w*.8,red,-hl-.012,ry,0);
+  bx(.03,.11,.42,std(0xf4f4f0),hl+.05,.4,0); bx(.03,.11,.42,std(0xf4f4f0),-hl-.05,.4,0);
   return g;
 }
 function buildEnv(){
@@ -963,16 +965,13 @@ $('bCenter').addEventListener('click',function(){ if(S.active==='tarp'&&S.tarp){
 $('bTop').addEventListener('click',function(){ cam.el=1.56; cam.az=0; redraw(); });
 $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCam(); redraw(); });
 
-/* ---------- view counter (GoatCounter); stays hidden where it cannot load ---------- */
+/* ---------- view counter (GoatCounter): always on screen, shows a dash until a number arrives ---------- */
 (function(){
-  if(!/\.github\.io$/.test(location.hostname)) return;
-  function show(){
-    fetch('https://tent-planner.goatcounter.com/counter/TOTAL.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){
-      if(!d||!d.count) return;
-      Array.prototype.forEach.call(document.querySelectorAll('.views'),function(el){ el.textContent='點閱 '+d.count+' 次'; el.hidden=false; });
-    }).catch(function(){});
-  }
-  setTimeout(show,1500);
+  var els=document.querySelectorAll('.views'),base='https://tent-planner.goatcounter.com/counter/';
+  function put(t){ Array.prototype.forEach.call(els,function(el){ el.textContent='瀏覽 '+t+' 次'; }); }
+  function get(path){ return fetch(base+path+'.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){ if(!d||!d.count) throw 0; return d.count; }); }
+  function load(){ get('TOTAL').catch(function(){ return get(encodeURIComponent(location.pathname)); }).then(put).catch(function(){}); }
+  put('—'); setTimeout(load,1200); setTimeout(load,6000);
 })();
 
 /* ---------- go ---------- */
