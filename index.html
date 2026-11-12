@@ -458,15 +458,13 @@ function buildEnv(){
   /* gravel road in front */
   var rt=tex('gravel'); rt.repeat.set((span*2+30)/2,2);
   var road=add(new THREE.Mesh(new THREE.PlaneGeometry(span*2+30,3.6),std(0xd9d2c4,{map:rt}))); road.rotation.x=-Math.PI/2; road.position.set(0,.012,roadZ); road.receiveShadow=true;
-  /* neighbouring pitches with tents, hedges between */
+  /* neighbouring pitches with tents */
   [-1,1].forEach(function(sx){
     var gt=tex('grass'); gt.repeat.set(L/1.5,W/1.5);
     var pad=add(new THREE.Mesh(new THREE.PlaneGeometry(L,W),std(0xe6ecd9,{map:gt}))); pad.rotation.x=-Math.PI/2; pad.position.set(sx*(L+1.8),.012,0); pad.receiveShadow=true;
     var bl=add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([P(-hl,.02,-hw),P(hl,.02,-hw),P(hl,.02,hw),P(-hl,.02,hw)]),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.7}))); bl.position.x=sx*(L+1.8);
     var tl=Math.min(3.2,L*.6),tw=Math.min(2.6,W*.6),sd=sections('dome',tl,tw,1.7);
     var nt=add(new THREE.Mesh(loft(sd.secs,sd.p),std(sx<0?0x7f97a8:0xb9744f,{side:THREE.DoubleSide,roughness:.9}))); nt.position.set(sx*(L+1.8),.02,-W*.08); nt.rotation.y=sx*.5; nt.castShadow=true;
-    var hg=add(new THREE.Mesh(new THREE.BoxGeometry(.5,.65,W*.8),std(0x3f6e45,{flatShading:true}))); hg.position.set(sx*(hl+.9),.325,-W*.05); hg.castShadow=true; hg.receiveShadow=true;
-    for(i=0;i<5;i++){ var hb=add(new THREE.Mesh(new THREE.IcosahedronGeometry(.3+r()*.1,1),std(0x477a4c,{flatShading:true}))); hb.position.set(sx*(hl+.9)+(r()-.5)*.15,.62,-W*.05+(i/4-.5)*W*.74); hb.castShadow=true; }
   });
   /* wooden fence behind */
   var wood=std(0x8a6a48),fz=-(hw+1.7),n=Math.ceil(span),k;
