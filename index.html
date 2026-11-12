@@ -1201,7 +1201,13 @@ $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCa
   var els=document.querySelectorAll('.views'),base='https://tent-planner.goatcounter.com/counter/';
   function put(t){ Array.prototype.forEach.call(els,function(el){ el.textContent='瀏覽 '+t+' 次'; }); }
   function get(path){ return fetch(base+path+'.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){ if(!d||!d.count) throw 0; return d.count; }); }
-  function load(){ get('TOTAL').catch(function(){ return get(encodeURIComponent(location.pathname)); }).then(put).catch(function(){}); }
+  function num0(s){ return parseInt(String(s).replace(/[^0-9]/g,''),10)||0; }
+  var best=null;
+  function load(){
+    ['TOTAL',encodeURIComponent(location.pathname)].forEach(function(p){
+      get(p).then(function(c){ if(best===null||num0(c)>num0(best)){ best=c; put(c); } }).catch(function(){});
+    });
+  }
   put('—'); setTimeout(load,1200); setTimeout(load,6000);
 })();
 
