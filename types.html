@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Sleepoutside Camp">
+<title>帳篷型式 3D 介紹與優缺點</title>
+<style>
+  :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;color-scheme:light}
+  *{box-sizing:border-box}
+  html,body{margin:0;overflow-x:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.55}
+  a{color:var(--accent)}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:16px 20px 10px;max-width:1180px;margin:0 auto}
+  header h1{font-size:20px;margin:0;letter-spacing:.02em}
+  header p{margin:0;color:var(--muted);font-size:13px;flex:1 1 260px}
+  .back{font-weight:600;white-space:nowrap}
+  main{max-width:1180px;margin:0 auto;padding:0 20px 40px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+  .view{position:sticky;top:12px}
+  .stage{position:relative;height:min(62vh,560px);border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#dfe8e2}
+  canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  .stage .tag{position:absolute;left:12px;top:12px;background:rgba(251,249,243,.93);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted)}
+  .stage .spin{position:absolute;right:12px;top:12px;font:inherit;font-size:12px;background:rgba(251,249,243,.93);border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer;color:var(--ink)}
+  .view{min-width:0}
+  .types{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;max-width:100%}
+  .types button{font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+  .types button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .info h2{font-size:24px;margin:2px 0 2px}
+  .info .lead{margin:0 0 14px;color:var(--muted)}
+  .specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
+  .specs div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+  .specs dt{font-size:12px;color:var(--muted)}
+  .specs dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+  .rates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin:0 0 18px}
+  .rate{display:grid;grid-template-columns:5.5em 1fr;align-items:center;gap:8px;font-size:13px}
+  .bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .bar i{height:9px;border-radius:3px;background:#e4dfd1}
+  .bar i.on{background:var(--accent)}
+  .pc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .box{border-radius:12px;padding:12px 14px 14px;border:1px solid var(--line)}
+  .box h3{margin:0 0 6px;font-size:14px;letter-spacing:.08em}
+  .box ul{margin:0;padding-left:1.15em}
+  .box li{margin:5px 0}
+  .pros{background:var(--accent-soft);border-color:#c5dccd}
+  .pros h3{color:var(--accent)}
+  .cons{background:var(--warn-soft);border-color:#ecc9bc}
+  .cons h3{color:var(--warn)}
+  .fit{margin:14px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+  .fit b{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.08em}
+  .cta{display:inline-block;margin-top:16px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border-radius:10px;padding:10px 16px}
+  .foot{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:12px}
+  .foot b{color:var(--ink)}
+  .err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--warn)}
+  @media (max-width: 860px){
+    main{grid-template-columns:1fr;padding:0 12px 30px;gap:14px}
+    header{padding:12px 12px 8px}
+    .view{position:static}
+    .stage{height:46vh}
+    .types{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+    .types button{white-space:nowrap}
+    .pc,.rates{grid-template-columns:1fr}
+    .foot{padding:0 12px 24px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>帳篷型式 3D 介紹</h1>
+  <p>十一種常見帳型的概念造型與優缺點，拖曳畫面可以轉著看。</p>
+  <a class="back" href="index.html">前往搭設模擬 →</a>
+</header>
+<main>
+  <section class="view" aria-label="3D 展示">
+    <div class="stage">
+      <canvas id="c" aria-label="帳篷 3D 概念造型，可拖曳旋轉、滾輪縮放"></canvas>
+      <div class="tag" id="tag"></div>
+      <button type="button" class="spin" id="spin" aria-pressed="true">自動旋轉：開</button>
+      <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
+    </div>
+    <div class="types" id="types" role="group" aria-label="帳篷型式"></div>
+  </section>
+  <section class="info" aria-live="polite">
+    <h2 id="tName"></h2>
+    <p class="lead" id="tLead"></p>
+    <dl class="specs" id="tSpecs"></dl>
+    <div class="rates" id="tRates"></div>
+    <div class="pc">
+      <div class="box pros"><h3>優點</h3><ul id="tPros"></ul></div>
+      <div class="box cons"><h3>缺點</h3><ul id="tCons"></ul></div>
+    </div>
+    <p class="fit"><b>適合</b><span id="tFit"></span></p>
+    <a class="cta" href="index.html">用搭設模擬看放不放得下 →</a>
+  </section>
+</main>
+<p class="foot">優缺點與評分是對整個帳型的一般性比較，同一類型裡不同款式的差異可能很大，選購前請以實際商品規格為準。3D 為依結構類型製作的概念造型，不是特定品牌型號；尺寸為該類型的常見大小。<br><b>設計/Sleepoutside Camp</b> *非營利使用　資訊僅供參考，請依官方資訊為準。</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script data-goatcounter="https://tent-planner.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+if(!window.THREE){ $('err').style.display='flex'; return; }
+var ASPECTS=['搭設容易','居住空間','抗風','收納輕便','價格親民','通風'];
+var TYPES=[
+ {id:'dome',name:'圓頂帳',lead:'兩支營柱交叉撐起的半球形，最普遍的入門帳型。',m:{L:270,W:270,H:170,shape:'dome',color:0xa9ad84},
+  size:'約 270 × 270 × 高 170 cm',cap:'2–4 人',time:'10–15 分鐘',crew:'1–2 人',r:[4,3,4,4,5,3],
+  pros:['結構簡單，新手也容易上手','自立式，搭好後可以整頂搬動調整位置','交叉營柱受力平均，抗風表現穩定','款式多、價格選擇廣，入門門檻低','收納體積小'],
+  cons:['邊緣高度低，只有中央能坐直或站立','沒有客廳，雨天活動空間不足，通常要另搭天幕','前庭小，鞋子與裝備容易淋雨'],
+  fit:'剛開始露營的人、小家庭，或打算搭配天幕使用的人。'},
+ {id:'domeVest',name:'圓頂帳＋前庭',lead:'圓頂主體往前延伸出一段有遮蔽的前庭。',m:{L:500,W:280,H:150,shape:'domeVest',color:0xb9a886,inner:{l:265,w:265,from:55}},
+  size:'約 500 × 280 × 高 150 cm',cap:'4–5 人',time:'15–20 分鐘',crew:'2 人',r:[3,3,4,3,4,3],
+  pros:['前庭可以放鞋子與裝備，下雨時進出不會直接淋到內帳','主體仍是自立式，結構穩','比一房一廳輕巧，收納與重量負擔較小'],
+  cons:['總長度拉長，小營位要先確認放不放得下','前庭高度低，不能站著活動','營繩與營釘數量比單純圓頂帳多'],
+  fit:'想要一點遮蔽空間、但不想帶大型帳的家庭。'},
+ {id:'tworoom',name:'一房一廳',lead:'臥室與客廳合在同一頂帳裡的大型家庭帳。',m:{L:600,W:380,H:210,shape:'tworoom',color:0x8c7b62,inner:{l:230,w:340,from:35}},
+  size:'約 600 × 380 × 高 210 cm',cap:'4–6 人',time:'30–40 分鐘',crew:'2 人',r:[2,5,3,1,2,4],
+  pros:['睡覺與活動空間一頂搞定，不必另搭天幕','內部可以站立，長時間待在帳內也舒服','四面可開紗網或全部關上，雨天、冬天都好用','客廳能關起來，隱私性好'],
+  cons:['體積大、重量重，很佔車內空間','搭設需要兩個人和比較長的時間','佔地大，訂位前要確認營位尺寸','價格偏高','迎風面積大，強風時要確實下釘、拉好營繩'],
+  fit:'以舒適為優先的家庭，或常在雨天、冬天露營的人。'},
+ {id:'tunnel',name:'隧道帳',lead:'多支拱形營柱平行排列，撐出長條形的空間。',m:{L:640,W:300,H:195,shape:'tunnel',color:0xc7a56c,inner:{l:220,w:280,from:15}},
+  size:'約 640 × 300 × 高 195 cm',cap:'4–5 人',time:'20–30 分鐘',crew:'2 人',r:[3,5,3,2,3,4],
+  pros:['同樣的佔地下，內部空間方正、好利用','營柱等長又平行，穿桿的步驟單純','客廳長，適合多人圍坐或併桌'],
+  cons:['不是自立式，一定要下釘拉繩才站得住，硬地或棧板比較麻煩','側面受風面積大，要順著風向搭設','長度長，營位的長邊要夠'],
+  fit:'多人同行、重視客廳空間，而且營地可以確實下釘的人。'},
+ {id:'bell',name:'神殿／鐘型帳',lead:'一根中柱加一圈矮牆，圓形的經典造型。',m:{L:400,W:400,H:250,shape:'bell',color:0xe8dfc8,wall:75},
+  size:'直徑約 400 × 高 250 cm',cap:'4–6 人',time:'20–30 分鐘',crew:'1–2 人',r:[3,4,3,1,2,3],
+  pros:['外型好看，適合佈置風格露營','中央挑高，空間感好','多為棉布或混紡材質，透氣、不容易結露','只有一根中柱，結構簡單'],
+  cons:['棉布材質重，淋濕後更重，收帳後要曬乾否則容易發霉','圓形佔地大，而且一整圈都要下釘拉繩','中柱立在正中央，會影響擺設','邊牆低，靠邊的空間不能站','價格偏高'],
+  fit:'重視氛圍與拍照、開車露營且不介意重量的人。'},
+ {id:'cabin',name:'速搭方形帳',lead:'骨架與帳體連在一起，撐開就成形。',m:{L:300,W:300,H:210,shape:'cabin',color:0x6d8794},
+  size:'約 300 × 300 × 高 210 cm',cap:'4–5 人',time:'3–5 分鐘',crew:'1 人',r:[5,4,2,1,3,4],
+  pros:['把骨架撐開就完成，搭設最快','牆面接近垂直，空間利用率高，可以站立','一個人就能搭好'],
+  cons:['收納長度長，常超過 100 cm，小車不好放','重量重','骨架關節多，強風下比較容易受損，維修也不容易','多數需要另搭天幕或前庭才有客廳'],
+  fit:'想省下搭帳時間、車內空間夠放長件裝備的人。'},
+ {id:'carside',name:'車邊帳',lead:'一側靠在車上，把車身當成一面牆的斜頂帳。',m:{L:250,W:250,H:200,shape:'carside',color:0xb9a886},car:true,
+  size:'約 250 × 250 × 高 200 cm',cap:'2–4 人（當客廳用）',time:'10–15 分鐘',crew:'1–2 人',r:[4,3,2,4,4,4],
+  pros:['利用車身當牆，用料少、收納小','和車內連通，拿東西方便，也適合搭配車泊','很快就有一個遮陽擋雨的客廳'],
+  cons:['車子一開走，帳就得拆掉或另外支撐','和車身的接縫不容易完全密合，雨水與蚊蟲可能跑進來','會受車高與車型限制','抗風主要靠車身與營繩，強風時要留意'],
+  fit:'車泊、短天數的輕便露營，或想加一個客廳空間的人。'},
+ {id:'pyramid',name:'金字塔帳（印地安帳）',lead:'一根中柱把帳布撐成錐形，四周用營釘固定。',m:{L:400,W:400,H:250,color:0xd8c9a3},
+  size:'約 400 × 400 × 高 250 cm',cap:'3–5 人',time:'10–15 分鐘',crew:'1 人',r:[4,3,4,3,3,3],
+  pros:['一根中柱加一圈營釘就完成，搭設快','錐形受風面小，抗風表現好','中央挑高','結構簡單，收納相對小'],
+  cons:['不是自立式，一定要下釘','中柱在正中間，會影響床位配置','牆面是斜的，靠邊的可用高度低，實際能用的空間比佔地小','門開在斜面上，下雨時開門雨水容易進來'],
+  fit:'人數不多、喜歡簡單結構，或會遇到風的營地。'},
+ {id:'air',name:'充氣帳',lead:'用充氣的氣柱取代營柱，打氣就立起來。',m:{L:600,W:320,H:200,color:0x7d9aa6},
+  size:'約 600 × 320 × 高 200 cm',cap:'4–6 人',time:'10–15 分鐘',crew:'1 人',r:[5,5,3,1,1,4],
+  pros:['打氣就能立起來，不用穿營柱，一個人也能完成','沒有金屬營柱，不會折斷；遇到強風氣柱會彎曲再回彈','多為大型家庭帳，空間大'],
+  cons:['價格高','重量與收納體積都大','要帶打氣筒；氣柱破損或漏氣就無法使用，需要準備修補包','高溫曝曬下氣壓會升高，要留意','收帳時排氣、摺疊比較費工'],
+  fit:'預算充足、想省下穿營柱力氣的家庭。'},
+ {id:'rooftop',name:'車頂帳',lead:'固定在車頂架上，打開就能睡的帳篷。',m:{L:210,W:130,H:120,color:0x5f6b63},
+  size:'約 210 × 130 × 高 120 cm（展開後）',cap:'2–3 人',time:'2–5 分鐘',crew:'1 人',r:[5,1,3,2,1,3],
+  pros:['打開就能睡，搭設最快','睡在離地的高度，不受地面潮濕、不平或蟲蛇影響','不佔營位地面，有車位就能過夜','寢具可以留在帳內一起收'],
+  cons:['價格高，還需要車頂架與足夠的車頂荷重','增加車高與風阻，進地下停車場要注意高度','上下要爬梯子，夜間、小孩與長輩比較不方便','車子一開走，營地就跟著走','只有睡覺的空間'],
+  fit:'常移動、公路旅行式的玩法，或營地地面條件不好的時候。'},
+ {id:'solo',name:'單人登山帳',lead:'以輕量與小體積為優先的低矮小帳。',m:{L:250,W:110,H:100,shape:'domeVest',color:0x6f8160},
+  size:'約 220 × 100 × 高 100 cm',cap:'1 人',time:'5–10 分鐘',crew:'1 人',r:[4,1,4,5,3,3],
+  pros:['重量輕、收納小，可以背著走，也適合機車或單車旅行','佔地小，找營地容易','低矮的流線外型，抗風好'],
+  cons:['裡面只能坐著或躺著','裝備多半要放在前庭','輕量布料比較薄，使用時要小心','內外帳距離近，容易結露'],
+  fit:'登山、徒步、單車或機車旅行等需要自己背負裝備的人。'}
+];
+
+/* ---------- builders shared with the simulator (copied from index.html) ---------- */
+function rnd(seed){var s=seed;return function(){s=(s*9301+49297)%233280;return s/233280}}
+function tex(kind){
+  var cv=document.createElement('canvas'); cv.width=cv.height=256; var g=cv.getContext('2d'); var r=rnd(7),i;
+  if(kind==='grass'){
+    g.fillStyle='#7fa35f'; g.fillRect(0,0,256,256);
+    for(i=0;i<2600;i++){ g.fillStyle=r()>.5?'rgba(60,110,50,.35)':'rgba(170,200,120,.3)'; g.fillRect(r()*256,r()*256,1.5,3+r()*3); }
+  }else if(kind==='land'){
+    g.fillStyle='#6f9058'; g.fillRect(0,0,256,256);
+    for(i=0;i<2200;i++){ g.fillStyle=r()>.5?'rgba(50,90,45,.35)':'rgba(140,170,100,.25)'; g.fillRect(r()*256,r()*256,2,4); }
+  }else if(kind==='gravel'){
+    g.fillStyle='#b9b3a6'; g.fillRect(0,0,256,256);
+    for(i=0;i<1800;i++){ var c=120+Math.floor(r()*110); g.fillStyle='rgb('+c+','+(c-4)+','+(c-12)+')'; g.beginPath(); g.arc(r()*256,r()*256,1+r()*3,0,6.3); g.fill(); }
+  }else if(kind==='deck'){
+    g.fillStyle='#b98d5e'; g.fillRect(0,0,256,256);
+    for(i=0;i<8;i++){ g.fillStyle=i%2?'rgba(90,55,25,.10)':'rgba(255,230,190,.10)'; g.fillRect(0,i*32,256,32); g.fillStyle='rgba(60,35,15,.55)'; g.fillRect(0,i*32,256,2); }
+    for(i=0;i<300;i++){ g.fillStyle='rgba(80,50,25,.12)'; g.fillRect(r()*256,r()*256,10+r()*30,1); }
+  }else{
+    g.fillStyle='#b4b1a7'; g.fillRect(0,0,256,256);
+    for(i=0;i<900;i++){ g.fillStyle='rgba(90,90,85,.10)'; g.fillRect(r()*256,r()*256,2,2); }
+  }
+  var t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4; return t;
+}
+function label(text,scale,color){
+  var cv=document.createElement('canvas'); var g=cv.getContext('2d');
+  var font='600 44px -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+  g.font=font; var w=Math.ceil(g.measureText(text).width)+44; cv.width=w; cv.height=72;
+  g=cv.getContext('2d'); g.font=font;
+  g.fillStyle=color||'rgba(34,48,42,.9)';
+  var x=0,y=0,h=72,rr=18; g.beginPath(); g.moveTo(x+rr,y); g.arcTo(x+w,y,x+w,y+h,rr); g.arcTo(x+w,y+h,x,y+h,rr); g.arcTo(x,y+h,x,y,rr); g.arcTo(x,y,x+w,y,rr); g.closePath(); g.fill();
+  g.fillStyle='#fff'; g.textBaseline='middle'; g.fillText(text,22,38);
+  var t=new THREE.CanvasTexture(cv); t.minFilter=THREE.LinearFilter;
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));
+  var k=(scale||1)*0.34; sp.scale.set(k*w/72,k,1); sp.renderOrder=10; return sp;
+}
+function dispose(o){
+  o.traverse(function(n){
+    if(n.geometry) n.geometry.dispose();
+    if(n.material){ var m=Array.isArray(n.material)?n.material:[n.material]; m.forEach(function(x){ if(x.map) x.map.dispose(); x.dispose(); }); }
+  });
+}
+function profile(w,h,p,segs){
+  var pts=[],j,t,c,s;
+  for(j=0;j<=segs;j++){ t=Math.PI*j/segs; c=Math.cos(t); s=Math.sin(t);
+    pts.push([ (c<0?-1:1)*w*Math.pow(Math.abs(c),2/p), h*Math.pow(Math.abs(s),2/p) ]); }
+  return pts;
+}
+function loft(secs,p){
+  var segs=28,pos=[],idx=[],i,j,n=secs.length,row=segs+1;
+  for(i=0;i<n;i++){ var pr=profile(secs[i].w,secs[i].h,p,segs); for(j=0;j<=segs;j++) pos.push(secs[i].x,pr[j][1],pr[j][0]); }
+  for(i=0;i<n-1;i++) for(j=0;j<segs;j++){ var a=i*row+j,b=a+1,c=a+row,d=c+1; idx.push(a,c,b,b,c,d); }
+  var g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+function sections(shape,L,W,H){
+  var a=[],i,hw=W/2;
+  function add(f,wf,hf){ a.push({x:-L/2+f*L,w:Math.max(hw*wf,0.002),h:Math.max(H*hf,0.002)}); }
+  if(shape==='dome'){
+    for(i=0;i<=16;i++){ var s=-1+i/8,k=Math.sqrt(Math.max(0,1-s*s)); a.push({x:s*L/2,w:Math.max(hw*Math.pow(k,0.55),0.002),h:Math.max(H*Math.pow(k,0.9),0.002)}); }
+    return {secs:a,p:2.3,ribs:[]};
+  }
+  if(shape==='domeVest'){
+    add(0,.3,.01);add(.08,.8,.55);add(.22,1,.9);add(.36,1,1);add(.52,1,.92);add(.66,.92,.74);add(.84,.72,.62);add(.97,.5,.3);add(1,.42,.01);
+    return {secs:a,p:2.2,ribs:[]};
+  }
+  if(shape==='tunnel'){
+    add(0,.8,.01);add(.09,1,.96);add(.3,1,1);add(.5,1,1);add(.7,1,1);add(.91,1,.96);add(1,.8,.01);
+    return {secs:a,p:2.5,ribs:[1,2,3,4,5]};
+  }
+  if(shape==='tworoom'){
+    add(0,.55,.01);add(.07,.88,.68);add(.24,1,.95);add(.5,1,1);add(.76,1,.95);add(.93,.88,.68);add(1,.55,.01);
+    return {secs:a,p:2.4,ribs:[2,3,4]};
+  }
+  /* cabin */
+  add(0,.001,.001);add(0,1,.97);add(.5,1,1);add(1,1,.97);add(1,.001,.001);
+  return {secs:a,p:5,ribs:[]};
+}
+function shade(c,f){ var col=new THREE.Color(c); col.r=Math.min(1,col.r*f); col.g=Math.min(1,col.g*f); col.b=Math.min(1,col.b*f); return col; }
+function surf(sd,x,t,pad){
+  var s=sd.secs,i,a=s[0],b=s[s.length-1],k=x<=s[0].x?0:1;
+  for(i=0;i<s.length-1;i++){ if(s[i+1].x>s[i].x&&x>=s[i].x-1e-6&&x<=s[i+1].x+1e-6){ a=s[i]; b=s[i+1]; k=(x-a.x)/(b.x-a.x); break; } }
+  var w=a.w+(b.w-a.w)*k+pad,h=a.h+(b.h-a.h)*k+pad,c=Math.cos(t),sn=Math.sin(t),e=2/sd.p;
+  return new THREE.Vector3(x,h*Math.pow(Math.abs(sn),e),(c<0?-1:1)*w*Math.pow(Math.abs(c),e));
+}
+function tOf(sd,yf,side){ var t=Math.asin(Math.pow(Math.min(1,Math.max(0,yf)),sd.p/2)); return side>0?t:Math.PI-t; }
+function gridMesh(fn,nu,nv,mat){
+  var pos=[],idx=[],i,j,row=nv+1;
+  for(i=0;i<=nu;i++) for(j=0;j<=nv;j++){ var p=fn(i/nu,j/nv); pos.push(p.x,p.y,p.z); }
+  for(i=0;i<nu;i++) for(j=0;j<nv;j++){ var a=i*row+j,b=a+1,c=a+row,d=c+1; idx.push(a,c,b,b,c,d); }
+  var g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
+  return new THREE.Mesh(g,mat);
+}
+function patch(sd,x0,x1,t0,t1,mat){ return gridMesh(function(u,v){ return surf(sd,x0+(x1-x0)*u,t0+(t1-t0)*v,0.012); },14,10,mat); }
+function quad(a,b,c,d,mat){ return gridMesh(function(u,v){ var p=a.clone().lerp(b,u),q=d.clone().lerp(c,u); return p.lerp(q,v); },1,1,mat); }
+function tube(pts,r,mat){ return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),Math.max(6,pts.length*2),r,6,false),mat); }
+function limb(a,b,r1,r2,mat,seg){
+  var d=b.clone().sub(a),len=d.length()||0.001,m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,len,seg||8),mat);
+  m.position.copy(a).add(b).multiplyScalar(.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize()); return m;
+}
+function P(x,y,z){ return new THREE.Vector3(x,y,z); }
+function std(col,o){ var p={color:col,roughness:1}; if(o) for(var k in o) p[k]=o[k]; return new THREE.MeshStandardMaterial(p); }
+function rectPts(l,w,y){ return [new THREE.Vector3(-l/2,y,-w/2),new THREE.Vector3(l/2,y,-w/2),new THREE.Vector3(l/2,y,w/2),new THREE.Vector3(-l/2,y,w/2),new THREE.Vector3(-l/2,y,-w/2)]; }
+function ellPts(l,w,y){ var a=[],i; for(i=0;i<=48;i++){ var t=i/48*Math.PI*2; a.push(new THREE.Vector3(Math.cos(t)*l/2,y,Math.sin(t)*w/2)); } return a; }
+function buildTent1(){
+  while(tentG.children.length){ var o=tentG.children[0]; tentG.remove(o); dispose(o); }
+  tentMeshes=[];
+  var t=S.tent,L=t.L/100,W=t.W/100,H=t.H/100,hl=L/2,hw=W/2,m=S.margin/100,bell=t.shape==='bell',mesh,i;
+  var V=function(x,y,z){return new THREE.Vector3(x,y,z)},PI=Math.PI;
+  function fab(col,op){ return new THREE.MeshStandardMaterial({color:col,roughness:.9,side:THREE.DoubleSide,transparent:true,opacity:S.xray?op*0.35:op,depthWrite:!S.xray&&op===1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}); }
+  shellMat=new THREE.MeshStandardMaterial({color:t.color,roughness:.88,side:THREE.DoubleSide,transparent:true,opacity:S.xray?0.38:1,depthWrite:!S.xray});
+  var trim=fab(shade(t.color,.7),1),roofM=fab(shade(t.color,1.14),1),win=fab(0x262b27,.8);
+  var poleMat=new THREE.MeshStandardMaterial({color:0x50544f,metalness:.5,roughness:.45});
+  var ropes=[];
+  function rope(a,b){ ropes.push(a,b); }
+  function add(o){ tentG.add(o); return o; }
+
+  if(bell){
+    var wall=Math.min((t.wall||75)/100,H*0.5);
+    var bp=function(a,y,pad){ var r=y<=wall?.5:.5*(1-(y-wall)/(H-wall)); return V(Math.cos(a)*(L*r+pad),y,Math.sin(a)*(W*r+pad)); };
+    var lg=new THREE.LatheGeometry([new THREE.Vector2(.5,0),new THREE.Vector2(.5,wall),new THREE.Vector2(.012,H),new THREE.Vector2(0,H)],48);
+    mesh=new THREE.Mesh(lg,shellMat); mesh.scale.set(L,1,W);
+    var pole=add(new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),poleMat)); pole.position.y=H/2;
+    var seam=[],n=12,ribMat=new THREE.LineBasicMaterial({color:0x3b342a,transparent:true,opacity:.4});
+    for(i=0;i<n;i++){ var a=(i+.5)/n*PI*2; seam.push(bp(a,wall,.004),V(0,H,0)); if(m>0) rope(bp(a,wall,.01),V(Math.cos(a)*(hl+m),0,Math.sin(a)*(hw+m))); }
+    add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seam),ribMat));
+    add(gridMesh(function(u,v){ return bp(u*PI*2,v*0.09,.012); },48,1,trim));
+    add(gridMesh(function(u,v){ return bp(u*PI*2,wall-.03+v*0.06,.012); },48,1,trim));
+    var dh=Math.min(1.75,H*.72),da=function(y){ return (0.06+0.2*(1-y/dh))*4/Math.max(L,2); };
+    add(gridMesh(function(u,v){ var y=v*dh; return bp((u*2-1)*da(y),y,.014); },6,10,win));
+    [1,-1].forEach(function(sg){ add(tube([bp(sg*da(0)*1.15,0,.03),bp(sg*da(dh*.5)*1.1,dh*.5,.03),bp(0,dh+.08,.03)],.018,poleMat)); });
+    [PI/2,PI,PI*1.5].forEach(function(c){ add(gridMesh(function(u,v){ return bp(c+(u*2-1)*0.16*4/Math.max(L,2),.14+v*(wall-.26),.014); },4,1,win)); });
+  }else if(t.shape==='carside'){
+    /* lean-to shelter: the tall open side (x = -L/2) goes against the car, the door faces away */
+    var cx0=-hl,cx1=-hl+.18*L,cx2=hl-.12*L,cx3=hl,cy2=H*.86,pf=function(z){ return [V(cx0,0,z),V(cx0,H*.97,z),V(cx1,H,z),V(cx2,cy2,z),V(cx3,0,z)]; };
+    var sA=pf(-hw),sB=pf(hw),ctri=[];
+    for(i=1;i<4;i++) ctri.push(sA[i],sB[i],sB[i+1],sA[i],sB[i+1],sA[i+1]);
+    [sA,sB].forEach(function(s){ ctri.push(s[0],s[1],s[2],s[0],s[2],s[3],s[0],s[3],s[4]); });
+    var sg2=new THREE.BufferGeometry().setFromPoints(ctri); sg2.computeVertexNormals();
+    mesh=new THREE.Mesh(sg2,shellMat);
+    add(quad(sA[1],sB[1],V(cx0-.45,H*.9,hw),V(cx0-.45,H*.9,-hw),roofM));
+    [sA,sB].forEach(function(s){ add(tube(s.map(function(q){ return V(q.x,q.y,q.z*1.004); }),.016,poleMat)); });
+    add(tube([sA[2],sB[2]],.014,poleMat)); add(tube([sA[3],sB[3]],.014,poleMat));
+    [1,-1].forEach(function(sg){
+      var z=sg*(hw+.012); add(quad(V(-.28*L,H*.32,z),V(.22*L,H*.32,z),V(.22*L,H*.74,z),V(-.28*L,H*.74,z),win));
+      if(m>0){ rope(V(cx2,cy2,sg*hw),V(hl+m,0,sg*(hw+m))); rope(V(cx1,H,sg*hw),V(cx1,0,sg*(hw+m))); }
+    });
+    var fp=function(k,z){ return V(cx2+(cx3-cx2)*k+.016,cy2*(1-k),z); };
+    add(quad(fp(.1,-.3*W),fp(.1,.3*W),fp(.95,.3*W),fp(.95,-.3*W),win));
+  }else if(t.shape==='cabin'){
+    var wh=H*.8,b=[V(-hl,0,-hw),V(hl,0,-hw),V(hl,0,hw),V(-hl,0,hw)],tp=b.map(function(p){return V(p.x,wh,p.z)}),ap=V(0,H,0),tri=[];
+    for(i=0;i<4;i++){ var j=(i+1)%4; tri.push(b[i],b[j],tp[j],b[i],tp[j],tp[i],tp[i],tp[j],ap); }
+    var cg=new THREE.BufferGeometry().setFromPoints(tri); cg.computeVertexNormals();
+    mesh=new THREE.Mesh(cg,shellMat);
+    for(i=0;i<4;i++){
+      var o1=V(b[i].x*1.004,0,b[i].z*1.004),o2=V(tp[i].x*1.004,wh,tp[i].z*1.004);
+      add(tube([o1,o2],.022,poleMat)); add(tube([o2,V(0,H+.01,0)],.018,poleMat));
+      if(m>0) rope(o2,V(b[i].x+(b[i].x>0?m:-m),0,b[i].z+(b[i].z>0?m:-m)));
+    }
+    var e=.014;
+    add(quad(V(hl+e,.03,-.28*W),V(hl+e,.03,.28*W),V(hl+e,wh*.92,.28*W),V(hl+e,wh*.92,-.28*W),win));
+    add(quad(V(-hl-e,wh*.42,-.25*W),V(-hl-e,wh*.42,.25*W),V(-hl-e,wh*.88,.25*W),V(-hl-e,wh*.88,-.25*W),win));
+    [1,-1].forEach(function(sg){ var z=sg*(hw+e); add(quad(V(-.3*L,wh*.42,z),V(.3*L,wh*.42,z),V(.3*L,wh*.88,z),V(-.3*L,wh*.88,z),win)); });
+    add(quad(V(tp[1].x*.55,wh+(H-wh)*.45+e,tp[1].z*.55),V(tp[2].x*.55,wh+(H-wh)*.45+e,tp[2].z*.55),V(tp[2].x*.97,wh+e*2,tp[2].z*.97),V(tp[1].x*.97,wh+e*2,tp[1].z*.97),roofM));
+  }else{
+    var sd=sections(t.shape,L,W,H),X=function(f){return -hl+f*L};
+    mesh=new THREE.Mesh(loft(sd.secs,sd.p),shellMat);
+    var rib=function(ri){ var s=sd.secs[ri]; add(tube(profile(s.w+.012,s.h+.012,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.014,poleMat)); };
+    var side=function(f0,f1,y0,y1,sg,mat){ add(patch(sd,X(f0),X(f1),tOf(sd,y0,sg),tOf(sd,y1,sg),mat)); };
+    var diag=function(f0,f1){ [0,1].forEach(function(fl){ var pts=[],k; for(k=0;k<=24;k++){ var u=k/24; pts.push(surf(sd,X(f0+(f1-f0)*u),PI*(fl?1-u:u),.014)); } add(tube(pts,.014,poleMat)); }); };
+    var sideRope=function(f,yf){ if(m<=0) return; [1,-1].forEach(function(sg){ rope(surf(sd,X(f),tOf(sd,yf,sg),.012),V(X(f),0,sg*(hw+m))); }); };
+    var cornerRope=function(f,yf,xs){ if(m<=0) return; [1,-1].forEach(function(sg){ rope(surf(sd,X(f),tOf(sd,yf,sg),.012),V(xs*(hl+m),0,sg*(hw+m))); }); };
+    var endRope=function(f,yf,xs){ if(m<=0) return; [1,-1].forEach(function(sg){ rope(surf(sd,X(f),tOf(sd,yf,sg),.012),V(xs*(hl+m),0,sg*.3*W)); }); };
+    [1,-1].forEach(function(sg){ side(.04,.96,0,.06,sg,trim); });
+    if(t.shape==='dome'){
+      diag(.07,.93);
+      add(patch(sd,X(.76),X(.955),PI*.24,PI*.76,win));
+      add(patch(sd,X(.4),X(.6),PI*.36,PI*.64,trim));
+      cornerRope(.25,.55,-1); cornerRope(.75,.55,1);
+    }else if(t.shape==='domeVest'){
+      diag(.09,.65); rib(6);
+      side(.69,.9,.1,.82,1,win);
+      add(patch(sd,X(.875),X(.985),PI*.26,PI*.74,trim));
+      add(patch(sd,X(.28),X(.44),PI*.38,PI*.62,trim));
+      sideRope(.36,.55); cornerRope(.12,.55,-1); cornerRope(.84,.6,1);
+    }else if(t.shape==='tunnel'){
+      [1,2,3,4,5].forEach(rib);
+      [1,-1].forEach(function(sg){ side(.55,.87,.08,.62,sg,win); side(.15,.3,.3,.56,sg,win); });
+      add(patch(sd,X(.918),X(.992),PI*.2,PI*.8,trim));
+      add(patch(sd,X(.008),X(.082),PI*.3,PI*.7,trim));
+      [.09,.3,.5,.7,.91].forEach(function(f){ sideRope(f,.6); }); endRope(.09,.85,-1); endRope(.91,.85,1);
+    }else{
+      [1,2,3,4,5].forEach(rib);
+      [1,-1].forEach(function(sg){ side(.53,.74,.08,.62,sg,win); side(.79,.9,.1,.6,sg,win); side(.18,.34,.3,.56,sg,win); });
+      add(patch(sd,X(.2),X(.8),PI*.3,PI*.7,roofM));
+      add(patch(sd,X(.945),X(.995),PI*.24,PI*.76,trim));
+      [.24,.5,.76].forEach(function(f){ sideRope(f,.62); }); endRope(.07,.8,-1); endRope(.93,.8,1);
+    }
+  }
+  mesh.castShadow=true; add(mesh); tentMeshes.push(mesh);
+  if((WX[S.wx]||{}).night){ shellMat.emissive.setHex(0xffb060); shellMat.emissiveIntensity=.42; var gl=add(new THREE.PointLight(0xffc27a,.9,7+L,1.8)); gl.position.set(0,Math.min(H*.6,1.4),0); }
+  ropeObjs=[]; zoneMat=null;
+  if(ropes.length&&S.ropes){
+    var pegMat=new THREE.MeshStandardMaterial({color:0xd8d8d2,metalness:.6,roughness:.4}),tnMat=new THREE.MeshStandardMaterial({color:0xf4f4f0,roughness:.5});
+    for(i=0;i<ropes.length;i+=2){
+      var ra=ropes[i],rb=ropes[i+1],gp=V(rb.x,.035,rb.z),dir=gp.clone().sub(ra).normalize();
+      var rm=new THREE.MeshStandardMaterial({color:0xffb300,emissive:0x7a5200,roughness:.6});
+      add(limb(ra,gp,.008,.008,rm,6));
+      var tn=add(new THREE.Mesh(new THREE.BoxGeometry(.035,.09,.02),tnMat)); tn.position.copy(gp).lerp(ra,.28); tn.quaternion.setFromUnitVectors(V(0,1,0),dir);
+      add(limb(gp.clone().addScaledVector(dir,.1),gp.clone().addScaledVector(dir,-.1).setY(.11),.011,.011,pegMat,6));
+      var dm=new THREE.MeshBasicMaterial({color:0xffb300,transparent:true,opacity:.9});
+      var dc=add(new THREE.Mesh(new THREE.RingGeometry(.05,.085,16),dm)); dc.rotation.x=-Math.PI/2; dc.position.set(rb.x,.017,rb.z);
+      ropeObjs.push({mat:rm,disc:dm,p:V(rb.x,0,rb.z)});
+    }
+  }
+  if(m>0){
+    var zs=new THREE.Shape(),zh=new THREE.Path();
+    if(bell){ zs.absellipse(0,0,hl+m,hw+m,0,Math.PI*2,false,0); zh.absellipse(0,0,hl,hw,0,Math.PI*2,true,0); }
+    else{ zs.moveTo(-hl-m,-hw-m); zs.lineTo(hl+m,-hw-m); zs.lineTo(hl+m,hw+m); zs.lineTo(-hl-m,hw+m); zs.closePath();
+          zh.moveTo(-hl,-hw); zh.lineTo(-hl,hw); zh.lineTo(hl,hw); zh.lineTo(hl,-hw); zh.closePath(); }
+    zs.holes.push(zh);
+    zoneMat=new THREE.MeshBasicMaterial({color:0xffc233,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});
+    var zm=add(new THREE.Mesh(new THREE.ShapeGeometry(zs,32),zoneMat)); zm.rotation.x=-Math.PI/2; zm.position.y=.013;
+  }
+  /* groundsheet */
+  var fm=new THREE.MeshStandardMaterial({color:0x4b4a44,roughness:1,transparent:true,opacity:.55});
+  var floor=bell?new THREE.Mesh(new THREE.CircleGeometry(.5,40),fm):new THREE.Mesh(new THREE.PlaneGeometry(L,W),fm);
+  if(bell) floor.scale.set(L,W,1);
+  floor.rotation.x=-Math.PI/2; floor.position.y=.006; tentG.add(floor); tentMeshes.push(floor);
+  if(t.inner){
+    var il=t.inner.l/100,iw=t.inner.w/100;
+    var im=new THREE.Mesh(new THREE.PlaneGeometry(il,iw),new THREE.MeshStandardMaterial({color:0xf2e6c4,roughness:1}));
+    im.rotation.x=-Math.PI/2; im.position.set(-L/2+t.inner.from/100+il/2,.012,0); tentG.add(im);
+    if(S.labels && S.xray){ var lb=label('內帳 '+t.inner.l+'×'+t.inner.w,0.8,'rgba(120,96,40,.9)'); lb.position.set(im.position.x,.45,0); tentG.add(lb); }
+  }
+  /* footprint + rope zone */
+  outlineMat=new THREE.LineBasicMaterial({color:0x2f6b4f});
+  var op=bell?ellPts(L,W,.02):rectPts(L,W,.02);
+  tentG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(op),outlineMat));
+  if(m>0){
+    ropeMat=new THREE.LineDashedMaterial({color:0x2f6b4f,dashSize:.18,gapSize:.12});
+    var rp=bell?ellPts(L+2*m,W+2*m,.02):rectPts(L+2*m,W+2*m,.02);
+    var rl=new THREE.Line(new THREE.BufferGeometry().setFromPoints(rp),ropeMat); rl.computeLineDistances(); tentG.add(rl);
+  }else ropeMat=null;
+  if(S.labels){ var tl=label(t.L+' × '+t.W+' × 高 '+t.H+' cm',1); tl.position.set(0,H+.45,0); tentG.add(tl); }
+  placeTent();
+}
+function buildPerson(){
+  while(personG.children.length){ var o=personG.children[0]; personG.remove(o); dispose(o); }
+  var f=S.pg==='f',skin=std(0xe0b08c,{roughness:.8}),hair=std(f?0x3a2a22:0x2b2320),jk=std(f?0x2f8f8a:0xd9793a,{roughness:.85}),pt=std(f?0x4a4f63:0x2f3b4c,{roughness:.9}),sh=std(0x393939);
+  var sw=f?.172:.2,hipX=f?.095:.09;
+  function add(o){ o.castShadow=true; personG.add(o); return o; }
+  [1,-1].forEach(function(s){
+    var ft=add(new THREE.Mesh(new THREE.BoxGeometry(f?.085:.095,.07,f?.23:.25),sh)); ft.position.set(s*hipX,.035,.045);
+    add(limb(P(s*hipX,.06,0),P(s*hipX,.48,0),f?.04:.045,f?.053:.058,pt,10));
+    add(limb(P(s*hipX,.48,0),P(s*(hipX-.005),.92,0),f?.055:.058,f?.085:.082,pt,10));
+    var kn=add(new THREE.Mesh(new THREE.SphereGeometry(f?.054:.058,10,8),pt)); kn.position.set(s*hipX,.48,0);
+    var so=add(new THREE.Mesh(new THREE.SphereGeometry(f?.062:.072,12,10),jk)); so.position.set(s*sw,1.365,0);
+    add(limb(P(s*(sw+.005),1.365,0),P(s*(sw+.04),1.09,.015),f?.045:.052,f?.04:.045,jk,10));
+    var el=add(new THREE.Mesh(new THREE.SphereGeometry(f?.04:.045,10,8),jk)); el.position.set(s*(sw+.04),1.09,.015);
+    add(limb(P(s*(sw+.04),1.09,.015),P(s*(sw+.03),.85,.075),f?.038:.043,f?.032:.036,jk,10));
+    var hd=add(new THREE.Mesh(new THREE.SphereGeometry(f?.038:.042,10,8),skin)); hd.position.set(s*(sw+.028),.805,.085); hd.scale.set(.8,1.15,1);
+  });
+  var pel=add(new THREE.Mesh(new THREE.SphereGeometry(.15,14,10),pt)); pel.position.y=.93; pel.scale.set(f?1.2:1.12,.72,.78);
+  var tor=add(new THREE.Mesh(new THREE.CylinderGeometry(f?.162:.19,f?.132:.155,.5,16),jk)); tor.position.y=1.17; tor.scale.z=.62;
+  if(f){ var hem=add(new THREE.Mesh(new THREE.CylinderGeometry(.136,.2,.2,16),jk)); hem.position.y=.9; hem.scale.z=.72; }
+  var top=add(new THREE.Mesh(new THREE.SphereGeometry(f?.162:.19,16,8,0,Math.PI*2,0,Math.PI/2),jk)); top.position.y=1.42; top.scale.set(1,.32,.62);
+  add(limb(P(0,1.42,0),P(0,1.52,0),f?.043:.05,f?.04:.046,skin,10));
+  var head=add(new THREE.Mesh(new THREE.SphereGeometry(.105,18,14),skin)); head.position.y=1.5845; head.scale.set(f?.86:.9,1.1,f?.96:1);
+  var hr=add(new THREE.Mesh(new THREE.SphereGeometry(.111,18,10,0,Math.PI*2,0,Math.PI*.56),hair)); hr.position.set(0,1.588,-.008); hr.scale.set(.93,1.1,1.03); hr.rotation.x=-.28;
+  if(f){
+    var bk=add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.075,.3,12),hair)); bk.position.set(0,1.46,-.05); bk.scale.z=.55;
+    [1,-1].forEach(function(s){ var sd=add(new THREE.Mesh(new THREE.CylinderGeometry(.03,.024,.2,8),hair)); sd.position.set(s*.085,1.5,-.005); });
+  }
+  personG.scale.setScalar(S.ph/170);
+}
+function car(type){
+  var c=CARS[type]||CARS.suv,g=new THREE.Group(),i;
+  var body=std(c.col,{roughness:.28,metalness:.45}),glass=std(0x141d23,{roughness:.1,metalness:.6}),dark=std(0x202325,{roughness:.75}),tyre=std(0x161616),alloy=std(0xc9cdd0,{metalness:.8,roughness:.3});
+  var hl=c.len/2,w=c.w,r=c.wr,ra=r+.06,xf=hl-c.fo,xr=-hl+c.ro,by=.22,cc=Math.sqrt(ra*ra-(r-by)*(r-by)),a0=Math.asin((by-r)/ra);
+  function ext(shape,depth,bt,bs,mat,z){
+    var geo=new THREE.ExtrudeGeometry(shape,{depth:depth,bevelEnabled:bt>0,bevelThickness:bt,bevelSize:bs,bevelSegments:3,curveSegments:16,steps:1});
+    geo.translate(0,0,-depth/2); var m=new THREE.Mesh(geo,mat); m.position.z=z||0; m.castShadow=true; g.add(m); return m;
+  }
+  function bx(sx,sy,sz,m,x,y,z){ var o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m); o.position.set(x,y,z); g.add(o); return o; }
+  function smooth(pts,n){ return new THREE.SplineCurve(pts.map(function(p){return new THREE.Vector2(p[0],p[1])})).getPoints(n).map(function(v){return [v.x,v.y]}); }
+  function poly(pts){ var s=new THREE.Shape(); s.moveTo(pts[0][0],pts[0][1]); for(var k=1;k<pts.length;k++) s.lineTo(pts[k][0],pts[k][1]); s.closePath(); return s; }
+  /* lower body: smooth shoulder line, wheel arches */
+  var top=smooth(c.top,48),s=new THREE.Shape(); s.moveTo(-hl+.12,by); s.lineTo(xr-cc,by); s.absarc(xr,r,ra,Math.PI-a0,a0,true); s.lineTo(xf-cc,by); s.absarc(xf,r,ra,Math.PI-a0,a0,true); s.lineTo(hl-.12,by);
+  for(i=top.length-1;i>=0;i--) s.lineTo(top[i][0],top[i][1]); s.closePath();
+  ext(s,w-.12,.06,.03,body);
+  /* glasshouse with a curved roofline */
+  var cab=smooth(c.cab,36),n=cab.length,gw=w-.3,cx=0,cy=0,roofY=0,baseY=c.cab[0][1];
+  cab.forEach(function(p){ cx+=p[0]/n; cy+=p[1]/n; roofY=Math.max(roofY,p[1]); });
+  ext(poly(cab),gw,.03,.012,glass);
+  var rf=cab.filter(function(p){ return p[1]>=roofY-.16; }),rp=rf.map(function(p){return [p[0],p[1]+.02]}).concat(rf.slice().reverse().map(function(p){return [p[0],p[1]-.05]}));
+  ext(poly(rp),w-.24,.03,.015,c.darkRoof?glass:body);
+  var fy=c.top[c.top.length-2][1]-.07,ry=c.top[2][1]-.14,led=std(0xffffff,{emissive:0xdfe8ff,emissiveIntensity:.9}),red=std(0xd0241c,{emissive:0x8a100c,emissiveIntensity:.8});
+  [1,-1].forEach(function(sg){
+    c.pil.forEach(function(px){ bx(.09,roofY-.07-baseY,.05,body,px,(roofY-.07+baseY)/2,sg*(gw/2+.035)); });
+    bx(.1,.09,.2,body,c.cab[c.cab.length-1][0]-.18,baseY+.1,sg*(w/2+.06));
+    if(c.rails) g.add(limb(P(rf[0][0]+.2,roofY+.07,sg*(w/2-.3)),P(rf[rf.length-1][0]-.2,roofY+.07,sg*(w/2-.3)),.016,.016,dark,6));
+    bx(.05,.045,.5,led,hl+.01,fy,sg*(w/2-.36)); bx(.05,.1,.26,glass,hl+.008,fy-.09,sg*(w/2-.3));
+    bx(.05,.06,.34,red,-hl-.01,ry,sg*(w/2-.24));
+    [xf,xr].forEach(function(wx){
+      var z=sg*(w/2-.11),t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.23,24),tyre); t.rotation.x=Math.PI/2; t.position.set(wx,r,z); t.castShadow=true; g.add(t);
+      var well=new THREE.Mesh(new THREE.CylinderGeometry(r*.74,r*.74,.235,20),dark); well.rotation.x=Math.PI/2; well.position.copy(t.position); g.add(well);
+      for(var k=0;k<5;k++){ var a=k/5*Math.PI*2,sp=bx(r*.66,.06,.02,alloy,wx+Math.cos(a)*r*.36,r+Math.sin(a)*r*.36,z+sg*.115); sp.rotation.z=a; }
+      var hub=new THREE.Mesh(new THREE.CylinderGeometry(r*.17,r*.17,.26,12),alloy); hub.rotation.x=Math.PI/2; hub.position.copy(t.position); g.add(hub);
+      var rim=new THREE.Mesh(new THREE.TorusGeometry(r*.72,.018,6,24),alloy); rim.position.set(wx,r,z+sg*.115); g.add(rim);
+    });
+  });
+  [xf,xr].forEach(function(wx){
+    bx(ra*2,ra*1.1,w-.52,dark,wx,r+ra*.4,0);
+    if(c.clad){ var cs=new THREE.Shape(); cs.absarc(wx,r,ra+.07,a0,Math.PI-a0,false); cs.absarc(wx,r,ra,Math.PI-a0,a0,true); cs.closePath(); ext(cs,w+.02,0,0,dark); }
+  });
+  if(c.clad) bx(xf-xr-ra*2,.12,w+.02,dark,(xf+xr)/2,by+.06,0);
+  bx(.14,.2,w-.16,dark,hl-.03,.36,0); bx(.14,.2,w-.16,dark,-hl+.03,.36,0);
+  bx(.04,.04,w*.8,red,-hl-.012,ry,0);
+  bx(.03,.11,.42,std(0xf4f4f0),hl+.05,.4,0); bx(.03,.11,.42,std(0xf4f4f0),-hl-.05,.4,0);
+  return g;
+}
+var CARS={
+  hatch:{name:'小型車',len:4.0,w:1.74,wr:.32,fo:.8,ro:.72,col:0x3f7f8c,
+    top:[[-2.0,.48],[-1.99,.8],[-1.9,.98],[-1.0,1.0],[.7,.97],[1.45,.9],[1.9,.76],[2.0,.5]],
+    cab:[[-1.9,.98],[-1.72,1.3],[-1.2,1.47],[-.3,1.52],[.3,1.42],[.95,.97]],pil:[-.55]},
+  sedan:{name:'轎車',len:4.7,w:1.84,wr:.34,fo:.92,ro:.95,col:0x5b6168,
+    top:[[-2.35,.5],[-2.34,.82],[-2.2,.98],[-1.2,1.0],[.9,.96],[1.7,.88],[2.25,.74],[2.35,.5]],
+    cab:[[-2.0,.99],[-1.3,1.3],[-.6,1.42],[.1,1.44],[.55,1.33],[1.2,.96]],pil:[-.2]},
+  suv:{name:'休旅車',len:4.6,w:1.87,wr:.38,fo:.9,ro:.88,col:0xeceeed,rails:true,clad:true,darkRoof:true,
+    top:[[-2.3,.55],[-2.29,.95],[-2.18,1.12],[-1.0,1.14],[.85,1.1],[1.6,1.04],[2.2,.9],[2.3,.58]],
+    cab:[[-2.18,1.12],[-1.95,1.48],[-1.3,1.66],[-.2,1.7],[.35,1.6],[1.05,1.1]],pil:[-.3,-1.35]},
+  van:{name:'MPV',len:4.8,w:1.88,wr:.35,fo:.85,ro:.9,col:0xcfd3d6,
+    top:[[-2.4,.55],[-2.39,1.0],[-2.3,1.15],[-1.0,1.16],[1.45,1.1],[2.0,.98],[2.34,.8],[2.4,.55]],
+    cab:[[-2.32,1.15],[-2.25,1.62],[-1.6,1.78],[.3,1.8],[1.0,1.6],[1.7,1.1]],pil:[.7,-.5,-1.5]},
+  pickup:{name:'皮卡',len:5.3,w:1.9,wr:.4,fo:.95,ro:1.15,col:0x3f4d44,clad:true,
+    top:[[-2.65,.62],[-2.64,1.05],[-2.58,1.2],[-.7,1.2],[1.0,1.18],[1.9,1.14],[2.55,1.02],[2.65,.62]],
+    cab:[[-.72,1.18],[-.62,1.62],[-.2,1.8],[.45,1.8],[.85,1.66],[1.35,1.16]],pil:[.15]}
+};
+
+/* ---------- scene ---------- */
+var canvas=$('c'),renderer;
+try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true}); }
+catch(e){ $('err').textContent='這個瀏覽器無法啟用 3D 繪圖（WebGL）。'; $('err').style.display='flex'; return; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+var scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,1,0.1,300);
+(function(){ var cv=document.createElement('canvas'); cv.width=4; cv.height=256; var g=cv.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0,'#9cc9ea'); gr.addColorStop(.6,'#d8e9f2'); gr.addColorStop(1,'#eef3ee'); g.fillStyle=gr; g.fillRect(0,0,4,256); scene.background=new THREE.CanvasTexture(cv); })();
+scene.fog=new THREE.Fog(0xdde8ec,30,90);
+scene.add(new THREE.HemisphereLight(0xffffff,0x7c8a70,0.9));
+var sun=new THREE.DirectionalLight(0xfff3dc,0.85); sun.position.set(7,12,5); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+var sc=sun.shadow.camera; sc.left=-9; sc.right=9; sc.top=9; sc.bottom=-9; sc.near=1; sc.far=40; sun.shadow.bias=-0.0006; scene.add(sun);
+(function(){ var t=tex('grass'); t.repeat.set(60,60); var m=new THREE.Mesh(new THREE.CircleGeometry(90,48),std(0xdde6cf,{map:t})); m.rotation.x=-Math.PI/2; m.receiveShadow=true; scene.add(m); })();
+var dirty=true; function redraw(){ dirty=true; }
+
+/* state the borrowed builders expect */
+var S={tent:null,rot:0,tx:0,tz:0,xray:false,margin:60,labels:false,ropes:true,wx:'sunny',mode:'single',pg:'m',ph:170,sL:40,sW:40,siteType:'grass'};
+var WX={sunny:{}},siteY=0,areaNo=0;
+var tentG=new THREE.Group(),extraG=new THREE.Group(),personG=new THREE.Group(),tentMeshes=[],outlineMat=null,ropeMat=null,shellMat=null,zoneMat=null,ropeObjs=[];
+scene.add(tentG,extraG,personG);
+function isArea(){ return false; }
+function placeTent(){ tentG.position.set(0,0,0); tentG.rotation.y=0; }
+
+/* ---------- types that the simulator does not have ---------- */
+function clearG(g){ while(g.children.length){ var o=g.children[0]; g.remove(o); dispose(o); } }
+function ropePeg(g,a,b){
+  g.add(limb(a,P(b.x,.035,b.z),.008,.008,new THREE.MeshStandardMaterial({color:0xffb300,emissive:0x7a5200,roughness:.6}),6));
+  var d=P(b.x,.035,b.z).sub(a).normalize(),gp=P(b.x,.035,b.z); g.add(limb(gp.clone().addScaledVector(d,.1),gp.clone().addScaledVector(d,-.1).setY(.11),.011,.011,std(0xd8d8d2,{metalness:.6,roughness:.4}),6));
+}
+function fabric(col,o){ var p={color:col,roughness:.9,side:THREE.DoubleSide}; if(o) for(var k in o) p[k]=o[k]; return new THREE.MeshStandardMaterial(p); }
+function buildPyramid(m){
+  var L=m.L/100,W=m.L/100,H=m.H/100,g=extraG,n=8,off=Math.PI/n,i,ca=Math.cos(off);
+  var cone=new THREE.Mesh(new THREE.ConeGeometry(.5,H,n,1,true),fabric(m.color,{flatShading:true})); cone.position.y=H/2; cone.scale.set(L,1,W); cone.rotation.y=off; cone.castShadow=true; g.add(cone);
+  var pole=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),std(0x50544f,{metalness:.5,roughness:.45})); pole.position.y=H/2; g.add(pole);
+  function fp(a,y){ var r=.5*(1-y/H)*ca/Math.cos(a)+.012; return P(Math.cos(a)*L*r,y,-Math.sin(a)*W*r); }
+  var dark=fabric(0x262b27,{transparent:true,opacity:.82,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  g.add(quad(fp(-.3,.03),fp(.3,.03),fp(.07,H*.62),fp(-.07,H*.62),dark));
+  var trim=fabric(shade(m.color,.72),{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  for(i=0;i<n;i++){
+    var a=off+i*Math.PI*2/n,r0=.5,e0=P(Math.cos(a)*L*r0,0,Math.sin(a)*W*r0),e1=P(Math.cos(a)*L*r0*.72,H*.28,Math.sin(a)*W*r0*.72);
+    g.add(limb(e0,P(0,H,0),.006,.006,std(0x6a5a44),5));
+    ropePeg(g,e1,P(Math.cos(a)*(L*r0+.7),0,Math.sin(a)*(W*r0+.7)));
+  }
+  var vent=new THREE.Mesh(new THREE.ConeGeometry(.5,H*.1,n,1,true),trim); vent.scale.set(L*.12,1,W*.12); vent.position.y=H*.97; vent.rotation.y=off; g.add(vent);
+}
+function buildAir(m){
+  var L=m.L/100,W=m.W/100,H=m.H/100,hl=L/2,g=extraG,sd=sections('tunnel',L,W,H),X=function(f){ return -hl+f*L; };
+  var shell=new THREE.Mesh(loft(sd.secs,sd.p),fabric(m.color)); shell.castShadow=true; g.add(shell);
+  var beam=std(0xeef1f2,{roughness:.55}),win=fabric(0x262b27,{transparent:true,opacity:.8,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),trim=fabric(shade(m.color,.7),{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  [1,2,3,4,5].forEach(function(ri){ var s=sd.secs[ri],t=tube(profile(s.w+.03,s.h+.03,sd.p,28).map(function(q){ return P(s.x,q[1],q[0]); }),.07,beam); t.castShadow=true; g.add(t);
+    [1,-1].forEach(function(sg){ ropePeg(g,surf(sd,s.x,tOf(sd,.6,sg),.05),P(s.x,0,sg*(W/2+.8))); }); });
+  [1,-1].forEach(function(sg){
+    g.add(patch(sd,X(.55),X(.68),tOf(sd,.1,sg),tOf(sd,.62,sg),win)); g.add(patch(sd,X(.73),X(.87),tOf(sd,.1,sg),tOf(sd,.62,sg),win)); g.add(patch(sd,X(.14),X(.27),tOf(sd,.3,sg),tOf(sd,.56,sg),win));
+    g.add(patch(sd,X(.04),X(.96),tOf(sd,0,sg),tOf(sd,.06,sg),trim));
+  });
+  g.add(patch(sd,X(.918),X(.992),Math.PI*.2,Math.PI*.8,trim));
+  var pump=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.5,10),std(0x2b2f31)); pump.position.set(hl+.5,.25,W/2+.3); g.add(pump);
+  var ph=new THREE.Mesh(new THREE.BoxGeometry(.22,.03,.04),std(0x2b2f31)); ph.position.set(hl+.5,.52,W/2+.3); g.add(ph);
+}
+function buildRooftop(m){
+  var g=extraG,L=m.L/100,W=m.W/100,H=m.H/100,by=1.83,cx=-.35,x0=cx-L/2,x1=cx+L/2,hw=W/2;
+  var c=car('suv'); g.add(c);
+  var rack=std(0x2a2d2f,{metalness:.5,roughness:.5}),shellM=std(0x2f3336,{roughness:.45,metalness:.3}),fab=fabric(m.color);
+  [-.55,.55].forEach(function(dx){ var bar=new THREE.Mesh(new THREE.BoxGeometry(.06,.05,W+.2),rack); bar.position.set(cx+dx,by-.07,0); g.add(bar); });
+  var base=new THREE.Mesh(new THREE.BoxGeometry(L,.1,W),shellM); base.position.set(cx,by,0); base.castShadow=true; g.add(base);
+  var top=by+.05,lidLen=Math.hypot(L,H),lid=new THREE.Mesh(new THREE.BoxGeometry(lidLen,.06,W+.04),shellM); lid.position.set(cx,top+H/2,0); lid.rotation.z=-Math.atan2(H,L); lid.castShadow=true; g.add(lid);
+  /* hinge at the front (x1); the tall open end is at the rear (x0); ladder on the side */
+  var tri=[]; [hw,-hw].forEach(function(z){ tri.push(P(x1,top,z),P(x0,top,z),P(x0,top+H-.04,z)); });
+  tri.push(P(x0,top,-hw),P(x0,top,hw),P(x0,top+H-.04,hw),P(x0,top,-hw),P(x0,top+H-.04,hw),P(x0,top+H-.04,-hw));
+  var tg=new THREE.BufferGeometry().setFromPoints(tri); tg.computeVertexNormals(); var tm=new THREE.Mesh(tg,fab); tm.castShadow=true; g.add(tm);
+  var win=fabric(0x262b27,{transparent:true,opacity:.8});
+  g.add(quad(P(x0-.012,top+.12,-hw*.6),P(x0-.012,top+.12,hw*.6),P(x0-.012,top+H*.72,hw*.6),P(x0-.012,top+H*.72,-hw*.6),win));
+  [1,-1].forEach(function(sg){ var z=sg*(hw+.012); g.add(quad(P(x0+.75,top+.1,z),P(x0+.12,top+.1,z),P(x0+.12,top+H*.5,z),P(x0+.5,top+H*.38,z),win)); });
+  var lm=std(0xb9bec2,{metalness:.7,roughness:.35}),lx=x0+.42,a=P(lx,top-.03,hw+.03),b=P(lx,0,hw+.95),i;
+  [1,-1].forEach(function(sg){ g.add(limb(P(a.x+sg*.2,a.y,a.z),P(b.x+sg*.2,b.y,b.z),.018,.018,lm,8)); });
+  for(i=1;i<7;i++){ var k=i/7.4,q=a.clone().lerp(b,k); g.add(limb(P(q.x-.2,q.y,q.z),P(q.x+.2,q.y,q.z),.014,.014,lm,6)); }
+}
+
+/* ---------- show one type ---------- */
+var cam={az:.75,el:.34,r:10,target:new THREE.Vector3(0,.9,0)},spin=true,cur=null;
+function show(t){
+  cur=t; clearG(extraG); clearG(tentG); tentMeshes=[];
+  var m=t.m,L=m.L/100,W=(t.id==='pyramid'?m.L:m.W)/100,H=m.H/100,px=L/2+.5,pz=-(W/2+.5),top=H;
+  if(m.shape){
+    S.tent={id:t.id,brand:'',name:t.name,L:m.L,W:m.W,H:m.H,shape:m.shape,color:m.color,inner:m.inner,wall:m.wall};
+    buildTent1();
+    [outlineMat,ropeMat,zoneMat].forEach(function(x){ if(x) x.visible=false; });
+    tentG.traverse(function(o){ if(o.geometry&&o.geometry.type==='RingGeometry') o.visible=false; });
+    if(t.car){ var c=car('suv'); c.rotation.y=Math.PI/2; c.position.set(-L/2-1.0,0,0); extraG.add(c); }
+  }else if(t.id==='pyramid') buildPyramid(m);
+  else if(t.id==='air') buildAir(m);
+  else if(t.id==='rooftop'){ buildRooftop(m); px=1.2; pz=-1.75; top=3.0; L=4.6; W=1.9; }
+  buildPerson(); personG.position.set(px,0,pz); personG.rotation.y=Math.PI/4;
+  var span=Math.max(L,W,top*1.6)+(t.car?2.2:0);
+  cam.r=Math.max(7.5,span*1.75+2.2)*(camera.aspect<.9?1.25:1); cam.target.set(t.car?-.9:0,Math.min(1.3,top*.42),0);
+  $('tag').textContent='人物身高 170 cm';
+  $('tName').textContent=t.name; $('tLead').textContent=t.lead; $('tFit').textContent=t.fit;
+  var sp=$('tSpecs'); sp.textContent=''; [['常見尺寸',t.size],['適合人數',t.cap],['搭設時間',t.time],['搭設人數',t.crew]].forEach(function(x){ var d=document.createElement('div'),a=document.createElement('dt'),b=document.createElement('dd'); a.textContent=x[0]; b.textContent=x[1]; d.appendChild(a); d.appendChild(b); sp.appendChild(d); });
+  var rt=$('tRates'); rt.textContent=''; ASPECTS.forEach(function(a,i){ var row=document.createElement('div'),lab=document.createElement('span'),bar=document.createElement('span'),k; row.className='rate'; lab.textContent=a; bar.className='bar'; bar.setAttribute('role','img'); bar.setAttribute('aria-label',a+' '+t.r[i]+' 分，滿分 5 分');
+    for(k=1;k<=5;k++){ var s=document.createElement('i'); if(k<=t.r[i]) s.className='on'; bar.appendChild(s); } row.appendChild(lab); row.appendChild(bar); rt.appendChild(row); });
+  [['tPros',t.pros],['tCons',t.cons]].forEach(function(x){ var ul=$(x[0]); ul.textContent=''; x[1].forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ul.appendChild(li); }); });
+  Array.prototype.forEach.call($('types').children,function(b){ b.setAttribute('aria-pressed',String(b.dataset.id===t.id)); });
+  redraw();
+}
+TYPES.forEach(function(t){ var b=document.createElement('button'); b.type='button'; b.textContent=t.name; b.dataset.id=t.id; b.addEventListener('click',function(){ show(t); }); $('types').appendChild(b); });
+
+/* ---------- camera + pointer ---------- */
+function applyCam(){ var ce=Math.cos(cam.el); camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az)); camera.lookAt(cam.target); }
+function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); redraw(); }
+if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElement); else window.addEventListener('resize',resize);
+var ptrs=new Map(),last={x:0,y:0},pinch={d:1,r:1};
+function pdist(){ var a=Array.from(ptrs.values()); return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1; }
+canvas.addEventListener('pointerdown',function(e){ try{canvas.setPointerCapture(e.pointerId)}catch(_){ } ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); last.x=e.clientX; last.y=e.clientY; if(ptrs.size===2){ pinch.d=pdist(); pinch.r=cam.r; } setSpin(false); });
+canvas.addEventListener('pointermove',function(e){ if(!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===1){ cam.az-=(e.clientX-last.x)*0.008; cam.el=Math.min(1.5,Math.max(0.05,cam.el+(e.clientY-last.y)*0.006)); last.x=e.clientX; last.y=e.clientY; redraw(); }
+  else if(ptrs.size===2){ cam.r=Math.min(40,Math.max(3,pinch.r*pinch.d/pdist())); redraw(); } });
+function pend(e){ ptrs.delete(e.pointerId); if(ptrs.size===1){ var p=Array.from(ptrs.values())[0]; last.x=p.x; last.y=p.y; } }
+canvas.addEventListener('pointerup',pend); canvas.addEventListener('pointercancel',pend);
+canvas.addEventListener('wheel',function(e){ e.preventDefault(); cam.r=Math.min(40,Math.max(3,cam.r*Math.exp(e.deltaY*0.0012))); redraw(); },{passive:false});
+function setSpin(v){ spin=v; var b=$('spin'); b.setAttribute('aria-pressed',String(v)); b.textContent='自動旋轉：'+(v?'開':'關'); }
+$('spin').addEventListener('click',function(){ setSpin(!spin); });
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches) setSpin(false);
+
+resize(); show(TYPES[0]);
+var lastT=0;
+(function loop(t){ var dt=Math.min(.05,((t||0)-lastT)/1000); lastT=t||0; if(spin){ cam.az+=dt*.22; dirty=true; } if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
+})();
+</script>
+</body>
+</html>
