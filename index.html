@@ -88,6 +88,15 @@
   .credit span,.credit-p span{font-weight:400;color:var(--muted);margin-left:4px}
   .credit .views,.credit-p .views{color:var(--ink);font-weight:600;margin-left:8px;padding-left:8px;border-left:1px solid var(--line);font-variant-numeric:tabular-nums}
   .credit-p{display:none;font-size:12px;font-weight:600;letter-spacing:.04em;margin:16px 0 0}
+  .pbtn{display:inline-block;font:inherit;font-weight:600;color:#fff;background:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;cursor:pointer;text-decoration:none;text-align:center}
+  .pbtn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .mrow{display:flex;flex-wrap:wrap;gap:8px}
+  .modal{position:fixed;inset:0;z-index:30;background:rgba(20,30,25,.55);display:none;align-items:center;justify-content:center;padding:16px}
+  .modal.on{display:flex}
+  .modal .card{background:var(--panel);border-radius:14px;padding:16px;max-width:min(94vw,760px);max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .modal .card h3{margin:0 0 6px;font-size:16px}
+  .modal .card p{margin:0 0 12px}
+  .modal .card img{display:block;max-width:100%;max-height:62vh;border-radius:8px;margin:0 auto 12px;border:1px solid var(--line)}
   .typelink{display:inline-block;margin:0 0 12px;font-weight:600;font-size:13px;color:var(--accent)}
   .src{font-size:12px;color:var(--muted);margin-top:16px}
   .src a{color:var(--accent)}
@@ -145,6 +154,7 @@
 </style>
 </head>
 <body>
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="card" id="modalCard"></div></div>
 <div class="app">
 
   <aside class="panel left" aria-label="帳篷">
@@ -239,6 +249,11 @@
       <h2 id="areaListH">已放置</h2>
       <div id="areaList"></div>
       <button type="button" id="areaClear" class="linkbtn" style="margin-top:12px">全部清除</button>
+      <h2>分享</h2>
+      <div class="mrow"><button type="button" id="areaShare" class="pbtn">複製分享連結</button><button type="button" id="areaShot" class="pbtn ghost">存成圖片</button></div>
+      <input type="text" id="areaShareUrl" readonly hidden aria-label="分享連結" style="margin-top:8px">
+      <p class="note" id="areaShareMsg" role="status"></p>
+      <p class="note">連結是把目前的配置傳一份給對方，不是多人同步；對方改了之後要再傳新連結回來。</p>
       <p class="note" id="areaSaved"></p>
       <p class="note">資訊僅供參考，請依官方資訊為準。</p>
     </div>
@@ -258,6 +273,7 @@
       <button type="button" id="bCenter">置中</button>
       <button type="button" id="bTop">俯視</button>
       <button type="button" id="bPersp">斜視</button>
+      <button type="button" id="bShot">存圖</button>
     </div>
     <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" aria-live="polite"></span></div>
     </div>
@@ -1364,6 +1380,73 @@ function areaLoad(){
     (d.items||[]).forEach(function(q){ if(ATYPE[q.t]&&areaCount(q.t)<(AREA.LIM[q.t]||99)) areaMake(q.t,q.c,+q.x||0,+q.z||0,+q.r||0); });
   }catch(e){}
 }
+/* ---- share link + save image ---- */
+function modal(build){
+  var m=$('modal'),card=$('modalCard'); card.textContent=''; m.classList.add('on');
+  function close(){ m.classList.remove('on'); card.textContent=''; }
+  build(card,close); return close;
+}
+function mbtn(txt,primary,fn){ var b=document.createElement('button'); b.type='button'; b.className='pbtn'+(primary?'':' ghost'); b.textContent=txt; b.addEventListener('click',fn); return b; }
+function b64u(s){ var by=new TextEncoder().encode(s),bin='',i; for(i=0;i<by.length;i++) bin+=String.fromCharCode(by[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function unb64u(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; var bin=atob(s),by=new Uint8Array(bin.length),i; for(i=0;i<bin.length;i++) by[i]=bin.charCodeAt(i); return new TextDecoder().decode(by); }
+function r2(n){ return Math.round(n*100)/100; }
+function areaData(){ return {L:S.aL,W:S.aW,items:AREA.items.map(function(it){ return {t:it.type,x:r2(it.x),z:r2(it.z),r:r2(it.rot),c:areaCfg(it)}; })}; }
+function shareUrl(){ var d=areaData(); d.v=1; d.g=S.siteType; d.e=S.env; d.w=S.wx; d.m=S.margin; return location.origin+location.pathname+'#a='+b64u(JSON.stringify(d)); }
+function areaReplace(d){
+  if(!isArea()) setMode('area');
+  AREA.items.slice().forEach(areaRemove);
+  S.aL=Math.min(50,Math.max(5,+d.L||20)); S.aW=Math.min(40,Math.max(5,+d.W||15)); S.sL=S.aL; S.sW=S.aW; $('aL').value=S.aL; $('aW').value=S.aW;
+  if(SITE_TYPES.some(function(x){return x.id===d.g})) S.siteType=d.g;
+  if(ENVS.some(function(x){return x.id===d.e})) S.env=d.e;
+  if(WX[d.w]) S.wx=d.w;
+  if(isFinite(+d.m)){ S.margin=Math.min(150,Math.max(0,Math.round(+d.m/5)*5)); $('margin').value=S.margin; $('marginV').textContent='每邊 '+S.margin+' cm'; }
+  (d.items||[]).slice(0,80).forEach(function(q){ if(q&&ATYPE[q.t]&&areaCount(q.t)<(AREA.LIM[q.t]||20)) areaMake(q.t,q.c,+q.x||0,+q.z||0,+q.r||0); });
+  renderSiteUI(); renderEnvUI(); buildSite(); AREA.items.forEach(areaPlace); buildLabels(); setActive(null); fitCam(); updateFit(); areaSave();
+}
+function checkShareHash(){
+  var h=location.hash||''; if(h.indexOf('#a=')!==0) return;
+  var d=null; try{ d=JSON.parse(unb64u(h.slice(3))); }catch(e){}
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  if(!d||!Array.isArray(d.items)){ modal(function(c,close){ var p=document.createElement('p'); p.textContent='這個分享連結無法讀取，可能在傳送時被截斷了。請對方重新複製一次。'; c.appendChild(p); c.appendChild(mbtn('知道了',true,close)); }); return; }
+  var mine=0; try{ var o=JSON.parse(localStorage.getItem('tentPlannerArea_v1')||'null'); mine=o&&o.items?o.items.length:0; }catch(e){}
+  if(!mine){ areaReplace(d); return; }
+  modal(function(c,close){
+    var h3=document.createElement('h3'),p=document.createElement('p'),row=document.createElement('div');
+    h3.textContent='要載入分享的配置嗎？'; p.textContent='連結裡有一份包區配置（'+d.items.length+' 個物件）。載入後會取代你存在這台裝置上的配置（'+mine+' 個物件），無法復原。';
+    row.className='mrow'; row.appendChild(mbtn('載入分享的配置',true,function(){ close(); areaReplace(d); })); row.appendChild(mbtn('保留我原本的',false,close));
+    c.appendChild(h3); c.appendChild(p); c.appendChild(row);
+  });
+}
+function copyShare(){
+  var url=shareUrl(),msg=$('areaShareMsg'),box=$('areaShareUrl');
+  function manual(){ box.hidden=false; box.value=url; box.focus(); box.select(); msg.textContent='無法自動複製，請手動複製上面這串網址（共 '+url.length+' 個字元）。'; }
+  if(!AREA.items.length){ msg.textContent='還沒有任何物件，先加入帳篷再分享。'; return; }
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(function(){ box.hidden=true; msg.textContent='已複製分享連結（'+url.length+' 個字元），貼給朋友即可。對方打開會看到同一份配置。'; },manual); }
+  else manual();
+}
+function saveShot(){
+  applyCam(); renderer.render(scene,camera);
+  var gl=renderer.domElement,c2=document.createElement('canvas'),k=gl.width/900,bar=Math.round(64*k); c2.width=gl.width; c2.height=gl.height;
+  var g=c2.getContext('2d'); g.drawImage(gl,0,0);
+  g.fillStyle='rgba(251,249,243,.93)'; g.fillRect(0,c2.height-bar,c2.width,bar);
+  var st=$('status'),l1=st.querySelector('.t').textContent+'｜'+st.querySelector('.d').textContent,fam='-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif',pad=Math.round(14*k);
+  g.fillStyle='#22302a'; g.textBaseline='middle'; g.font='600 '+Math.round(15*k)+'px '+fam;
+  while(l1.length>8&&g.measureText(l1).width>c2.width-pad*2) l1=l1.slice(0,-2); if(l1!==st.querySelector('.t').textContent+'｜'+st.querySelector('.d').textContent) l1+='…';
+  g.fillText(l1,pad,c2.height-bar+bar*.33);
+  g.fillStyle='#66736b'; g.font=Math.round(12*k)+'px '+fam; g.fillText('設計/Sleepoutside Camp　*非營利使用　sleepoutside.github.io/tent-planner',pad,c2.height-bar+bar*.72);
+  c2.toBlob(function(blob){
+    if(!blob) return; var url=URL.createObjectURL(blob),name='tent-plan.png',file=null; try{ file=new File([blob],name,{type:'image/png'}); }catch(e){}
+    modal(function(c,close){
+      var img=document.createElement('img'),row=document.createElement('div'),a=document.createElement('a'),p=document.createElement('p');
+      img.src=url; img.alt='目前的 3D 畫面'; a.className='pbtn'; a.href=url; a.download=name; a.textContent='下載圖片';
+      p.className='note'; p.textContent='如果按鈕沒有反應，可以在圖片上長按或按右鍵另存。';
+      row.className='mrow'; row.appendChild(a);
+      if(file&&navigator.canShare&&navigator.canShare({files:[file]})) row.appendChild(mbtn('分享…',false,function(){ navigator.share({files:[file],title:'帳篷配置'}).catch(function(){}); }));
+      row.appendChild(mbtn('關閉',false,function(){ close(); URL.revokeObjectURL(url); }));
+      c.appendChild(img); c.appendChild(row); c.appendChild(p);
+    });
+  },'image/png');
+}
 /* ---- UI ---- */
 function areaCounts(){
   ['tent','tarp','car','person','chair','table','pet','lamp'].forEach(function(t){
@@ -1714,10 +1797,11 @@ function applyTypeHash(){
   if(best&&(S.sL<need[0]||S.sW<need[1])){ S.sL=best[0]; S.sW=best[1]; $('sL').value=S.sL; $('sW').value=S.sW; }
   renderSw(); renderTents(); syncCustom(); siteChanged(); buildTent(); setActive('tent'); fitCam(); updateFit();
 }
-window.addEventListener('hashchange',applyTypeHash);
+window.addEventListener('hashchange',function(){ applyTypeHash(); checkShareHash(); });
+$('areaShare').addEventListener('click',copyShare); $('areaShot').addEventListener('click',saveShot); $('bShot').addEventListener('click',saveShot);
 
 /* ---------- go ---------- */
-buildPerson(); initTent2UI(); initPropsUI(); initAreaUI(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit(); applyTypeHash();
+buildPerson(); initTent2UI(); initPropsUI(); initAreaUI(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit(); applyTypeHash(); checkShareHash();
 var lastT=0;
 (function loop(t){ if(anim){ tick(Math.min(.05,((t||0)-lastT)/1000)); dirty=true; } lastT=t||0; if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
 })();
