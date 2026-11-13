@@ -165,7 +165,7 @@
           <option value="tworoom">一房一廳</option>
           <option value="tunnel">隧道帳</option>
           <option value="bell">神殿／鐘型帳</option>
-          <option value="cabin">速搭方形帳</option>
+          <option value="cabin">速搭方形帳</option><option value="carside">車邊帳</option>
         </select>
       </label>
       <div class="f" style="margin-top:8px"><span id="cColLb">顏色</span>
@@ -185,7 +185,7 @@
       <label class="f" style="margin-top:8px"><span>外型</span>
         <select id="c2Shape">
           <option value="dome">圓頂帳</option><option value="domeVest">圓頂帳＋前庭</option><option value="tworoom">一房一廳</option>
-          <option value="tunnel">隧道帳</option><option value="bell">神殿／鐘型帳</option><option value="cabin">速搭方形帳</option>
+          <option value="tunnel">隧道帳</option><option value="bell">神殿／鐘型帳</option><option value="cabin">速搭方形帳</option><option value="carside">車邊帳</option>
         </select>
       </label>
       <div class="f" style="margin-top:8px"><span>顏色</span><div class="sw" id="c2Sw"></div></div>
@@ -341,6 +341,7 @@ var TENTS=[
  {id:'nd-asgard126',brand:'Nordisk',name:'Asgard 12.6',sku:'',L:400,W:375,H:250,shape:'bell',cap:'6 人',color:0xe8dfc8,wall:75,src:'https://nordisk.eu/products/asgard-126-m2-glamping-tent-6-person-natural'},
  {id:'nd-asgard196',brand:'Nordisk',name:'Asgard 19.6',sku:'',L:500,W:470,H:300,shape:'bell',cap:'8–10 人',color:0xe8dfc8,wall:80,src:'https://nordisk.eu/products/asgard-196-m2-glamping-tent-8-10-person-natural'},
  {id:'bw-turbo300',brand:'BlackWolf',name:'Turbo Lite Tent 300',sku:'',L:300,W:300,H:210,shape:'cabin',cap:'5 人',color:0x6d8794,src:'https://blackwolf.com.au/products/turbo-lite-tent-300'},
+ {id:'gen-carside',brand:'通用',name:'車邊帳',sku:'',L:250,W:250,H:200,shape:'carside',cap:'',color:0xb9a886,note:'常見規格，非特定型號；高的開口側靠車'},
  {id:'custom',brand:'自訂',name:'自訂尺寸',sku:'',L:450,W:300,H:180,shape:'dome',cap:'',color:0xc98a55}
 ];
 var SITE_TYPES=[
@@ -837,6 +838,23 @@ function buildTent1(){
     add(gridMesh(function(u,v){ var y=v*dh; return bp((u*2-1)*da(y),y,.014); },6,10,win));
     [1,-1].forEach(function(sg){ add(tube([bp(sg*da(0)*1.15,0,.03),bp(sg*da(dh*.5)*1.1,dh*.5,.03),bp(0,dh+.08,.03)],.018,poleMat)); });
     [PI/2,PI,PI*1.5].forEach(function(c){ add(gridMesh(function(u,v){ return bp(c+(u*2-1)*0.16*4/Math.max(L,2),.14+v*(wall-.26),.014); },4,1,win)); });
+  }else if(t.shape==='carside'){
+    /* lean-to shelter: the tall open side (x = -L/2) goes against the car, the door faces away */
+    var cx0=-hl,cx1=-hl+.18*L,cx2=hl-.12*L,cx3=hl,cy2=H*.86,pf=function(z){ return [V(cx0,0,z),V(cx0,H*.97,z),V(cx1,H,z),V(cx2,cy2,z),V(cx3,0,z)]; };
+    var sA=pf(-hw),sB=pf(hw),ctri=[];
+    for(i=1;i<4;i++) ctri.push(sA[i],sB[i],sB[i+1],sA[i],sB[i+1],sA[i+1]);
+    [sA,sB].forEach(function(s){ ctri.push(s[0],s[1],s[2],s[0],s[2],s[3],s[0],s[3],s[4]); });
+    var sg2=new THREE.BufferGeometry().setFromPoints(ctri); sg2.computeVertexNormals();
+    mesh=new THREE.Mesh(sg2,shellMat);
+    add(quad(sA[1],sB[1],V(cx0-.45,H*.9,hw),V(cx0-.45,H*.9,-hw),roofM));
+    [sA,sB].forEach(function(s){ add(tube(s.map(function(q){ return V(q.x,q.y,q.z*1.004); }),.016,poleMat)); });
+    add(tube([sA[2],sB[2]],.014,poleMat)); add(tube([sA[3],sB[3]],.014,poleMat));
+    [1,-1].forEach(function(sg){
+      var z=sg*(hw+.012); add(quad(V(-.28*L,H*.32,z),V(.22*L,H*.32,z),V(.22*L,H*.74,z),V(-.28*L,H*.74,z),win));
+      if(m>0){ rope(V(cx2,cy2,sg*hw),V(hl+m,0,sg*(hw+m))); rope(V(cx1,H,sg*hw),V(cx1,0,sg*(hw+m))); }
+    });
+    var fp=function(k,z){ return V(cx2+(cx3-cx2)*k+.016,cy2*(1-k),z); };
+    add(quad(fp(.1,-.3*W),fp(.1,.3*W),fp(.95,.3*W),fp(.95,-.3*W),win));
   }else if(t.shape==='cabin'){
     var wh=H*.8,b=[V(-hl,0,-hw),V(hl,0,-hw),V(hl,0,hw),V(-hl,0,hw)],tp=b.map(function(p){return V(p.x,wh,p.z)}),ap=V(0,H,0),tri=[];
     for(i=0;i<4;i++){ var j=(i+1)%4; tri.push(b[i],b[j],tp[j],b[i],tp[j],tp[i],tp[i],tp[j],ap); }
@@ -1335,7 +1353,7 @@ function areaEditor(it,box){
   function done(){ areaBuild(it); areaFit(); areaSave(); }
   function row(){ var d=document.createElement('div'); d.className=arguments.length>2?'row3':'row'; d.style.marginTop='8px'; for(var i=0;i<arguments.length;i++) d.appendChild(arguments[i]); box.appendChild(d); }
   function color(obj){ var f=document.createElement('div'); f.className='f'; f.style.marginTop='8px'; var s=document.createElement('span'); s.textContent='顏色'; var sw=document.createElement('div'); sw.className='sw'; sw.id='asw'+it.id; f.appendChild(s); f.appendChild(sw); box.appendChild(f); swatches(sw.id,obj,done); }
-  var SH=[['dome','圓頂帳'],['domeVest','圓頂帳＋前庭'],['tworoom','一房一廳'],['tunnel','隧道帳'],['bell','神殿／鐘型帳'],['cabin','速搭方形帳']],SZ=[['s','小型'],['m','中型'],['l','大型']];
+  var SH=[['dome','圓頂帳'],['domeVest','圓頂帳＋前庭'],['tworoom','一房一廳'],['tunnel','隧道帳'],['bell','神殿／鐘型帳'],['cabin','速搭方形帳'],['carside','車邊帳']],SZ=[['s','小型'],['m','中型'],['l','大型']];
   if(it.type==='tent'){ var t=it.slot.tent;
     if(t.brand==='自訂'){ row(areaField('長 cm',areaNum(t.L,100,1200,5,function(v){t.L=v;done()})),areaField('寬 cm',areaNum(t.W,80,800,5,function(v){t.W=v;done()})),areaField('高 cm',areaNum(t.H,60,400,5,function(v){t.H=v;done()})));
       box.appendChild(areaField('外型',areaSel(SH,t.shape,function(v){t.shape=v;done()}))); color(t); }
