@@ -167,7 +167,7 @@
           <option value="tworoom">一房一廳</option>
           <option value="tunnel">隧道帳</option>
           <option value="bell">神殿／鐘型帳</option>
-          <option value="cabin">速搭方形帳</option><option value="carside">車邊帳</option>
+          <option value="cabin">速搭方形帳</option><option value="carside">車邊帳</option><option value="pyramid">金字塔帳</option><option value="air">充氣帳</option>
         </select>
       </label>
       <div class="f" style="margin-top:8px"><span id="cColLb">顏色</span>
@@ -187,7 +187,7 @@
       <label class="f" style="margin-top:8px"><span>外型</span>
         <select id="c2Shape">
           <option value="dome">圓頂帳</option><option value="domeVest">圓頂帳＋前庭</option><option value="tworoom">一房一廳</option>
-          <option value="tunnel">隧道帳</option><option value="bell">神殿／鐘型帳</option><option value="cabin">速搭方形帳</option><option value="carside">車邊帳</option>
+          <option value="tunnel">隧道帳</option><option value="bell">神殿／鐘型帳</option><option value="cabin">速搭方形帳</option><option value="carside">車邊帳</option><option value="pyramid">金字塔帳</option><option value="air">充氣帳</option>
         </select>
       </label>
       <div class="f" style="margin-top:8px"><span>顏色</span><div class="sw" id="c2Sw"></div></div>
@@ -344,6 +344,9 @@ var TENTS=[
  {id:'nd-asgard196',brand:'Nordisk',name:'Asgard 19.6',sku:'',L:500,W:470,H:300,shape:'bell',cap:'8–10 人',color:0xe8dfc8,wall:80,src:'https://nordisk.eu/products/asgard-196-m2-glamping-tent-8-10-person-natural'},
  {id:'bw-turbo300',brand:'BlackWolf',name:'Turbo Lite Tent 300',sku:'',L:300,W:300,H:210,shape:'cabin',cap:'5 人',color:0x6d8794,src:'https://blackwolf.com.au/products/turbo-lite-tent-300'},
  {id:'gen-carside',brand:'通用',name:'車邊帳',sku:'',L:250,W:250,H:200,shape:'carside',cap:'',color:0xb9a886,note:'常見規格，非特定型號；高的開口側靠車'},
+ {id:'gen-pyramid',brand:'通用',name:'金字塔帳',sku:'',L:400,W:400,H:250,shape:'pyramid',cap:'',color:0xd8c9a3,note:'常見規格，非特定型號'},
+ {id:'gen-air',brand:'通用',name:'充氣帳',sku:'',L:600,W:320,H:200,shape:'air',cap:'',color:0x7d9aa6,note:'常見規格，非特定型號'},
+ {id:'gen-solo',brand:'通用',name:'單人登山帳',sku:'',L:250,W:110,H:100,shape:'domeVest',cap:'',color:0x6f8160,note:'含前庭；常見規格，非特定型號'},
  {id:'custom',brand:'自訂',name:'自訂尺寸',sku:'',L:450,W:300,H:180,shape:'dome',cap:'',color:0xc98a55}
 ];
 var SITE_TYPES=[
@@ -857,6 +860,18 @@ function buildTent1(){
     });
     var fp=function(k,z){ return V(cx2+(cx3-cx2)*k+.016,cy2*(1-k),z); };
     add(quad(fp(.1,-.3*W),fp(.1,.3*W),fp(.95,.3*W),fp(.95,-.3*W),win));
+  }else if(t.shape==='pyramid'){
+    /* one centre pole, eight flat panels, pegged all round; the door panel faces +x */
+    var pn=8,po=Math.PI/pn,pca=Math.cos(po),pg0=new THREE.ConeGeometry(.5,H,pn,1,true); pg0.rotateY(po);
+    shellMat.flatShading=true; mesh=new THREE.Mesh(pg0,shellMat); mesh.position.y=H/2; mesh.scale.set(L,1,W);
+    var pp=add(new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),poleMat)); pp.position.y=H/2;
+    var pfp=function(a,y){ var r=.5*(1-y/H)*pca/Math.cos(a)+.012; return V(Math.cos(a)*L*r,y,-Math.sin(a)*W*r); };
+    add(quad(pfp(-.3,.03),pfp(.3,.03),pfp(.07,H*.62),pfp(-.07,H*.62),win));
+    for(i=0;i<pn;i++){
+      var pa=po+i*Math.PI*2/pn,pe0=V(Math.cos(pa)*hl,0,Math.sin(pa)*hw),pe1=V(Math.cos(pa)*hl*.72,H*.28,Math.sin(pa)*hw*.72);
+      add(limb(pe0,V(0,H,0),.006,.006,poleMat,5)); if(m>0) rope(pe1,V(Math.cos(pa)*(hl+m),0,Math.sin(pa)*(hw+m)));
+    }
+    var pvg=new THREE.ConeGeometry(.5,H*.1,pn,1,true); pvg.rotateY(po); var pv=add(new THREE.Mesh(pvg,trim)); pv.scale.set(L*.12,1,W*.12); pv.position.y=H*.97;
   }else if(t.shape==='cabin'){
     var wh=H*.8,b=[V(-hl,0,-hw),V(hl,0,-hw),V(hl,0,hw),V(-hl,0,hw)],tp=b.map(function(p){return V(p.x,wh,p.z)}),ap=V(0,H,0),tri=[];
     for(i=0;i<4;i++){ var j=(i+1)%4; tri.push(b[i],b[j],tp[j],b[i],tp[j],tp[i],tp[i],tp[j],ap); }
@@ -873,7 +888,7 @@ function buildTent1(){
     [1,-1].forEach(function(sg){ var z=sg*(hw+e); add(quad(V(-.3*L,wh*.42,z),V(.3*L,wh*.42,z),V(.3*L,wh*.88,z),V(-.3*L,wh*.88,z),win)); });
     add(quad(V(tp[1].x*.55,wh+(H-wh)*.45+e,tp[1].z*.55),V(tp[2].x*.55,wh+(H-wh)*.45+e,tp[2].z*.55),V(tp[2].x*.97,wh+e*2,tp[2].z*.97),V(tp[1].x*.97,wh+e*2,tp[1].z*.97),roofM));
   }else{
-    var sd=sections(t.shape,L,W,H),X=function(f){return -hl+f*L};
+    var sd=sections(t.shape==='air'?'tunnel':t.shape,L,W,H),X=function(f){return -hl+f*L};
     mesh=new THREE.Mesh(loft(sd.secs,sd.p),shellMat);
     var rib=function(ri){ var s=sd.secs[ri]; add(tube(profile(s.w+.012,s.h+.012,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.014,poleMat)); };
     var side=function(f0,f1,y0,y1,sg,mat){ add(patch(sd,X(f0),X(f1),tOf(sd,y0,sg),tOf(sd,y1,sg),mat)); };
@@ -893,6 +908,12 @@ function buildTent1(){
       add(patch(sd,X(.875),X(.985),PI*.26,PI*.74,trim));
       add(patch(sd,X(.28),X(.44),PI*.38,PI*.62,trim));
       sideRope(.36,.55); cornerRope(.12,.55,-1); cornerRope(.84,.6,1);
+    }else if(t.shape==='air'){
+      var beamM=new THREE.MeshStandardMaterial({color:0xeef1f2,roughness:.55,transparent:S.xray,opacity:S.xray?.5:1});
+      [1,2,3,4,5].forEach(function(ri){ var s=sd.secs[ri],bt=add(tube(profile(s.w+.03,s.h+.03,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.07,beamM)); bt.castShadow=true; });
+      [1,-1].forEach(function(sg){ side(.55,.68,.1,.62,sg,win); side(.73,.87,.1,.62,sg,win); side(.14,.27,.3,.56,sg,win); });
+      add(patch(sd,X(.918),X(.992),PI*.2,PI*.8,trim));
+      [.09,.3,.5,.7,.91].forEach(function(f){ sideRope(f,.6); }); endRope(.09,.85,-1); endRope(.91,.85,1);
     }else if(t.shape==='tunnel'){
       [1,2,3,4,5].forEach(rib);
       [1,-1].forEach(function(sg){ side(.55,.87,.08,.62,sg,win); side(.15,.3,.3,.56,sg,win); });
@@ -1355,7 +1376,7 @@ function areaEditor(it,box){
   function done(){ areaBuild(it); areaFit(); areaSave(); }
   function row(){ var d=document.createElement('div'); d.className=arguments.length>2?'row3':'row'; d.style.marginTop='8px'; for(var i=0;i<arguments.length;i++) d.appendChild(arguments[i]); box.appendChild(d); }
   function color(obj){ var f=document.createElement('div'); f.className='f'; f.style.marginTop='8px'; var s=document.createElement('span'); s.textContent='顏色'; var sw=document.createElement('div'); sw.className='sw'; sw.id='asw'+it.id; f.appendChild(s); f.appendChild(sw); box.appendChild(f); swatches(sw.id,obj,done); }
-  var SH=[['dome','圓頂帳'],['domeVest','圓頂帳＋前庭'],['tworoom','一房一廳'],['tunnel','隧道帳'],['bell','神殿／鐘型帳'],['cabin','速搭方形帳'],['carside','車邊帳']],SZ=[['s','小型'],['m','中型'],['l','大型']];
+  var SH=[['dome','圓頂帳'],['domeVest','圓頂帳＋前庭'],['tworoom','一房一廳'],['tunnel','隧道帳'],['bell','神殿／鐘型帳'],['cabin','速搭方形帳'],['carside','車邊帳'],['pyramid','金字塔帳'],['air','充氣帳']],SZ=[['s','小型'],['m','中型'],['l','大型']];
   if(it.type==='tent'){ var t=it.slot.tent;
     if(t.brand==='自訂'){ row(areaField('長 cm',areaNum(t.L,100,1200,5,function(v){t.L=v;done()})),areaField('寬 cm',areaNum(t.W,80,800,5,function(v){t.W=v;done()})),areaField('高 cm',areaNum(t.H,60,400,5,function(v){t.H=v;done()})));
       box.appendChild(areaField('外型',areaSel(SH,t.shape,function(v){t.shape=v;done()}))); color(t); }
@@ -1678,8 +1699,24 @@ $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCa
     .then(function(d){ if(d&&typeof d.value==='number') put(d.value.toLocaleString('en-US')); }).catch(function(){});
 })();
 
+/* ---------- arriving from the tent types page: index.html#type-<id> loads that type as the custom tent ---------- */
+var TYPE_PRESET={dome:[270,270,170,'dome',0xa9ad84],domeVest:[500,280,150,'domeVest',0xb9a886],tworoom:[600,380,210,'tworoom',0x8c7b62],tunnel:[640,300,195,'tunnel',0xc7a56c],
+  bell:[400,400,250,'bell',0xe8dfc8],cabin:[300,300,210,'cabin',0x6d8794],carside:[250,250,200,'carside',0xb9a886],pyramid:[400,400,250,'pyramid',0xd8c9a3],air:[600,320,200,'air',0x7d9aa6],solo:[250,110,100,'domeVest',0x6f8160]};
+function applyTypeHash(){
+  var mt=/^#type-([A-Za-z]+)$/.exec(location.hash||''),q=mt&&TYPE_PRESET[mt[1]]; if(!q) return;
+  if(isArea()) setMode('single');
+  var c=TENTS[TENTS.length-1]; c.L=q[0]; c.W=q[1]; c.H=q[2]; c.shape=q[3]; c.color=q[4];
+  $('cL').value=c.L; $('cW').value=c.W; $('cH').value=c.H; $('cShape').value=c.shape;
+  S.tent=c; S.tx=0; S.tz=0; S.rot=0;
+  var need=[c.L/100+S.margin/50,c.W/100+S.margin/50],best=null;
+  PRESETS.forEach(function(pz){ if(!best&&pz[0]>=need[0]&&pz[1]>=need[1]) best=pz; });
+  if(best&&(S.sL<need[0]||S.sW<need[1])){ S.sL=best[0]; S.sW=best[1]; $('sL').value=S.sL; $('sW').value=S.sW; }
+  renderSw(); renderTents(); syncCustom(); siteChanged(); buildTent(); setActive('tent'); fitCam(); updateFit();
+}
+window.addEventListener('hashchange',applyTypeHash);
+
 /* ---------- go ---------- */
-buildPerson(); initTent2UI(); initPropsUI(); initAreaUI(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit();
+buildPerson(); initTent2UI(); initPropsUI(); initAreaUI(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit(); applyTypeHash();
 var lastT=0;
 (function loop(t){ if(anim){ tick(Math.min(.05,((t||0)-lastT)/1000)); dirty=true; } lastT=t||0; if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
 })();

@@ -90,7 +90,7 @@
       <div class="box cons"><h3>缺點</h3><ul id="tCons"></ul></div>
     </div>
     <p class="fit"><b>適合</b><span id="tFit"></span></p>
-    <a class="cta" href="index.html">用搭設模擬看放不放得下 →</a>
+    <a class="cta" id="cta" href="index.html">用搭設模擬看放不放得下 →</a>
   </section>
 </main>
 <p class="foot">優缺點與評分是對整個帳型的一般性比較，同一類型裡不同款式的差異可能很大，選購前請以實際商品規格為準。3D 為依結構類型製作的概念造型，不是特定品牌型號；尺寸為該類型的常見大小。<br><b>設計/Sleepoutside Camp</b> *非營利使用　資訊僅供參考，請依官方資訊為準。</p>
@@ -139,12 +139,12 @@ var TYPES=[
   pros:['利用車身當牆，用料少、收納小','和車內連通，拿東西方便，也適合搭配車泊','很快就有一個遮陽擋雨的客廳'],
   cons:['車子一開走，帳就得拆掉或另外支撐','和車身的接縫不容易完全密合，雨水與蚊蟲可能跑進來','會受車高與車型限制','抗風主要靠車身與營繩，強風時要留意'],
   fit:'車泊、短天數的輕便露營，或想加一個客廳空間的人。'},
- {id:'pyramid',name:'金字塔帳（印地安帳）',lead:'一根中柱把帳布撐成錐形，四周用營釘固定。',m:{L:400,W:400,H:250,color:0xd8c9a3},
+ {id:'pyramid',name:'金字塔帳（印地安帳）',lead:'一根中柱把帳布撐成錐形，四周用營釘固定。',m:{L:400,W:400,H:250,shape:'pyramid',color:0xd8c9a3},
   size:'約 400 × 400 × 高 250 cm',cap:'3–5 人',time:'10–15 分鐘',crew:'1 人',r:[4,3,4,3,3,3],
   pros:['一根中柱加一圈營釘就完成，搭設快','錐形受風面小，抗風表現好','中央挑高','結構簡單，收納相對小'],
   cons:['不是自立式，一定要下釘','中柱在正中間，會影響床位配置','牆面是斜的，靠邊的可用高度低，實際能用的空間比佔地小','門開在斜面上，下雨時開門雨水容易進來'],
   fit:'人數不多、喜歡簡單結構，或會遇到風的營地。'},
- {id:'air',name:'充氣帳',lead:'用充氣的氣柱取代營柱，打氣就立起來。',m:{L:600,W:320,H:200,color:0x7d9aa6},
+ {id:'air',name:'充氣帳',lead:'用充氣的氣柱取代營柱，打氣就立起來。',m:{L:600,W:320,H:200,shape:'air',color:0x7d9aa6},
   size:'約 600 × 320 × 高 200 cm',cap:'4–6 人',time:'10–15 分鐘',crew:'1 人',r:[5,5,3,1,1,4],
   pros:['打氣就能立起來，不用穿營柱，一個人也能完成','沒有金屬營柱，不會折斷；遇到強風氣柱會彎曲再回彈','多為大型家庭帳，空間大'],
   cons:['價格高','重量與收納體積都大','要帶打氣筒；氣柱破損或漏氣就無法使用，需要準備修補包','高溫曝曬下氣壓會升高，要留意','收帳時排氣、摺疊比較費工'],
@@ -155,7 +155,7 @@ var TYPES=[
   cons:['價格高，還需要車頂架與足夠的車頂荷重','增加車高與風阻，進地下停車場要注意高度','上下要爬梯子，夜間、小孩與長輩比較不方便','車子一開走，營地就跟著走','只有睡覺的空間'],
   fit:'常移動、公路旅行式的玩法，或營地地面條件不好的時候。'},
  {id:'solo',name:'單人登山帳',lead:'以輕量與小體積為優先的低矮小帳。',m:{L:250,W:110,H:100,shape:'domeVest',color:0x6f8160},
-  size:'約 220 × 100 × 高 100 cm',cap:'1 人',time:'5–10 分鐘',crew:'1 人',r:[4,1,4,5,3,3],
+  size:'約 250 × 110 × 高 100 cm（含前庭）',cap:'1 人',time:'5–10 分鐘',crew:'1 人',r:[4,1,4,5,3,3],
   pros:['重量輕、收納小，可以背著走，也適合機車或單車旅行','佔地小，找營地容易','低矮的流線外型，抗風好'],
   cons:['裡面只能坐著或躺著','裝備多半要放在前庭','輕量布料比較薄，使用時要小心','內外帳距離近，容易結露'],
   fit:'登山、徒步、單車或機車旅行等需要自己背負裝備的人。'}
@@ -309,6 +309,18 @@ function buildTent1(){
     });
     var fp=function(k,z){ return V(cx2+(cx3-cx2)*k+.016,cy2*(1-k),z); };
     add(quad(fp(.1,-.3*W),fp(.1,.3*W),fp(.95,.3*W),fp(.95,-.3*W),win));
+  }else if(t.shape==='pyramid'){
+    /* one centre pole, eight flat panels, pegged all round; the door panel faces +x */
+    var pn=8,po=Math.PI/pn,pca=Math.cos(po),pg0=new THREE.ConeGeometry(.5,H,pn,1,true); pg0.rotateY(po);
+    shellMat.flatShading=true; mesh=new THREE.Mesh(pg0,shellMat); mesh.position.y=H/2; mesh.scale.set(L,1,W);
+    var pp=add(new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),poleMat)); pp.position.y=H/2;
+    var pfp=function(a,y){ var r=.5*(1-y/H)*pca/Math.cos(a)+.012; return V(Math.cos(a)*L*r,y,-Math.sin(a)*W*r); };
+    add(quad(pfp(-.3,.03),pfp(.3,.03),pfp(.07,H*.62),pfp(-.07,H*.62),win));
+    for(i=0;i<pn;i++){
+      var pa=po+i*Math.PI*2/pn,pe0=V(Math.cos(pa)*hl,0,Math.sin(pa)*hw),pe1=V(Math.cos(pa)*hl*.72,H*.28,Math.sin(pa)*hw*.72);
+      add(limb(pe0,V(0,H,0),.006,.006,poleMat,5)); if(m>0) rope(pe1,V(Math.cos(pa)*(hl+m),0,Math.sin(pa)*(hw+m)));
+    }
+    var pvg=new THREE.ConeGeometry(.5,H*.1,pn,1,true); pvg.rotateY(po); var pv=add(new THREE.Mesh(pvg,trim)); pv.scale.set(L*.12,1,W*.12); pv.position.y=H*.97;
   }else if(t.shape==='cabin'){
     var wh=H*.8,b=[V(-hl,0,-hw),V(hl,0,-hw),V(hl,0,hw),V(-hl,0,hw)],tp=b.map(function(p){return V(p.x,wh,p.z)}),ap=V(0,H,0),tri=[];
     for(i=0;i<4;i++){ var j=(i+1)%4; tri.push(b[i],b[j],tp[j],b[i],tp[j],tp[i],tp[i],tp[j],ap); }
@@ -325,7 +337,7 @@ function buildTent1(){
     [1,-1].forEach(function(sg){ var z=sg*(hw+e); add(quad(V(-.3*L,wh*.42,z),V(.3*L,wh*.42,z),V(.3*L,wh*.88,z),V(-.3*L,wh*.88,z),win)); });
     add(quad(V(tp[1].x*.55,wh+(H-wh)*.45+e,tp[1].z*.55),V(tp[2].x*.55,wh+(H-wh)*.45+e,tp[2].z*.55),V(tp[2].x*.97,wh+e*2,tp[2].z*.97),V(tp[1].x*.97,wh+e*2,tp[1].z*.97),roofM));
   }else{
-    var sd=sections(t.shape,L,W,H),X=function(f){return -hl+f*L};
+    var sd=sections(t.shape==='air'?'tunnel':t.shape,L,W,H),X=function(f){return -hl+f*L};
     mesh=new THREE.Mesh(loft(sd.secs,sd.p),shellMat);
     var rib=function(ri){ var s=sd.secs[ri]; add(tube(profile(s.w+.012,s.h+.012,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.014,poleMat)); };
     var side=function(f0,f1,y0,y1,sg,mat){ add(patch(sd,X(f0),X(f1),tOf(sd,y0,sg),tOf(sd,y1,sg),mat)); };
@@ -345,6 +357,12 @@ function buildTent1(){
       add(patch(sd,X(.875),X(.985),PI*.26,PI*.74,trim));
       add(patch(sd,X(.28),X(.44),PI*.38,PI*.62,trim));
       sideRope(.36,.55); cornerRope(.12,.55,-1); cornerRope(.84,.6,1);
+    }else if(t.shape==='air'){
+      var beamM=new THREE.MeshStandardMaterial({color:0xeef1f2,roughness:.55,transparent:S.xray,opacity:S.xray?.5:1});
+      [1,2,3,4,5].forEach(function(ri){ var s=sd.secs[ri],bt=add(tube(profile(s.w+.03,s.h+.03,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.07,beamM)); bt.castShadow=true; });
+      [1,-1].forEach(function(sg){ side(.55,.68,.1,.62,sg,win); side(.73,.87,.1,.62,sg,win); side(.14,.27,.3,.56,sg,win); });
+      add(patch(sd,X(.918),X(.992),PI*.2,PI*.8,trim));
+      [.09,.3,.5,.7,.91].forEach(function(f){ sideRope(f,.6); }); endRope(.09,.85,-1); endRope(.91,.85,1);
     }else if(t.shape==='tunnel'){
       [1,2,3,4,5].forEach(rib);
       [1,-1].forEach(function(sg){ side(.55,.87,.08,.62,sg,win); side(.15,.3,.3,.56,sg,win); });
@@ -531,35 +549,6 @@ function ropePeg(g,a,b){
   var d=P(b.x,.035,b.z).sub(a).normalize(),gp=P(b.x,.035,b.z); g.add(limb(gp.clone().addScaledVector(d,.1),gp.clone().addScaledVector(d,-.1).setY(.11),.011,.011,std(0xd8d8d2,{metalness:.6,roughness:.4}),6));
 }
 function fabric(col,o){ var p={color:col,roughness:.9,side:THREE.DoubleSide}; if(o) for(var k in o) p[k]=o[k]; return new THREE.MeshStandardMaterial(p); }
-function buildPyramid(m){
-  var L=m.L/100,W=m.L/100,H=m.H/100,g=extraG,n=8,off=Math.PI/n,i,ca=Math.cos(off);
-  var cone=new THREE.Mesh(new THREE.ConeGeometry(.5,H,n,1,true),fabric(m.color,{flatShading:true})); cone.position.y=H/2; cone.scale.set(L,1,W); cone.rotation.y=off; cone.castShadow=true; g.add(cone);
-  var pole=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),std(0x50544f,{metalness:.5,roughness:.45})); pole.position.y=H/2; g.add(pole);
-  function fp(a,y){ var r=.5*(1-y/H)*ca/Math.cos(a)+.012; return P(Math.cos(a)*L*r,y,-Math.sin(a)*W*r); }
-  var dark=fabric(0x262b27,{transparent:true,opacity:.82,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  g.add(quad(fp(-.3,.03),fp(.3,.03),fp(.07,H*.62),fp(-.07,H*.62),dark));
-  var trim=fabric(shade(m.color,.72),{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  for(i=0;i<n;i++){
-    var a=off+i*Math.PI*2/n,r0=.5,e0=P(Math.cos(a)*L*r0,0,Math.sin(a)*W*r0),e1=P(Math.cos(a)*L*r0*.72,H*.28,Math.sin(a)*W*r0*.72);
-    g.add(limb(e0,P(0,H,0),.006,.006,std(0x6a5a44),5));
-    ropePeg(g,e1,P(Math.cos(a)*(L*r0+.7),0,Math.sin(a)*(W*r0+.7)));
-  }
-  var vent=new THREE.Mesh(new THREE.ConeGeometry(.5,H*.1,n,1,true),trim); vent.scale.set(L*.12,1,W*.12); vent.position.y=H*.97; vent.rotation.y=off; g.add(vent);
-}
-function buildAir(m){
-  var L=m.L/100,W=m.W/100,H=m.H/100,hl=L/2,g=extraG,sd=sections('tunnel',L,W,H),X=function(f){ return -hl+f*L; };
-  var shell=new THREE.Mesh(loft(sd.secs,sd.p),fabric(m.color)); shell.castShadow=true; g.add(shell);
-  var beam=std(0xeef1f2,{roughness:.55}),win=fabric(0x262b27,{transparent:true,opacity:.8,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),trim=fabric(shade(m.color,.7),{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  [1,2,3,4,5].forEach(function(ri){ var s=sd.secs[ri],t=tube(profile(s.w+.03,s.h+.03,sd.p,28).map(function(q){ return P(s.x,q[1],q[0]); }),.07,beam); t.castShadow=true; g.add(t);
-    [1,-1].forEach(function(sg){ ropePeg(g,surf(sd,s.x,tOf(sd,.6,sg),.05),P(s.x,0,sg*(W/2+.8))); }); });
-  [1,-1].forEach(function(sg){
-    g.add(patch(sd,X(.55),X(.68),tOf(sd,.1,sg),tOf(sd,.62,sg),win)); g.add(patch(sd,X(.73),X(.87),tOf(sd,.1,sg),tOf(sd,.62,sg),win)); g.add(patch(sd,X(.14),X(.27),tOf(sd,.3,sg),tOf(sd,.56,sg),win));
-    g.add(patch(sd,X(.04),X(.96),tOf(sd,0,sg),tOf(sd,.06,sg),trim));
-  });
-  g.add(patch(sd,X(.918),X(.992),Math.PI*.2,Math.PI*.8,trim));
-  var pump=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.5,10),std(0x2b2f31)); pump.position.set(hl+.5,.25,W/2+.3); g.add(pump);
-  var ph=new THREE.Mesh(new THREE.BoxGeometry(.22,.03,.04),std(0x2b2f31)); ph.position.set(hl+.5,.52,W/2+.3); g.add(ph);
-}
 function buildRooftop(m){
   var g=extraG,L=m.L/100,W=m.W/100,H=m.H/100,by=1.83,cx=-.35,x0=cx-L/2,x1=cx+L/2,hw=W/2;
   var c=car('suv'); g.add(c);
@@ -583,20 +572,19 @@ function buildRooftop(m){
 var cam={az:.75,el:.34,r:10,target:new THREE.Vector3(0,.9,0)},spin=true,cur=null;
 function show(t){
   cur=t; clearG(extraG); clearG(tentG); tentMeshes=[];
-  var m=t.m,L=m.L/100,W=(t.id==='pyramid'?m.L:m.W)/100,H=m.H/100,px=L/2+.5,pz=-(W/2+.5),top=H;
+  var m=t.m,L=m.L/100,W=m.W/100,H=m.H/100,px=L/2+.5,pz=-(W/2+.5),top=H;
   if(m.shape){
     S.tent={id:t.id,brand:'',name:t.name,L:m.L,W:m.W,H:m.H,shape:m.shape,color:m.color,inner:m.inner,wall:m.wall};
     buildTent1();
     [outlineMat,ropeMat,zoneMat].forEach(function(x){ if(x) x.visible=false; });
     tentG.traverse(function(o){ if(o.geometry&&o.geometry.type==='RingGeometry') o.visible=false; });
     if(t.car){ var c=car('suv'); c.rotation.y=Math.PI/2; c.position.set(-L/2-1.0,0,0); extraG.add(c); }
-  }else if(t.id==='pyramid') buildPyramid(m);
-  else if(t.id==='air') buildAir(m);
-  else if(t.id==='rooftop'){ buildRooftop(m); px=1.2; pz=-1.75; top=3.0; L=4.6; W=1.9; }
+  }else if(t.id==='rooftop'){ buildRooftop(m); px=1.2; pz=-1.75; top=3.0; L=4.6; W=1.9; }
   buildPerson(); personG.position.set(px,0,pz); personG.rotation.y=Math.PI/4;
   var span=Math.max(L,W,top*1.6)+(t.car?2.2:0);
   cam.r=Math.max(7.5,span*1.75+2.2)*(camera.aspect<.9?1.25:1); cam.target.set(t.car?-.9:0,Math.min(1.3,top*.42),0);
   $('tag').textContent='人物身高 170 cm';
+  var cta=$('cta'); if(t.id==='rooftop'){ cta.href='index.html'; cta.textContent='前往搭設模擬（車頂帳不在模擬範圍）→'; } else { cta.href='index.html#type-'+t.id; cta.textContent='用搭設模擬看這頂放不放得下 →'; }
   $('tName').textContent=t.name; $('tLead').textContent=t.lead; $('tFit').textContent=t.fit;
   var sp=$('tSpecs'); sp.textContent=''; [['常見尺寸',t.size],['適合人數',t.cap],['搭設時間',t.time],['搭設人數',t.crew]].forEach(function(x){ var d=document.createElement('div'),a=document.createElement('dt'),b=document.createElement('dd'); a.textContent=x[0]; b.textContent=x[1]; d.appendChild(a); d.appendChild(b); sp.appendChild(d); });
   var rt=$('tRates'); rt.textContent=''; ASPECTS.forEach(function(a,i){ var row=document.createElement('div'),lab=document.createElement('span'),bar=document.createElement('span'),k; row.className='rate'; lab.textContent=a; bar.className='bar'; bar.setAttribute('role','img'); bar.setAttribute('aria-label',a+' '+t.r[i]+' 分，滿分 5 分');
