@@ -135,6 +135,7 @@
     .quick{display:flex;order:2;gap:6px;max-width:100%}
     .quick button{display:flex;align-items:center;gap:7px;min-width:0;font:inherit;font-weight:600;color:var(--ink);background:rgba(251,249,243,.96);
       border:1px solid var(--line);border-radius:999px;padding:8px 13px;box-shadow:0 2px 10px rgba(30,45,38,.16);cursor:pointer}
+    .quick .qlink{flex:none;display:flex;align-items:center;font-weight:600;color:#fff;background:var(--accent);border-radius:999px;padding:8px 13px;text-decoration:none;box-shadow:0 2px 10px rgba(30,45,38,.16)}
     .quick button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .quick .dot{flex:none;width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.2)}
     .quick button::after{content:"▴";font-size:10px;color:var(--muted)}
@@ -249,7 +250,7 @@
     <div class="status" id="status" role="status" aria-live="polite"><div class="t"></div><div class="d"></div></div>
     <div class="hint">拖曳空白處旋轉視角 · 滾輪縮放 · 畫面上的物件都可直接拖曳</div>
     <div class="dock">
-    <div class="quick"><button type="button" id="qTent" aria-label="展開帳篷與天幕選項"><i class="dot" id="qDot"></i><span id="qTentT"></span></button><button type="button" id="qSite" aria-label="展開營位與環境選項"><span id="qSiteT"></span></button></div>
+    <div class="quick"><button type="button" id="qTent" aria-label="展開帳篷與天幕選項"><i class="dot" id="qDot"></i><span id="qTentT"></span></button><button type="button" id="qSite" aria-label="展開營位與環境選項"><span id="qSiteT"></span></button><a class="qlink" href="types.html">帳型介紹</a></div>
     <div class="tools">
       <select id="actSel" class="actsel" aria-label="要移動或旋轉的對象" hidden></select>
       <button type="button" id="bRot">轉 90°</button>
