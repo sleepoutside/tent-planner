@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Sleepoutside Camp">
+<title>焚火安全模擬｜焚火台、燃料與安全距離</title>
+<style>
+  :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;--amber:#a86a12;--amber-soft:#fbefd2;color-scheme:light}
+  *{box-sizing:border-box}
+  html,body{margin:0;overflow-x:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.55}
+  a{color:var(--accent)}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:16px 20px 10px;max-width:1220px;margin:0 auto}
+  header h1{font-size:20px;margin:0}
+  header p{margin:0;color:var(--muted);font-size:13px;flex:1 1 260px}
+  header nav{display:flex;gap:14px;font-weight:600;white-space:nowrap;font-size:14px}
+  main{max-width:1220px;margin:0 auto;padding:0 20px 30px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+  .view{position:sticky;top:12px;min-width:0}
+  .stage{position:relative;height:min(58vh,540px);border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#2c3440}
+  canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  .hint{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:#f3efe6;text-shadow:0 1px 3px #000;pointer-events:none}
+  .verdict{margin-top:12px;border-radius:12px;padding:10px 14px;border:1px solid var(--line);border-left:6px solid var(--accent);background:var(--accent-soft)}
+  .verdict.mid{border-left-color:var(--amber);background:var(--amber-soft)}
+  .verdict.bad{border-left-color:var(--warn);background:var(--warn-soft)}
+  .verdict b{font-size:17px}
+  .verdict.mid b{color:var(--amber)} .verdict.bad b{color:var(--warn)}
+  .verdict ul{margin:4px 0 0;padding-left:1.15em}
+  .verdict li{margin:3px 0}
+  h2{font-size:13px;margin:18px 0 8px;color:var(--muted);letter-spacing:.08em}
+  .view h2:first-of-type{margin-top:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chips button,.tools button{font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+  .chips button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .chips.warnset button{border-color:#e3c3b6}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .windrow{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
+  .dial{display:grid;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(3,34px);gap:3px}
+  .dial button{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;padding:0;color:var(--ink)}
+  .dial button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .dial span{display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+  .tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px}
+  .card h3{margin:0 0 2px;font-size:17px}
+  .card p{margin:0 0 8px;color:var(--muted)}
+  .pc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .box{border-radius:10px;padding:8px 12px 10px;border:1px solid var(--line)}
+  .box h4{margin:0 0 2px;font-size:12px;letter-spacing:.08em}
+  .box ul{margin:0;padding-left:1.1em}
+  .box li{margin:3px 0}
+  .pros{background:var(--accent-soft);border-color:#c5dccd} .pros h4{color:var(--accent)}
+  .cons{background:var(--warn-soft);border-color:#ecc9bc} .cons h4{color:var(--warn)}
+  .rates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;margin:4px 0 2px}
+  .rate{display:grid;grid-template-columns:4.5em 1fr;align-items:center;gap:8px;font-size:13px}
+  .bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .bar i{height:9px;border-radius:3px;background:#e4dfd1}
+  .bar i.on{background:#d98a3d}
+  .tip{font-size:13px;margin:8px 0 0;color:var(--ink)}
+  .check h3{font-size:15px;margin:12px 0 4px}
+  .check label{display:flex;gap:9px;align-items:flex-start;padding:5px 0;cursor:pointer}
+  .check input{width:17px;height:17px;margin-top:3px;accent-color:var(--accent);flex:none}
+  .prog{height:8px;border-radius:4px;background:#e4dfd1;overflow:hidden;margin:6px 0 2px}
+  .prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+  .never{background:var(--warn-soft);border:1px solid #ecc9bc;border-radius:12px;padding:10px 14px;margin-top:12px}
+  .never b{color:var(--warn)}
+  .wide{max-width:1220px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font-size:12.5px}
+  .wide h2{margin-top:0}
+  .wide li{margin:3px 0}
+  .wide b{color:var(--ink)}
+  .err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;color:#ffd9cc}
+  @media (max-width: 880px){
+    main{grid-template-columns:1fr;padding:0 12px 24px;gap:8px}
+    header{padding:12px 12px 8px}
+    .view{position:static}
+    .stage{height:44vh}
+    .pc,.rates{grid-template-columns:1fr}
+    .wide{padding:0 12px 26px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>焚火安全模擬</h1>
+  <p>換焚火台、換燃料、調風向，再把帳篷和天幕拖來拖去，看看怎麼擺才安心。</p>
+  <nav><a href="index.html">搭設模擬</a><a href="types.html">帳型介紹</a></nav>
+</header>
+<main>
+  <section class="view" aria-label="3D 模擬">
+    <div class="stage">
+      <canvas id="c" aria-label="焚火 3D 示意，可拖曳旋轉視角，帳篷與天幕可拖曳移動"></canvas>
+      <div class="hint">拖曳空白處轉視角 · 直接拖帳篷或天幕移動</div>
+      <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
+    </div>
+    <div class="verdict" id="verdict" role="status" aria-live="polite"><b></b><ul></ul></div>
+    <h2>風往哪邊吹</h2>
+    <div class="windrow">
+      <div class="dial" id="dial" role="group" aria-label="風向"></div>
+      <div><div class="chips" id="windLv" role="group" aria-label="風力"></div>
+      <div class="tools"><button type="button" id="rotTent">帳篷轉 90°</button><button type="button" id="reset">回到示範擺法</button></div></div>
+    </div>
+    <h2>常見的錯誤，點了看會怎樣</h2>
+    <div class="chips warnset" id="scen"></div>
+  </section>
+  <section>
+    <h2 style="margin-top:4px">選焚火台</h2>
+    <div class="chips" id="pits" role="group" aria-label="焚火台"></div>
+    <div class="card" id="pitCard"></div>
+    <h2>選燃料</h2>
+    <div class="chips" id="fuels" role="group" aria-label="燃料"></div>
+    <div class="card" id="fuelCard"></div>
+    <h2>生火前後的檢查清單</h2>
+    <div class="card check" id="check"></div>
+    <div class="never"><b>絕對不要：把火帶進帳篷或車裡取暖。</b>燒柴、燒炭都會產生一氧化碳，它沒有顏色也沒有味道，在通風不良的空間裡會讓人在睡夢中中毒。就算是隧道帳的客廳、門開著也不行。冷的話靠睡袋、熱水袋、暖暖包和多穿一層。</div>
+  </section>
+</main>
+<div class="wide">
+  <h2>這頁的依據與限制</h2>
+  <ul>
+    <li><b>4.5 公尺（黃圈）</b>：美國林務署 Smokey Bear 的建議，營火離帳篷、灌木、低垂樹枝至少 15 英尺；上方淨空至少是火焰高度的 3 倍；周圍清出直徑約 3 公尺沒有可燃物的範圍。<a href="https://smokeybear.com/en/prevention-how-tos/campfire-safety/how-to-pick-your-campfire-spot" target="_blank" rel="noopener">Smokey Bear</a>、<a href="https://recreation.gov/articles/location-spotlight/campfire-safety-tips/807" target="_blank" rel="noopener">Recreation.gov</a></li>
+    <li><b>3 公尺（紅圈）</b>：日本戶外雜誌 BE-PAL 建議帳篷、天幕離焚火 2 到 3 公尺，有風要再拉遠。這裡取上限當作「再近就危險」的線。<a href="https://www.bepal.net/archives/293894" target="_blank" rel="noopener">BE-PAL</a></li>
+    <li><b>帳內不可用火</b>：新竹縣消防局在 2023 年帳內使用焚火台取暖造成一死二傷後的宣導。<a href="https://news.ltn.com.tw/news/society/breakingnews/4502822" target="_blank" rel="noopener">自由時報報導</a></li>
+    <li>有風時圈圈往下風處拉長、火焰與火星的大小，都是為了好懂而做的示意，不是精確的計算。焚火台與燃料的評分是一般性的比較。</li>
+    <li>各營區規定不同，有些完全禁止明火或只能在指定區域生火，請以營區公告與現場狀況為準。這頁是觀念介紹，不能取代實際的用火經驗與訓練。</li>
+  </ul>
+  <p><b>設計/Sleepoutside Camp</b> *非營利使用　資訊僅供參考，請依官方資訊為準。</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script data-goatcounter="https://tent-planner.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+if(!window.THREE){ $('err').style.display='flex'; return; }
+var PITS=[
+ {id:'pyramid',name:'倒金字塔型',lead:'四片金屬板組成漏斗狀，最常見的一種。',sp:1,sm:1,
+  pros:['開口大，放柴和顧火都順手','收合後是平的，好收納','款式多，容易買到'],cons:['四周敞開，火星會往外跳','火床離地近的款式，草地要墊隔熱墊'],tip:'長柴不要超出爐口太多，燒斷了會掉到地上。'},
+ {id:'box',name:'箱型／柴爐型',lead:'方形的箱體，側面有通風孔，多半可以架鍋。',sp:.8,sm:1,
+  pros:['側板擋風，火比較穩','上面能放烤網或鍋具，煮東西方便','火星比敞開式少一些'],cons:['比較重','柴要劈短一點才放得進去','側板很燙，小孩容易誤碰'],tip:'側板在熄火後很久都還是燙的，收之前先確認溫度。'},
+ {id:'dish',name:'盤型（碟型）',lead:'一個淺淺的圓盤架在腳上，火看得最清楚。',sp:1.15,sm:1,
+  pros:['視野好，大家圍著看最有氣氛','結構簡單，好清理','柴的長度比較不受限'],cons:['四面都沒有遮擋，火星和灰最容易飛出來','盤子淺，柴堆太高容易滾落','風一來火就亂'],tip:'柴不要疊高，寧可少量多次添加。'},
+ {id:'mesh',name:'網狀輕量型',lead:'四支細腳撐起一張金屬網，重量很輕。',sp:1.2,sm:1,
+  pros:['非常輕，適合登山或機車露營','通風好，容易燒旺','收起來很小'],cons:['細灰和小火星會從網目掉下去，一定要鋪防火墊','承重有限，不能放太多或太重的柴','不適合放小顆的炭'],tip:'下方務必鋪防火墊，並把周圍的落葉枯草清乾淨。'},
+ {id:'second',name:'二次燃燒型（無煙）',lead:'雙層筒身，把熱空氣導回上方再燒一次。',sp:.7,sm:.35,
+  pros:['燃燒完全，煙明顯比較少','筒身深，火星不太容易跳出來','火焰集中，好看也好顧'],cons:['燒得快，比較耗柴','筒身外壁非常燙','柴要夠短夠乾，效果才好'],tip:'煙少不代表安全距離可以縮短，火星和熱度還是在。'},
+ {id:'barrel',name:'焚火桶',lead:'比較高的金屬桶，側面有一圈通風孔。',sp:.75,sm:1.05,
+  pros:['桶壁高，火星和灰比較不會被風帶走','火床離地遠，對地面影響小','可以直立放進較長的柴'],cons:['體積大又重，佔車內空間','桶身高，重心高，要放在平穩的地面','桶內看不太到火床，容易加太多柴'],tip:'一定要放在平整的硬地上，別讓它有機會被踢倒。'}
+];
+var FUELS=[
+ {id:'hard',name:'闊葉木（硬木）',lead:'相思木、龍眼木、橡木這類，密度高。',fh:.6,r:[3,2,2,4,2],col:0xff8a2a,
+  pros:['耐燒，火穩定','火星少、煙也少','炭火持久，適合煮東西'],cons:['不好點燃，要先用細柴引火','比較重，價格也高一些'],tip:'最適合當主力燃料：先用細柴和火種起火，穩了再加硬木。'},
+ {id:'soft',name:'針葉木（軟木）',lead:'松木、杉木這類，含油脂、質地鬆。',fh:.9,r:[5,5,3,2,5],col:0xffa030,
+  pros:['很好點燃，適合拿來起火','火焰大，亮又暖'],cons:['油脂多，火星噴得多又遠','燒得快，很快就要再加','煙比硬木多'],tip:'火星是燒破帳篷和天幕的主因。用針葉木時距離要抓更寬，或只拿它來起火。'},
+ {id:'char',name:'木炭',lead:'燒製過的原木炭，幾乎沒有火焰。',fh:.22,r:[1,3,1,4,2],col:0xff5a1e,
+  pros:['熱度高又穩，適合烤肉','煙很少'],cons:['剛點燃時可能爆炭，火星會彈出來','沒什麼火焰，容易讓人忘記它很燙','燒完的炭看起來像熄了，其實還有餘溫'],tip:'沒有火焰不等於沒有危險：木炭的一氧化碳產量很高，絕對不能拿進帳內。'},
+ {id:'briq',name:'炭精（壓縮炭）',lead:'把炭粉壓成規則形狀，燃燒時間長。',fh:.16,r:[1,1,1,5,1],col:0xff4a18,
+  pros:['燃燒時間最長，溫度穩定','幾乎沒有火星和煙','形狀整齊，好堆疊'],cons:['很難點燃，要有耐心','沒有火焰，少了焚火的氣氛','熄滅也慢，善後要預留時間'],tip:'因為熄得慢，準備收的前一兩個小時就不要再加了。'},
+ {id:'pellet',name:'木質顆粒',lead:'木屑壓成的小顆粒，乾燥、大小一致。',fh:.5,r:[3,1,1,2,3],col:0xff9632,
+  pros:['很乾，燒起來煙少','體積小，好攜帶','搭配二次燃燒型的爐子效果最好'],cons:['燒得快，要常常補','顆粒小，會從網狀或有大孔的爐子漏下去','受潮就會散掉不能用'],tip:'只適合有底盤的爐子。保存時一定要密封防潮。'}
+];
+var FASPECT=['火焰大小','火星','煙','耐燒','好點燃'];
+var CHECK=[
+ ['生火之前',['確認營區允許生火，今天沒有禁火或強風的公告','選在帳篷和天幕的下風處，離它們至少 3 公尺，能抓到 4.5 公尺更好','抬頭看：正上方沒有天幕、樹枝或電線','把周圍的落葉、枯草、紙箱和備用的柴清開','草地或木棧板上先鋪隔熱墊或防火墊','水桶裝滿水放在伸手可及的地方，夾子和耐熱手套準備好']],
+ ['燒的時候',['火邊隨時有大人在，離開就先把火處理好','小孩和寵物保持距離，不在火邊追跑','不用酒精、汽油、去漬油這類液體助燃','柴少量多次加，不堆到超出爐口','穿棉質或防火材質的衣服，化纖外套遇到火星會熔出洞','風變大就不再加柴，必要時提早滅火']],
+ ['收的時候',['睡前和離開前，把火完全熄滅，不留著讓它自己燒完','慢慢澆水或放進滅火桶，翻一翻，再澆一次','用手背靠近確認沒有餘溫，才算真的熄了','灰和炭放涼後裝袋帶走或丟到營區指定的地方，不埋在土裡','檢查地面有沒有燒焦的痕跡，恢復原狀']]
+];
+/* ---------- builders shared with the simulator (copied from index.html) ---------- */
+function rnd(seed){var s=seed;return function(){s=(s*9301+49297)%233280;return s/233280}}
+function tex(kind){
+  var cv=document.createElement('canvas'); cv.width=cv.height=256; var g=cv.getContext('2d'); var r=rnd(7),i;
+  if(kind==='grass'){
+    g.fillStyle='#7fa35f'; g.fillRect(0,0,256,256);
+    for(i=0;i<2600;i++){ g.fillStyle=r()>.5?'rgba(60,110,50,.35)':'rgba(170,200,120,.3)'; g.fillRect(r()*256,r()*256,1.5,3+r()*3); }
+  }else if(kind==='land'){
+    g.fillStyle='#6f9058'; g.fillRect(0,0,256,256);
+    for(i=0;i<2200;i++){ g.fillStyle=r()>.5?'rgba(50,90,45,.35)':'rgba(140,170,100,.25)'; g.fillRect(r()*256,r()*256,2,4); }
+  }else if(kind==='gravel'){
+    g.fillStyle='#b9b3a6'; g.fillRect(0,0,256,256);
+    for(i=0;i<1800;i++){ var c=120+Math.floor(r()*110); g.fillStyle='rgb('+c+','+(c-4)+','+(c-12)+')'; g.beginPath(); g.arc(r()*256,r()*256,1+r()*3,0,6.3); g.fill(); }
+  }else if(kind==='deck'){
+    g.fillStyle='#b98d5e'; g.fillRect(0,0,256,256);
+    for(i=0;i<8;i++){ g.fillStyle=i%2?'rgba(90,55,25,.10)':'rgba(255,230,190,.10)'; g.fillRect(0,i*32,256,32); g.fillStyle='rgba(60,35,15,.55)'; g.fillRect(0,i*32,256,2); }
+    for(i=0;i<300;i++){ g.fillStyle='rgba(80,50,25,.12)'; g.fillRect(r()*256,r()*256,10+r()*30,1); }
+  }else{
+    g.fillStyle='#b4b1a7'; g.fillRect(0,0,256,256);
+    for(i=0;i<900;i++){ g.fillStyle='rgba(90,90,85,.10)'; g.fillRect(r()*256,r()*256,2,2); }
+  }
+  var t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4; return t;
+}
+function label(text,scale,color){
+  var cv=document.createElement('canvas'); var g=cv.getContext('2d');
+  var font='600 44px -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+  g.font=font; var w=Math.ceil(g.measureText(text).width)+44; cv.width=w; cv.height=72;
+  g=cv.getContext('2d'); g.font=font;
+  g.fillStyle=color||'rgba(34,48,42,.9)';
+  var x=0,y=0,h=72,rr=18; g.beginPath(); g.moveTo(x+rr,y); g.arcTo(x+w,y,x+w,y+h,rr); g.arcTo(x+w,y+h,x,y+h,rr); g.arcTo(x,y+h,x,y,rr); g.arcTo(x,y,x+w,y,rr); g.closePath(); g.fill();
+  g.fillStyle='#fff'; g.textBaseline='middle'; g.fillText(text,22,38);
+  var t=new THREE.CanvasTexture(cv); t.minFilter=THREE.LinearFilter;
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));
+  var k=(scale||1)*0.34; sp.scale.set(k*w/72,k,1); sp.renderOrder=10; return sp;
+}
+function dispose(o){
+  o.traverse(function(n){
+    if(n.geometry) n.geometry.dispose();
+    if(n.material){ var m=Array.isArray(n.material)?n.material:[n.material]; m.forEach(function(x){ if(x.map) x.map.dispose(); x.dispose(); }); }
+  });
+}
+function profile(w,h,p,segs){
+  var pts=[],j,t,c,s;
+  for(j=0;j<=segs;j++){ t=Math.PI*j/segs; c=Math.cos(t); s=Math.sin(t);
+    pts.push([ (c<0?-1:1)*w*Math.pow(Math.abs(c),2/p), h*Math.pow(Math.abs(s),2/p) ]); }
+  return pts;
+}
+function loft(secs,p){
+  var segs=28,pos=[],idx=[],i,j,n=secs.length,row=segs+1;
+  for(i=0;i<n;i++){ var pr=profile(secs[i].w,secs[i].h,p,segs); for(j=0;j<=segs;j++) pos.push(secs[i].x,pr[j][1],pr[j][0]); }
+  for(i=0;i<n-1;i++) for(j=0;j<segs;j++){ var a=i*row+j,b=a+1,c=a+row,d=c+1; idx.push(a,c,b,b,c,d); }
+  var g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+function sections(shape,L,W,H){
+  var a=[],i,hw=W/2;
+  function add(f,wf,hf){ a.push({x:-L/2+f*L,w:Math.max(hw*wf,0.002),h:Math.max(H*hf,0.002)}); }
+  if(shape==='dome'){
+    for(i=0;i<=16;i++){ var s=-1+i/8,k=Math.sqrt(Math.max(0,1-s*s)); a.push({x:s*L/2,w:Math.max(hw*Math.pow(k,0.55),0.002),h:Math.max(H*Math.pow(k,0.9),0.002)}); }
+    return {secs:a,p:2.3,ribs:[]};
+  }
+  if(shape==='domeVest'){
+    add(0,.3,.01);add(.08,.8,.55);add(.22,1,.9);add(.36,1,1);add(.52,1,.92);add(.66,.92,.74);add(.84,.72,.62);add(.97,.5,.3);add(1,.42,.01);
+    return {secs:a,p:2.2,ribs:[]};
+  }
+  if(shape==='tunnel'){
+    add(0,.8,.01);add(.09,1,.96);add(.3,1,1);add(.5,1,1);add(.7,1,1);add(.91,1,.96);add(1,.8,.01);
+    return {secs:a,p:2.5,ribs:[1,2,3,4,5]};
+  }
+  if(shape==='tworoom'){
+    add(0,.55,.01);add(.07,.88,.68);add(.24,1,.95);add(.5,1,1);add(.76,1,.95);add(.93,.88,.68);add(1,.55,.01);
+    return {secs:a,p:2.4,ribs:[2,3,4]};
+  }
+  /* cabin */
+  add(0,.001,.001);add(0,1,.97);add(.5,1,1);add(1,1,.97);add(1,.001,.001);
+  return {secs:a,p:5,ribs:[]};
+}
+function shade(c,f){ var col=new THREE.Color(c); col.r=Math.min(1,col.r*f); col.g=Math.min(1,col.g*f); col.b=Math.min(1,col.b*f); return col; }
+function surf(sd,x,t,pad){
+  var s=sd.secs,i,a=s[0],b=s[s.length-1],k=x<=s[0].x?0:1;
+  for(i=0;i<s.length-1;i++){ if(s[i+1].x>s[i].x&&x>=s[i].x-1e-6&&x<=s[i+1].x+1e-6){ a=s[i]; b=s[i+1]; k=(x-a.x)/(b.x-a.x); break; } }
+  var w=a.w+(b.w-a.w)*k+pad,h=a.h+(b.h-a.h)*k+pad,c=Math.cos(t),sn=Math.sin(t),e=2/sd.p;
+  return new THREE.Vector3(x,h*Math.pow(Math.abs(sn),e),(c<0?-1:1)*w*Math.pow(Math.abs(c),e));
+}
+function tOf(sd,yf,side){ var t=Math.asin(Math.pow(Math.min(1,Math.max(0,yf)),sd.p/2)); return side>0?t:Math.PI-t; }
+function gridMesh(fn,nu,nv,mat){
+  var pos=[],idx=[],i,j,row=nv+1;
+  for(i=0;i<=nu;i++) for(j=0;j<=nv;j++){ var p=fn(i/nu,j/nv); pos.push(p.x,p.y,p.z); }
+  for(i=0;i<nu;i++) for(j=0;j<nv;j++){ var a=i*row+j,b=a+1,c=a+row,d=c+1; idx.push(a,c,b,b,c,d); }
+  var g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
+  return new THREE.Mesh(g,mat);
+}
+function patch(sd,x0,x1,t0,t1,mat){ return gridMesh(function(u,v){ return surf(sd,x0+(x1-x0)*u,t0+(t1-t0)*v,0.012); },14,10,mat); }
+function quad(a,b,c,d,mat){ return gridMesh(function(u,v){ var p=a.clone().lerp(b,u),q=d.clone().lerp(c,u); return p.lerp(q,v); },1,1,mat); }
+function tube(pts,r,mat){ return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),Math.max(6,pts.length*2),r,6,false),mat); }
+function limb(a,b,r1,r2,mat,seg){
+  var d=b.clone().sub(a),len=d.length()||0.001,m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,len,seg||8),mat);
+  m.position.copy(a).add(b).multiplyScalar(.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize()); return m;
+}
+function P(x,y,z){ return new THREE.Vector3(x,y,z); }
+function std(col,o){ var p={color:col,roughness:1}; if(o) for(var k in o) p[k]=o[k]; return new THREE.MeshStandardMaterial(p); }
+function rectPts(l,w,y){ return [new THREE.Vector3(-l/2,y,-w/2),new THREE.Vector3(l/2,y,-w/2),new THREE.Vector3(l/2,y,w/2),new THREE.Vector3(-l/2,y,w/2),new THREE.Vector3(-l/2,y,-w/2)]; }
+function ellPts(l,w,y){ var a=[],i; for(i=0;i<=48;i++){ var t=i/48*Math.PI*2; a.push(new THREE.Vector3(Math.cos(t)*l/2,y,Math.sin(t)*w/2)); } return a; }
+function buildTent1(){
+  while(tentG.children.length){ var o=tentG.children[0]; tentG.remove(o); dispose(o); }
+  tentMeshes=[];
+  var t=S.tent,L=t.L/100,W=t.W/100,H=t.H/100,hl=L/2,hw=W/2,m=S.margin/100,bell=t.shape==='bell',mesh,i;
+  var V=function(x,y,z){return new THREE.Vector3(x,y,z)},PI=Math.PI;
+  function fab(col,op){ return new THREE.MeshStandardMaterial({color:col,roughness:.9,side:THREE.DoubleSide,transparent:true,opacity:S.xray?op*0.35:op,depthWrite:!S.xray&&op===1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}); }
+  shellMat=new THREE.MeshStandardMaterial({color:t.color,roughness:.88,side:THREE.DoubleSide,transparent:true,opacity:S.xray?0.38:1,depthWrite:!S.xray});
+  var trim=fab(shade(t.color,.7),1),roofM=fab(shade(t.color,1.14),1),win=fab(0x262b27,.8);
+  var poleMat=new THREE.MeshStandardMaterial({color:0x50544f,metalness:.5,roughness:.45});
+  var ropes=[];
+  function rope(a,b){ ropes.push(a,b); }
+  function add(o){ tentG.add(o); return o; }
+
+  if(bell){
+    var wall=Math.min((t.wall||75)/100,H*0.5);
+    var bp=function(a,y,pad){ var r=y<=wall?.5:.5*(1-(y-wall)/(H-wall)); return V(Math.cos(a)*(L*r+pad),y,Math.sin(a)*(W*r+pad)); };
+    var lg=new THREE.LatheGeometry([new THREE.Vector2(.5,0),new THREE.Vector2(.5,wall),new THREE.Vector2(.012,H),new THREE.Vector2(0,H)],48);
+    mesh=new THREE.Mesh(lg,shellMat); mesh.scale.set(L,1,W);
+    var pole=add(new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),poleMat)); pole.position.y=H/2;
+    var seam=[],n=12,ribMat=new THREE.LineBasicMaterial({color:0x3b342a,transparent:true,opacity:.4});
+    for(i=0;i<n;i++){ var a=(i+.5)/n*PI*2; seam.push(bp(a,wall,.004),V(0,H,0)); if(m>0) rope(bp(a,wall,.01),V(Math.cos(a)*(hl+m),0,Math.sin(a)*(hw+m))); }
+    add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seam),ribMat));
+    add(gridMesh(function(u,v){ return bp(u*PI*2,v*0.09,.012); },48,1,trim));
+    add(gridMesh(function(u,v){ return bp(u*PI*2,wall-.03+v*0.06,.012); },48,1,trim));
+    var dh=Math.min(1.75,H*.72),da=function(y){ return (0.06+0.2*(1-y/dh))*4/Math.max(L,2); };
+    add(gridMesh(function(u,v){ var y=v*dh; return bp((u*2-1)*da(y),y,.014); },6,10,win));
+    [1,-1].forEach(function(sg){ add(tube([bp(sg*da(0)*1.15,0,.03),bp(sg*da(dh*.5)*1.1,dh*.5,.03),bp(0,dh+.08,.03)],.018,poleMat)); });
+    [PI/2,PI,PI*1.5].forEach(function(c){ add(gridMesh(function(u,v){ return bp(c+(u*2-1)*0.16*4/Math.max(L,2),.14+v*(wall-.26),.014); },4,1,win)); });
+  }else if(t.shape==='carside'){
+    /* lean-to shelter: the tall open side (x = -L/2) goes against the car, the door faces away */
+    var cx0=-hl,cx1=-hl+.18*L,cx2=hl-.12*L,cx3=hl,cy2=H*.86,pf=function(z){ return [V(cx0,0,z),V(cx0,H*.97,z),V(cx1,H,z),V(cx2,cy2,z),V(cx3,0,z)]; };
+    var sA=pf(-hw),sB=pf(hw),ctri=[];
+    for(i=1;i<4;i++) ctri.push(sA[i],sB[i],sB[i+1],sA[i],sB[i+1],sA[i+1]);
+    [sA,sB].forEach(function(s){ ctri.push(s[0],s[1],s[2],s[0],s[2],s[3],s[0],s[3],s[4]); });
+    var sg2=new THREE.BufferGeometry().setFromPoints(ctri); sg2.computeVertexNormals();
+    mesh=new THREE.Mesh(sg2,shellMat);
+    add(quad(sA[1],sB[1],V(cx0-.45,H*.9,hw),V(cx0-.45,H*.9,-hw),roofM));
+    [sA,sB].forEach(function(s){ add(tube(s.map(function(q){ return V(q.x,q.y,q.z*1.004); }),.016,poleMat)); });
+    add(tube([sA[2],sB[2]],.014,poleMat)); add(tube([sA[3],sB[3]],.014,poleMat));
+    [1,-1].forEach(function(sg){
+      var z=sg*(hw+.012); add(quad(V(-.28*L,H*.32,z),V(.22*L,H*.32,z),V(.22*L,H*.74,z),V(-.28*L,H*.74,z),win));
+      if(m>0){ rope(V(cx2,cy2,sg*hw),V(hl+m,0,sg*(hw+m))); rope(V(cx1,H,sg*hw),V(cx1,0,sg*(hw+m))); }
+    });
+    var fp=function(k,z){ return V(cx2+(cx3-cx2)*k+.016,cy2*(1-k),z); };
+    add(quad(fp(.1,-.3*W),fp(.1,.3*W),fp(.95,.3*W),fp(.95,-.3*W),win));
+  }else if(t.shape==='pyramid'){
+    /* one centre pole, eight flat panels, pegged all round; the door panel faces +x */
+    var pn=8,po=Math.PI/pn,pca=Math.cos(po),pg0=new THREE.ConeGeometry(.5,H,pn,1,true); pg0.rotateY(po);
+    shellMat.flatShading=true; mesh=new THREE.Mesh(pg0,shellMat); mesh.position.y=H/2; mesh.scale.set(L,1,W);
+    var pp=add(new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,H,8),poleMat)); pp.position.y=H/2;
+    var pfp=function(a,y){ var r=.5*(1-y/H)*pca/Math.cos(a)+.012; return V(Math.cos(a)*L*r,y,-Math.sin(a)*W*r); };
+    add(quad(pfp(-.3,.03),pfp(.3,.03),pfp(.07,H*.62),pfp(-.07,H*.62),win));
+    for(i=0;i<pn;i++){
+      var pa=po+i*Math.PI*2/pn,pe0=V(Math.cos(pa)*hl,0,Math.sin(pa)*hw),pe1=V(Math.cos(pa)*hl*.72,H*.28,Math.sin(pa)*hw*.72);
+      add(limb(pe0,V(0,H,0),.006,.006,poleMat,5)); if(m>0) rope(pe1,V(Math.cos(pa)*(hl+m),0,Math.sin(pa)*(hw+m)));
+    }
+    var pvg=new THREE.ConeGeometry(.5,H*.1,pn,1,true); pvg.rotateY(po); var pv=add(new THREE.Mesh(pvg,trim)); pv.scale.set(L*.12,1,W*.12); pv.position.y=H*.97;
+  }else if(t.shape==='cabin'){
+    var wh=H*.8,b=[V(-hl,0,-hw),V(hl,0,-hw),V(hl,0,hw),V(-hl,0,hw)],tp=b.map(function(p){return V(p.x,wh,p.z)}),ap=V(0,H,0),tri=[];
+    for(i=0;i<4;i++){ var j=(i+1)%4; tri.push(b[i],b[j],tp[j],b[i],tp[j],tp[i],tp[i],tp[j],ap); }
+    var cg=new THREE.BufferGeometry().setFromPoints(tri); cg.computeVertexNormals();
+    mesh=new THREE.Mesh(cg,shellMat);
+    for(i=0;i<4;i++){
+      var o1=V(b[i].x*1.004,0,b[i].z*1.004),o2=V(tp[i].x*1.004,wh,tp[i].z*1.004);
+      add(tube([o1,o2],.022,poleMat)); add(tube([o2,V(0,H+.01,0)],.018,poleMat));
+      if(m>0) rope(o2,V(b[i].x+(b[i].x>0?m:-m),0,b[i].z+(b[i].z>0?m:-m)));
+    }
+    var e=.014;
+    add(quad(V(hl+e,.03,-.28*W),V(hl+e,.03,.28*W),V(hl+e,wh*.92,.28*W),V(hl+e,wh*.92,-.28*W),win));
+    add(quad(V(-hl-e,wh*.42,-.25*W),V(-hl-e,wh*.42,.25*W),V(-hl-e,wh*.88,.25*W),V(-hl-e,wh*.88,-.25*W),win));
+    [1,-1].forEach(function(sg){ var z=sg*(hw+e); add(quad(V(-.3*L,wh*.42,z),V(.3*L,wh*.42,z),V(.3*L,wh*.88,z),V(-.3*L,wh*.88,z),win)); });
+    add(quad(V(tp[1].x*.55,wh+(H-wh)*.45+e,tp[1].z*.55),V(tp[2].x*.55,wh+(H-wh)*.45+e,tp[2].z*.55),V(tp[2].x*.97,wh+e*2,tp[2].z*.97),V(tp[1].x*.97,wh+e*2,tp[1].z*.97),roofM));
+  }else{
+    var sd=sections(t.shape==='air'?'tunnel':t.shape,L,W,H),X=function(f){return -hl+f*L};
+    mesh=new THREE.Mesh(loft(sd.secs,sd.p),shellMat);
+    var rib=function(ri){ var s=sd.secs[ri]; add(tube(profile(s.w+.012,s.h+.012,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.014,poleMat)); };
+    var side=function(f0,f1,y0,y1,sg,mat){ add(patch(sd,X(f0),X(f1),tOf(sd,y0,sg),tOf(sd,y1,sg),mat)); };
+    var diag=function(f0,f1){ [0,1].forEach(function(fl){ var pts=[],k; for(k=0;k<=24;k++){ var u=k/24; pts.push(surf(sd,X(f0+(f1-f0)*u),PI*(fl?1-u:u),.014)); } add(tube(pts,.014,poleMat)); }); };
+    var sideRope=function(f,yf){ if(m<=0) return; [1,-1].forEach(function(sg){ rope(surf(sd,X(f),tOf(sd,yf,sg),.012),V(X(f),0,sg*(hw+m))); }); };
+    var cornerRope=function(f,yf,xs){ if(m<=0) return; [1,-1].forEach(function(sg){ rope(surf(sd,X(f),tOf(sd,yf,sg),.012),V(xs*(hl+m),0,sg*(hw+m))); }); };
+    var endRope=function(f,yf,xs){ if(m<=0) return; [1,-1].forEach(function(sg){ rope(surf(sd,X(f),tOf(sd,yf,sg),.012),V(xs*(hl+m),0,sg*.3*W)); }); };
+    [1,-1].forEach(function(sg){ side(.04,.96,0,.06,sg,trim); });
+    if(t.shape==='dome'){
+      diag(.07,.93);
+      add(patch(sd,X(.76),X(.955),PI*.24,PI*.76,win));
+      add(patch(sd,X(.4),X(.6),PI*.36,PI*.64,trim));
+      cornerRope(.25,.55,-1); cornerRope(.75,.55,1);
+    }else if(t.shape==='domeVest'){
+      diag(.09,.65); rib(6);
+      side(.69,.9,.1,.82,1,win);
+      add(patch(sd,X(.875),X(.985),PI*.26,PI*.74,trim));
+      add(patch(sd,X(.28),X(.44),PI*.38,PI*.62,trim));
+      sideRope(.36,.55); cornerRope(.12,.55,-1); cornerRope(.84,.6,1);
+    }else if(t.shape==='air'){
+      var beamM=new THREE.MeshStandardMaterial({color:0xeef1f2,roughness:.55,transparent:S.xray,opacity:S.xray?.5:1});
+      [1,2,3,4,5].forEach(function(ri){ var s=sd.secs[ri],bt=add(tube(profile(s.w+.03,s.h+.03,sd.p,28).map(function(q){return V(s.x,q[1],q[0])}),.07,beamM)); bt.castShadow=true; });
+      [1,-1].forEach(function(sg){ side(.55,.68,.1,.62,sg,win); side(.73,.87,.1,.62,sg,win); side(.14,.27,.3,.56,sg,win); });
+      add(patch(sd,X(.918),X(.992),PI*.2,PI*.8,trim));
+      [.09,.3,.5,.7,.91].forEach(function(f){ sideRope(f,.6); }); endRope(.09,.85,-1); endRope(.91,.85,1);
+    }else if(t.shape==='tunnel'){
+      [1,2,3,4,5].forEach(rib);
+      [1,-1].forEach(function(sg){ side(.55,.87,.08,.62,sg,win); side(.15,.3,.3,.56,sg,win); });
+      add(patch(sd,X(.918),X(.992),PI*.2,PI*.8,trim));
+      add(patch(sd,X(.008),X(.082),PI*.3,PI*.7,trim));
+      [.09,.3,.5,.7,.91].forEach(function(f){ sideRope(f,.6); }); endRope(.09,.85,-1); endRope(.91,.85,1);
+    }else{
+      [1,2,3,4,5].forEach(rib);
+      [1,-1].forEach(function(sg){ side(.53,.74,.08,.62,sg,win); side(.79,.9,.1,.6,sg,win); side(.18,.34,.3,.56,sg,win); });
+      add(patch(sd,X(.2),X(.8),PI*.3,PI*.7,roofM));
+      add(patch(sd,X(.945),X(.995),PI*.24,PI*.76,trim));
+      [.24,.5,.76].forEach(function(f){ sideRope(f,.62); }); endRope(.07,.8,-1); endRope(.93,.8,1);
+    }
+  }
+  mesh.castShadow=true; add(mesh); tentMeshes.push(mesh);
+  if((WX[S.wx]||{}).night){ shellMat.emissive.setHex(0xffb060); shellMat.emissiveIntensity=.42; var gl=add(new THREE.PointLight(0xffc27a,.9,7+L,1.8)); gl.position.set(0,Math.min(H*.6,1.4),0); }
+  ropeObjs=[]; zoneMat=null;
+  if(ropes.length&&S.ropes){
+    var pegMat=new THREE.MeshStandardMaterial({color:0xd8d8d2,metalness:.6,roughness:.4}),tnMat=new THREE.MeshStandardMaterial({color:0xf4f4f0,roughness:.5});
+    for(i=0;i<ropes.length;i+=2){
+      var ra=ropes[i],rb=ropes[i+1],gp=V(rb.x,.035,rb.z),dir=gp.clone().sub(ra).normalize();
+      var rm=new THREE.MeshStandardMaterial({color:0xffb300,emissive:0x7a5200,roughness:.6});
+      add(limb(ra,gp,.008,.008,rm,6));
+      var tn=add(new THREE.Mesh(new THREE.BoxGeometry(.035,.09,.02),tnMat)); tn.position.copy(gp).lerp(ra,.28); tn.quaternion.setFromUnitVectors(V(0,1,0),dir);
+      add(limb(gp.clone().addScaledVector(dir,.1),gp.clone().addScaledVector(dir,-.1).setY(.11),.011,.011,pegMat,6));
+      var dm=new THREE.MeshBasicMaterial({color:0xffb300,transparent:true,opacity:.9});
+      var dc=add(new THREE.Mesh(new THREE.RingGeometry(.05,.085,16),dm)); dc.rotation.x=-Math.PI/2; dc.position.set(rb.x,.017,rb.z);
+      ropeObjs.push({mat:rm,disc:dm,p:V(rb.x,0,rb.z)});
+    }
+  }
+  if(m>0){
+    var zs=new THREE.Shape(),zh=new THREE.Path();
+    if(bell){ zs.absellipse(0,0,hl+m,hw+m,0,Math.PI*2,false,0); zh.absellipse(0,0,hl,hw,0,Math.PI*2,true,0); }
+    else{ zs.moveTo(-hl-m,-hw-m); zs.lineTo(hl+m,-hw-m); zs.lineTo(hl+m,hw+m); zs.lineTo(-hl-m,hw+m); zs.closePath();
+          zh.moveTo(-hl,-hw); zh.lineTo(-hl,hw); zh.lineTo(hl,hw); zh.lineTo(hl,-hw); zh.closePath(); }
+    zs.holes.push(zh);
+    zoneMat=new THREE.MeshBasicMaterial({color:0xffc233,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});
+    var zm=add(new THREE.Mesh(new THREE.ShapeGeometry(zs,32),zoneMat)); zm.rotation.x=-Math.PI/2; zm.position.y=.013;
+  }
+  /* groundsheet */
+  var fm=new THREE.MeshStandardMaterial({color:0x4b4a44,roughness:1,transparent:true,opacity:.55});
+  var floor=bell?new THREE.Mesh(new THREE.CircleGeometry(.5,40),fm):new THREE.Mesh(new THREE.PlaneGeometry(L,W),fm);
+  if(bell) floor.scale.set(L,W,1);
+  floor.rotation.x=-Math.PI/2; floor.position.y=.006; tentG.add(floor); tentMeshes.push(floor);
+  if(t.inner){
+    var il=t.inner.l/100,iw=t.inner.w/100;
+    var im=new THREE.Mesh(new THREE.PlaneGeometry(il,iw),new THREE.MeshStandardMaterial({color:0xf2e6c4,roughness:1}));
+    im.rotation.x=-Math.PI/2; im.position.set(-L/2+t.inner.from/100+il/2,.012,0); tentG.add(im);
+    if(S.labels && S.xray){ var lb=label('內帳 '+t.inner.l+'×'+t.inner.w,0.8,'rgba(120,96,40,.9)'); lb.position.set(im.position.x,.45,0); tentG.add(lb); }
+  }
+  /* footprint + rope zone */
+  outlineMat=new THREE.LineBasicMaterial({color:0x2f6b4f});
+  var op=bell?ellPts(L,W,.02):rectPts(L,W,.02);
+  tentG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(op),outlineMat));
+  if(m>0){
+    ropeMat=new THREE.LineDashedMaterial({color:0x2f6b4f,dashSize:.18,gapSize:.12});
+    var rp=bell?ellPts(L+2*m,W+2*m,.02):rectPts(L+2*m,W+2*m,.02);
+    var rl=new THREE.Line(new THREE.BufferGeometry().setFromPoints(rp),ropeMat); rl.computeLineDistances(); tentG.add(rl);
+  }else ropeMat=null;
+  if(S.labels){ var tl=label(t.L+' × '+t.W+' × 高 '+t.H+' cm',1); tl.position.set(0,H+.45,0); tentG.add(tl); }
+  placeTent();
+}
+function buildPerson(){
+  while(personG.children.length){ var o=personG.children[0]; personG.remove(o); dispose(o); }
+  var f=S.pg==='f',skin=std(0xe0b08c,{roughness:.8}),hair=std(f?0x3a2a22:0x2b2320),jk=std(f?0x2f8f8a:0xd9793a,{roughness:.85}),pt=std(f?0x4a4f63:0x2f3b4c,{roughness:.9}),sh=std(0x393939);
+  var sw=f?.172:.2,hipX=f?.095:.09;
+  function add(o){ o.castShadow=true; personG.add(o); return o; }
+  [1,-1].forEach(function(s){
+    var ft=add(new THREE.Mesh(new THREE.BoxGeometry(f?.085:.095,.07,f?.23:.25),sh)); ft.position.set(s*hipX,.035,.045);
+    add(limb(P(s*hipX,.06,0),P(s*hipX,.48,0),f?.04:.045,f?.053:.058,pt,10));
+    add(limb(P(s*hipX,.48,0),P(s*(hipX-.005),.92,0),f?.055:.058,f?.085:.082,pt,10));
+    var kn=add(new THREE.Mesh(new THREE.SphereGeometry(f?.054:.058,10,8),pt)); kn.position.set(s*hipX,.48,0);
+    var so=add(new THREE.Mesh(new THREE.SphereGeometry(f?.062:.072,12,10),jk)); so.position.set(s*sw,1.365,0);
+    add(limb(P(s*(sw+.005),1.365,0),P(s*(sw+.04),1.09,.015),f?.045:.052,f?.04:.045,jk,10));
+    var el=add(new THREE.Mesh(new THREE.SphereGeometry(f?.04:.045,10,8),jk)); el.position.set(s*(sw+.04),1.09,.015);
+    add(limb(P(s*(sw+.04),1.09,.015),P(s*(sw+.03),.85,.075),f?.038:.043,f?.032:.036,jk,10));
+    var hd=add(new THREE.Mesh(new THREE.SphereGeometry(f?.038:.042,10,8),skin)); hd.position.set(s*(sw+.028),.805,.085); hd.scale.set(.8,1.15,1);
+  });
+  var pel=add(new THREE.Mesh(new THREE.SphereGeometry(.15,14,10),pt)); pel.position.y=.93; pel.scale.set(f?1.2:1.12,.72,.78);
+  var tor=add(new THREE.Mesh(new THREE.CylinderGeometry(f?.162:.19,f?.132:.155,.5,16),jk)); tor.position.y=1.17; tor.scale.z=.62;
+  if(f){ var hem=add(new THREE.Mesh(new THREE.CylinderGeometry(.136,.2,.2,16),jk)); hem.position.y=.9; hem.scale.z=.72; }
+  var top=add(new THREE.Mesh(new THREE.SphereGeometry(f?.162:.19,16,8,0,Math.PI*2,0,Math.PI/2),jk)); top.position.y=1.42; top.scale.set(1,.32,.62);
+  add(limb(P(0,1.42,0),P(0,1.52,0),f?.043:.05,f?.04:.046,skin,10));
+  var head=add(new THREE.Mesh(new THREE.SphereGeometry(.105,18,14),skin)); head.position.y=1.5845; head.scale.set(f?.86:.9,1.1,f?.96:1);
+  var hr=add(new THREE.Mesh(new THREE.SphereGeometry(.111,18,10,0,Math.PI*2,0,Math.PI*.56),hair)); hr.position.set(0,1.588,-.008); hr.scale.set(.93,1.1,1.03); hr.rotation.x=-.28;
+  if(f){
+    var bk=add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.075,.3,12),hair)); bk.position.set(0,1.46,-.05); bk.scale.z=.55;
+    [1,-1].forEach(function(s){ var sd=add(new THREE.Mesh(new THREE.CylinderGeometry(.03,.024,.2,8),hair)); sd.position.set(s*.085,1.5,-.005); });
+  }
+  personG.scale.setScalar(S.ph/170);
+}
+
+/* ---------- scene ---------- */
+var canvas=$('c'),renderer;
+try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true}); }
+catch(e){ $('err').textContent='這個瀏覽器無法啟用 3D 繪圖（WebGL）。'; $('err').style.display='flex'; return; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+var scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,0.1,300);
+(function(){ var cv=document.createElement('canvas'); cv.width=4; cv.height=256; var g=cv.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0,'#27324d'); gr.addColorStop(.6,'#8a6f78'); gr.addColorStop(1,'#e2a878'); g.fillStyle=gr; g.fillRect(0,0,4,256); scene.background=new THREE.CanvasTexture(cv); })();
+scene.fog=new THREE.Fog(0x6f6470,26,80);
+scene.add(new THREE.HemisphereLight(0xcfd6ff,0x55604a,0.62));
+var sun=new THREE.DirectionalLight(0xffb27a,0.42); sun.position.set(10,6,4); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+var sc=sun.shadow.camera; sc.left=-12; sc.right=12; sc.top=12; sc.bottom=-12; sc.near=1; sc.far=40; sun.shadow.bias=-0.0006; scene.add(sun);
+(function(){ var t=tex('grass'); t.repeat.set(60,60); var m=new THREE.Mesh(new THREE.CircleGeometry(90,48),std(0xb9c7a6,{map:t})); m.rotation.x=-Math.PI/2; m.receiveShadow=true; scene.add(m); })();
+var dirty=true; function redraw(){ dirty=true; }
+
+/* state the borrowed builders expect */
+var S={tent:null,rot:0,tx:0,tz:0,xray:false,margin:50,labels:false,ropes:true,wx:'sunny',mode:'single',pg:'m',ph:170,sL:60,sW:60,siteType:'grass'};
+var WX={sunny:{}},siteY=0,areaNo=0;
+var tentG=new THREE.Group(),tarpG=new THREE.Group(),pitG=new THREE.Group(),fxG=new THREE.Group(),zoneG=new THREE.Group(),personG=new THREE.Group(),tentMeshes=[],tarpMeshes=[],outlineMat=null,ropeMat=null,shellMat=null,zoneMat=null,ropeObjs=[];
+scene.add(zoneG,tentG,tarpG,pitG,fxG,personG);
+function isArea(){ return false; }
+function placeTent(){ tentG.position.set(S.tx,0,S.tz); tentG.rotation.y=-S.rot; }
+function clearG(g){ while(g.children.length){ var o=g.children[0]; g.remove(o); dispose(o); } }
+
+var ST={pit:PITS[0],fuel:FUELS[0],wdir:0,wlv:1,tarp:{x:-3.6,z:3.4,L:4,W:3,H:2.3,hc:1.6}},TENT={L:270,W:270,H:170};
+var R_IN=3,R_OUT=4.5;
+
+/* ---------- tent, tarp, person ---------- */
+function buildScene(){
+  S.tent={id:'t',brand:'',name:'',L:TENT.L,W:TENT.W,H:TENT.H,shape:'dome',color:0xa9ad84}; buildTent1();
+  [outlineMat,ropeMat,zoneMat].forEach(function(x){ if(x) x.visible=false; });
+  tentG.traverse(function(o){ if(o.geometry&&o.geometry.type==='RingGeometry') o.visible=false; });
+  clearG(tarpG); tarpMeshes=[];
+  var t=ST.tarp,hl=t.L/2,hw=t.W/2,mat=new THREE.MeshStandardMaterial({color:0xc7a56c,roughness:.9,side:THREE.DoubleSide}),pm=std(0x50544f,{metalness:.5,roughness:.45});
+  var cloth=gridMesh(function(u,v){ var x=(u-.5)*t.L,z=(v*2-1)*hw,rd=t.H-.1*(1-Math.pow(2*x/t.L,2)); return P(x,rd-(rd-t.hc)*Math.pow(Math.abs(z)/hw,1.15),z); },16,10,mat); cloth.castShadow=true; tarpG.add(cloth); tarpMeshes.push(cloth);
+  [hl,-hl].forEach(function(x){ tarpG.add(limb(P(x,0,0),P(x,t.H+.05,0),.017,.017,pm,8)); [hw,-hw].forEach(function(z){ tarpG.add(limb(P(x,0,z),P(x,t.hc+.04,z),.014,.014,pm,8)); }); });
+  tarpG.position.set(t.x,0,t.z);
+  buildPerson(); personG.position.set(1.5,0,-1.0); personG.rotation.y=Math.atan2(-1.5,1.0);
+}
+
+/* ---------- fire pits ---------- */
+function buildPit(){
+  clearG(pitG);
+  var steel=std(0x8d9296,{metalness:.75,roughness:.4,side:THREE.DoubleSide}),dark=std(0x3a3d40,{metalness:.5,roughness:.6,side:THREE.DoubleSide}),id=ST.pit.id,i,top=.3;
+  function add(o){ o.castShadow=true; pitG.add(o); return o; }
+  function legs(r,h,n){ for(var k=0;k<n;k++){ var a=k/n*Math.PI*2+Math.PI/n; add(limb(P(Math.cos(a)*r,0,Math.sin(a)*r),P(Math.cos(a)*r*.75,h,Math.sin(a)*r*.75),.012,.012,dark,6)); } }
+  if(id==='pyramid'){ var g=new THREE.ConeGeometry(.3,.26,4,1,true); g.rotateY(Math.PI/4); var m=add(new THREE.Mesh(g,steel)); m.rotation.x=Math.PI; m.position.y=.25; legs(.26,.16,4); top=.34; }
+  else if(id==='box'){ [[.2,0,0],[-.2,0,0],[0,0,.14],[0,0,-.14]].forEach(function(p,k){ var b=add(new THREE.Mesh(new THREE.BoxGeometry(k<2?.012:.4,.22,k<2?.28:.012),steel)); b.position.set(p[0],.23,p[2]); });
+    var fl=add(new THREE.Mesh(new THREE.BoxGeometry(.4,.012,.28),dark)); fl.position.y=.13; legs(.24,.12,4); for(i=0;i<5;i++){ var h=new THREE.Mesh(new THREE.CircleGeometry(.014,8),std(0x1a1a1a)); h.position.set(-.14+i*.07,.18,.147); pitG.add(h); } top=.3; }
+  else if(id==='dish'){ var d=add(new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(0,.2),new THREE.Vector2(.14,.215),new THREE.Vector2(.27,.26),new THREE.Vector2(.31,.29)],24),steel)); legs(.24,.21,3); top=.3; }
+  else if(id==='mesh'){ var mm=new THREE.MeshStandardMaterial({color:0x9aa0a4,metalness:.7,roughness:.5,side:THREE.DoubleSide,transparent:true,opacity:.75,wireframe:true});
+    pitG.add(gridMesh(function(u,v){ var x=(u-.5)*.42,z=(v-.5)*.42; return P(x,.3-.06*(1-Math.pow(2*x/.42,2))*(1-Math.pow(2*z/.42,2)),z); },10,10,mm));
+    [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(function(c){ add(limb(P(c[0]*.26,0,c[1]*.26),P(c[0]*.21,.31,c[1]*.21),.008,.008,steel,6)); }); top=.28; }
+  else if(id==='second'){ add(new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.3,28,1,true),steel)).position.y=.17; add(new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.02,28),dark)).position.y=.02;
+    var rim=add(new THREE.Mesh(new THREE.TorusGeometry(.19,.012,8,28),steel)); rim.rotation.x=Math.PI/2; rim.position.y=.32;
+    for(i=0;i<16;i++){ var a=i/16*Math.PI*2,hh=new THREE.Mesh(new THREE.CircleGeometry(.012,8),std(0x151515)); hh.position.set(Math.cos(a)*.203,.07,Math.sin(a)*.203); hh.lookAt(Math.cos(a)*2,.07,Math.sin(a)*2); pitG.add(hh); } top=.3; }
+  else { add(new THREE.Mesh(new THREE.CylinderGeometry(.22,.19,.5,24,1,true),dark)).position.y=.29; add(new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.015,24),dark)).position.y=.05; legs(.2,.05,3);
+    for(i=0;i<12;i++){ var a2=i/12*Math.PI*2,h2=new THREE.Mesh(new THREE.CircleGeometry(.018,8),std(0xff7a2a,{emissive:0xff5a10,emissiveIntensity:.9})); h2.position.set(Math.cos(a2)*.2,.16,Math.sin(a2)*.2); h2.lookAt(Math.cos(a2)*2,.16,Math.sin(a2)*2); pitG.add(h2); } top=.5; }
+  var mat=new THREE.Mesh(new THREE.BoxGeometry(.9,.012,.9),std(0x4a4d50,{roughness:.9})); mat.position.y=.007; mat.receiveShadow=true; pitG.add(mat);
+  ST.top=top;
+  /* fuel pieces */
+  var f=ST.fuel.id,r=rnd(4),wood=std(f==='soft'?0xc9a06a:0x7a5236),coal=std(0x1d1b1a,{emissive:0xff3a08,emissiveIntensity:.55});
+  if(f==='hard'||f==='soft'){ for(i=0;i<5;i++){ var a3=i/5*Math.PI*2; add(limb(P(Math.cos(a3)*.13,top-.05,Math.sin(a3)*.13),P(Math.cos(a3+2.4)*.07,top+.16,Math.sin(a3+2.4)*.07),.03,.026,wood,7)); } }
+  else if(f==='pellet'){ for(i=0;i<40;i++){ var q=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.03,5),std(0xb98d5e)); q.position.set((r()-.5)*.24,top-.04+r()*.04,(r()-.5)*.24); q.rotation.set(r()*3,r()*3,r()*3); pitG.add(q); } }
+  else { for(i=0;i<9;i++){ var cq=f==='briq'?new THREE.Mesh(new THREE.BoxGeometry(.06,.045,.06),coal):new THREE.Mesh(new THREE.DodecahedronGeometry(.04+r()*.02,0),coal); cq.position.set((r()-.5)*.22,top-.05+r()*.05,(r()-.5)*.22); cq.rotation.y=r()*3; pitG.add(cq); } }
+  var bucket=add(new THREE.Mesh(new THREE.CylinderGeometry(.15,.12,.26,16,1,true),std(0x3f6fa8,{side:THREE.DoubleSide,roughness:.5}))); bucket.position.set(1.0,.13,.9);
+  var water=new THREE.Mesh(new THREE.CircleGeometry(.14,16),std(0x9cc7e0,{roughness:.1})); water.rotation.x=-Math.PI/2; water.position.set(1.0,.22,.9); pitG.add(water);
+}
+
+/* ---------- flames, sparks, smoke ---------- */
+var flames=[],sparks=null,spGeo=null,spN=0,smoke=[],fireLight=new THREE.PointLight(0xff9a40,1.4,11,1.5); scene.add(fireLight);
+function wvec(){ return {x:Math.cos(ST.wdir),z:Math.sin(ST.wdir)}; }
+function buildFx(){
+  clearG(fxG); flames=[]; smoke=[];
+  var f=ST.fuel,i,n=f.fh>.3?6:4;
+  for(i=0;i<n;i++){ var m=new THREE.Mesh(new THREE.ConeGeometry(.07+i%3*.02,1,7),new THREE.MeshBasicMaterial({color:i%2?0xffd060:f.col,transparent:true,opacity:.78,blending:THREE.AdditiveBlending,depthWrite:false}));
+    m.userData={a:i/n*Math.PI*2,ph:i*1.7,k:.75+.25*(i%3)/2}; fxG.add(m); flames.push(m); }
+  var cnt=Math.round(f.r[1]*ST.pit.sp*14); spN=cnt; sparks=new Float32Array(Math.max(1,cnt)*7);
+  spGeo=new THREE.BufferGeometry(); spGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(Math.max(1,cnt)*3),3));
+  fxG.add(new THREE.Points(spGeo,new THREE.PointsMaterial({color:0xffc060,size:.07,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false})));
+  for(i=0;i<cnt;i++) respawn(i,true);
+  var sn=Math.round(f.r[2]*ST.pit.sm*3);
+  for(i=0;i<sn;i++){ var s=new THREE.Mesh(new THREE.IcosahedronGeometry(.16,1),new THREE.MeshBasicMaterial({color:0xb9b4b0,transparent:true,opacity:.16,depthWrite:false})); s.userData={t:i/sn*4}; fxG.add(s); smoke.push(s); }
+}
+function respawn(i,init){ var o=i*7,w=wvec(),lv=ST.wlv; sparks[o]=(Math.random()-.5)*.16; sparks[o+1]=ST.top+ST.fuel.fh*(.3+Math.random()*.5); sparks[o+2]=(Math.random()-.5)*.16;
+  sparks[o+3]=(Math.random()-.5)*.5+w.x*lv*(.5+Math.random()*.9); sparks[o+4]=.9+Math.random()*1.4; sparks[o+5]=(Math.random()-.5)*.5+w.z*lv*(.5+Math.random()*.9); sparks[o+6]=init?Math.random()*2.2:(1.2+Math.random()*1.4); }
+function tick(dt,t){
+  var f=ST.fuel,w=wvec(),lv=ST.wlv,i,lean=lv*.2;
+  flames.forEach(function(m){ var u=m.userData,h=f.fh*u.k*(.72+.28*Math.sin(t*7+u.ph)+.1*Math.sin(t*13.3+u.ph*2)),rr=.06*(f.fh>.3?1:.6);
+    m.scale.set(1+f.fh*.9,Math.max(.05,h),1+f.fh*.9); m.position.set(Math.cos(u.a+t*.6)*rr+w.x*lean*h*.5,ST.top+h/2,Math.sin(u.a+t*.6)*rr+w.z*lean*h*.5); m.rotation.z=-w.x*lean*.9; m.rotation.x=w.z*lean*.9; });
+  var pos=spGeo.attributes.position.array;
+  for(i=0;i<spN;i++){ var o=i*7; sparks[o+6]-=dt; if(sparks[o+6]<=0||sparks[o+1]<0) respawn(i,false);
+    sparks[o+4]-=dt*.9; sparks[o]+=sparks[o+3]*dt; sparks[o+1]+=sparks[o+4]*dt; sparks[o+2]+=sparks[o+5]*dt; pos[i*3]=sparks[o]; pos[i*3+1]=sparks[o+1]; pos[i*3+2]=sparks[o+2]; }
+  spGeo.attributes.position.needsUpdate=true;
+  smoke.forEach(function(s){ var u=s.userData; u.t=(u.t+dt)%4; var k=u.t/4; s.position.set(w.x*lv*k*2.6+Math.sin(u.t*1.3+s.id)*.12,ST.top+f.fh+.2+k*3.2,w.z*lv*k*2.6+Math.cos(u.t*1.1+s.id)*.12); s.scale.setScalar(.8+k*3.2); s.material.opacity=.2*(1-k)*Math.min(1,k*6); });
+  fireLight.position.set(0,ST.top+.3,0); fireLight.intensity=(.7+f.fh*1.3)*(.88+.12*Math.sin(t*9)+.06*Math.sin(t*23));
+}
+
+/* ---------- clearance rings ---------- */
+function stretch(ang){ return 1+.35*ST.wlv*Math.max(0,Math.cos(ang-ST.wdir)); }
+var zmIn,zmOut;
+function buildZone(){
+  clearG(zoneG);
+  function ring(R,col,op){ var pts=[],sh=new THREE.Shape(),i; for(i=0;i<=72;i++){ var a=i/72*Math.PI*2,r=R*stretch(a); pts.push(P(Math.cos(a)*r,.03,Math.sin(a)*r)); if(i) sh.lineTo(Math.cos(a)*r,-Math.sin(a)*r); else sh.moveTo(Math.cos(a)*r,-Math.sin(a)*r); }
+    var fill=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false,side:THREE.DoubleSide})); fill.rotation.x=-Math.PI/2; fill.position.y=.02; zoneG.add(fill);
+    zoneG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:col}))); }
+  ring(R_OUT,0xf2b233,.13); ring(R_IN,0xe5391f,.2);
+  var a=label('4.5 m',1.7,'rgba(168,106,18,.92)'),b=label('3 m',1.7,'rgba(184,71,42,.92)'),u=ST.wdir+Math.PI; a.position.set(Math.cos(u)*R_OUT,.3,Math.sin(u)*R_OUT); b.position.set(Math.cos(u)*R_IN,.3,Math.sin(u)*R_IN); zoneG.add(a,b);
+  if(ST.wlv>0){ var w=wvec(),s=P(-w.x*1.4,.05,-w.z*1.4).add(P(-w.z*1.6,0,w.x*1.6)),e=s.clone().add(P(w.x*(1+ST.wlv*.6),0,w.z*(1+ST.wlv*.6))),am=new THREE.MeshBasicMaterial({color:0xffffff});
+    zoneG.add(limb(s,e,.03,.03,am,6)); var hd=new THREE.Mesh(new THREE.ConeGeometry(.12,.3,10),am); hd.position.copy(e); hd.quaternion.setFromUnitVectors(P(0,1,0),e.clone().sub(s).normalize()); zoneG.add(hd);
+    var wl=label('風',1.5,'rgba(40,50,70,.85)'); wl.position.copy(s).setY(.45); zoneG.add(wl); }
+}
+
+/* ---------- judging ---------- */
+function rectPerim(cx,cz,L,W,rot,n){ var out=[],c=Math.cos(rot),s=Math.sin(rot),i,k; for(k=0;k<4;k++) for(i=0;i<n;i++){ var u=i/n*2-1,lx=k===0?u*L/2:k===1?L/2:k===2?-u*L/2:-L/2,lz=k===0?W/2:k===1?-u*W/2:k===2?-W/2:u*W/2; out.push([cx+lx*c-lz*s,cz+lx*s+lz*c]); } return out; }
+function inRect(cx,cz,L,W,rot){ var c=Math.cos(rot),s=Math.sin(rot),x=-cx,z=-cz,lx=x*c+z*s,lz=-x*s+z*c; return Math.abs(lx)<=L/2&&Math.abs(lz)<=W/2; }
+function nearest(pts){ var bd=1e9,be=1e9,down=false; pts.forEach(function(p){ var d=Math.hypot(p[0],p[1]),a=Math.atan2(p[1],p[0]),e=d/stretch(a); if(e<be){ be=e; bd=d; down=Math.cos(a-ST.wdir)>.5; } }); return {d:bd,e:be,down:down}; }
+function judge(){
+  var lvl=0,why=[],f=ST.fuel,t=ST.tarp,TL=TENT.L/100,TW=TENT.W/100;
+  function hit(l,s){ lvl=Math.max(lvl,l); why.push(s); }
+  var tn=nearest(rectPerim(S.tx,S.tz,TL,TW,S.rot,12)),tp=nearest(rectPerim(t.x,t.z,t.L,t.W,0,12));
+  if(inRect(S.tx,S.tz,TL,TW,S.rot)) hit(2,'火在帳篷裡面！燒柴燒炭都會產生一氧化碳，帳內通風不良會中毒，而且帳布一碰到火就燒起來。任何情況都不要這樣做。');
+  else if(tn.e<R_IN) hit(2,'帳篷離火只有 '+tn.d.toFixed(1)+' 公尺'+(tn.down&&ST.wlv?'，而且在下風處':'')+'。火星飄過去會把帳布燒出洞，請拉開到紅圈外。');
+  else if(tn.e<R_OUT) hit(1,'帳篷離火 '+tn.d.toFixed(1)+' 公尺，已經在紅圈外，但還在黃圈內'+(tn.down&&ST.wlv?'，又在下風處':'')+'。空間夠的話再拉遠一點。');
+  if(inRect(t.x,t.z,t.L,t.W,0)){ var need=f.fh*3; hit(2,'火在天幕正下方。上方淨空至少要有火焰高度的 3 倍'+(need+ST.top>t.hc?'，這張天幕不夠高':'')+'，而且熱氣和火星會直接衝到布面。請把火移到天幕外。'); }
+  else if(tp.e<R_IN) hit(2,'天幕邊緣離火只有 '+tp.d.toFixed(1)+' 公尺，火星很容易燒到布面。');
+  else if(tp.e<R_OUT) hit(1,'天幕離火 '+tp.d.toFixed(1)+' 公尺，在黃圈內，注意火星。');
+  if(ST.wlv===3) hit(2,'現在是強風。火星會被吹得很遠，火也不好控制，這種天氣建議不要生火。');
+  else if(ST.wlv===2) hit(1,'風有點大，下風處要多留距離（圈圈已經往下風處拉長），柴不要加太多。');
+  if(f.r[1]*ST.pit.sp>=4.5&&lvl<2) hit(1,'這個組合火星特別多：'+f.name+'配上'+ST.pit.name+'，距離要抓得更寬。');
+  if(ST.pit.id==='mesh'&&(f.id==='char'||f.id==='briq'||f.id==='pellet')) hit(1,'小顆的'+f.name+'會從網目掉下去，網狀焚火台不適合。');
+  if(!why.length) why.push('帳篷和天幕都在黃圈外，上方也沒有東西。記得火邊隨時有人、水桶放旁邊。');
+  var v=$('verdict'); v.className='verdict'+(lvl===2?' bad':lvl===1?' mid':''); v.querySelector('b').textContent=lvl===2?'這樣很危險':lvl===1?'還可以，但要注意':'這樣擺很安心';
+  var ul=v.querySelector('ul'); ul.textContent=''; why.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ul.appendChild(li); });
+  if(shellMat) shellMat.emissive.setHex(tn.e<R_IN||inRect(S.tx,S.tz,TL,TW,S.rot)?0x7a1408:0x000000);
+  redraw();
+}
+
+/* ---------- UI ---------- */
+function chips(box,list,cur,cb){ box.textContent=''; list.forEach(function(x){ var b=document.createElement('button'); b.type='button'; b.textContent=x.name; b.setAttribute('aria-pressed',String(x===cur)); b.addEventListener('click',function(){ cb(x); }); box.appendChild(b); }); }
+function ulist(items){ var ul=document.createElement('ul'); items.forEach(function(s){ var li=document.createElement('li'); li.textContent=s; ul.appendChild(li); }); return ul; }
+function card(el,x,rates){
+  el.textContent=''; var h=document.createElement('h3'),p=document.createElement('p'); h.textContent=x.name; p.textContent=x.lead; el.appendChild(h); el.appendChild(p);
+  if(rates){ var rt=document.createElement('div'); rt.className='rates'; FASPECT.forEach(function(a,i){ var row=document.createElement('div'),lab=document.createElement('span'),bar=document.createElement('span'),k; row.className='rate'; lab.textContent=a; bar.className='bar'; bar.setAttribute('role','img'); bar.setAttribute('aria-label',a+' '+x.r[i]+'，滿分 5');
+      for(k=1;k<=5;k++){ var s=document.createElement('i'); if(k<=x.r[i]) s.className='on'; bar.appendChild(s); } row.appendChild(lab); row.appendChild(bar); rt.appendChild(row); }); el.appendChild(rt); }
+  var pc=document.createElement('div'); pc.className='pc'; [['pros','優點',x.pros],['cons','要注意',x.cons]].forEach(function(q){ var b=document.createElement('div'),h4=document.createElement('h4'); b.className='box '+q[0]; h4.textContent=q[1]; b.appendChild(h4); b.appendChild(ulist(q[2])); pc.appendChild(b); }); el.appendChild(pc);
+  var tp=document.createElement('p'); tp.className='tip'; tp.textContent='小提醒：'+x.tip; el.appendChild(tp);
+}
+function refresh(all){
+  chips($('pits'),PITS,ST.pit,function(x){ ST.pit=x; refresh(true); });
+  chips($('fuels'),FUELS,ST.fuel,function(x){ ST.fuel=x; refresh(true); });
+  card($('pitCard'),ST.pit,false); card($('fuelCard'),ST.fuel,true);
+  var lv=$('windLv'); lv.textContent=''; ['無風','微風','有風','強風'].forEach(function(n,i){ var b=document.createElement('button'); b.type='button'; b.textContent=n; b.setAttribute('aria-pressed',String(ST.wlv===i)); b.addEventListener('click',function(){ ST.wlv=i; refresh(true); }); lv.appendChild(b); });
+  var dl=$('dial'); dl.textContent=''; [['↖',-3],['↑',-2],['↗',-1],['←',4],[null,0],['→',0],['↙',3],['↓',2],['↘',1]].forEach(function(q){
+    if(q[0]===null){ var sp=document.createElement('span'); sp.textContent='風向'; dl.appendChild(sp); return; }
+    var ang=q[1]*Math.PI/4,b=document.createElement('button'); b.type='button'; b.textContent=q[0]; b.setAttribute('aria-label','風往'+q[0]+'吹'); b.setAttribute('aria-pressed',String(Math.abs(Math.atan2(Math.sin(ang-ST.wdir),Math.cos(ang-ST.wdir)))<.01)); b.addEventListener('click',function(){ ST.wdir=ang; if(!ST.wlv) ST.wlv=1; refresh(true); }); dl.appendChild(b); });
+  if(all){ buildPit(); buildFx(); buildZone(); }
+  judge();
+}
+var SCEN=[
+ ['離帳太近',function(){ S.tx=-2.6; S.tz=-.6; ST.wlv=1; ST.wdir=0; }],
+ ['天幕下生火',function(){ ST.tarp.x=0; ST.tarp.z=.2; ST.wlv=1; }],
+ ['帳篷在下風處',function(){ S.tx=4.9; S.tz=0; ST.wdir=0; ST.wlv=2; }],
+ ['強風天',function(){ ST.wlv=3; }],
+ ['搬進帳篷取暖',function(){ S.tx=0; S.tz=0; }]
+];
+function demo(){ S.tx=-6.3; S.tz=-1.2; S.rot=0; ST.tarp.x=-1.6; ST.tarp.z=6.7; ST.wdir=0; ST.wlv=1; }
+function place(){ placeTent(); tarpG.position.set(ST.tarp.x,0,ST.tarp.z); }
+(function(){ var box=$('scen'); SCEN.forEach(function(q){ var b=document.createElement('button'); b.type='button'; b.textContent=q[0]; b.addEventListener('click',function(){ demo(); q[1](); place(); refresh(true); }); box.appendChild(b); }); })();
+$('reset').addEventListener('click',function(){ demo(); place(); refresh(true); });
+$('rotTent').addEventListener('click',function(){ S.rot=(S.rot+Math.PI/2)%(Math.PI*2); place(); judge(); });
+(function(){ var box=$('check'),total=0,done=0,prog=document.createElement('div'),bar=document.createElement('i'),cap=document.createElement('p'); prog.className='prog'; prog.appendChild(bar); cap.className='tip'; cap.style.marginTop='2px';
+  function upd(){ bar.style.width=(done/total*100)+'%'; cap.textContent=done===total?'全部確認了，好好享受火光吧。':'已確認 '+done+' / '+total+' 項'; }
+  box.appendChild(prog); box.appendChild(cap);
+  CHECK.forEach(function(g){ var h=document.createElement('h3'); h.textContent=g[0]; box.appendChild(h); g[1].forEach(function(s){ total++; var l=document.createElement('label'),c=document.createElement('input'),t=document.createElement('span'); c.type='checkbox'; t.textContent=s; c.addEventListener('change',function(){ done+=c.checked?1:-1; upd(); }); l.appendChild(c); l.appendChild(t); box.appendChild(l); }); }); upd(); })();
+
+/* ---------- camera + pointer ---------- */
+var cam={az:.5,el:.55,r:17,target:new THREE.Vector3(-1.4,.4,1.6)};
+function applyCam(){ var ce=Math.cos(cam.el); camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az)); camera.lookAt(cam.target); }
+function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?24:17; redraw(); }
+if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElement); else window.addEventListener('resize',resize);
+var ptrs=new Map(),mode=null,last={x:0,y:0},off={x:0,z:0},pinch={d:1,r:1},ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),grab=null;
+function setRay(e){ var r=canvas.getBoundingClientRect(); ndc.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)); ray.setFromCamera(ndc,camera); }
+function ground(e){ setRay(e); var p=new THREE.Vector3(); return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),p)?p:null; }
+function pdist(){ var a=Array.from(ptrs.values()); return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1; }
+canvas.addEventListener('pointerdown',function(e){ try{canvas.setPointerCapture(e.pointerId)}catch(_){ } ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===1){ setRay(e); var a=ray.intersectObjects(tentMeshes,false),b=ray.intersectObjects(tarpMeshes,false),g=ground(e); grab=null;
+    if(g&&(a.length||b.length)){ grab=(b.length&&(!a.length||b[0].distance<a[0].distance))?'tarp':'tent'; off.x=g.x-(grab==='tarp'?ST.tarp.x:S.tx); off.z=g.z-(grab==='tarp'?ST.tarp.z:S.tz); mode='drag'; } else mode='orbit';
+    last.x=e.clientX; last.y=e.clientY; }
+  else if(ptrs.size===2){ mode='pinch'; pinch.d=pdist(); pinch.r=cam.r; } });
+canvas.addEventListener('pointermove',function(e){ if(!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(mode==='orbit'){ cam.az-=(e.clientX-last.x)*0.008; cam.el=Math.min(1.5,Math.max(0.08,cam.el+(e.clientY-last.y)*0.006)); last.x=e.clientX; last.y=e.clientY; redraw(); }
+  else if(mode==='drag'){ var g=ground(e); if(!g) return; var nx=Math.max(-11,Math.min(11,Math.round((g.x-off.x)*10)/10)),nz=Math.max(-11,Math.min(11,Math.round((g.z-off.z)*10)/10)); if(grab==='tarp'){ ST.tarp.x=nx; ST.tarp.z=nz; } else { S.tx=nx; S.tz=nz; } place(); judge(); }
+  else if(mode==='pinch'&&ptrs.size===2){ cam.r=Math.min(45,Math.max(5,pinch.r*pinch.d/pdist())); redraw(); } });
+function pend(e){ ptrs.delete(e.pointerId); if(!ptrs.size) mode=null; else if(ptrs.size===1){ mode='orbit'; var p=Array.from(ptrs.values())[0]; last.x=p.x; last.y=p.y; } }
+canvas.addEventListener('pointerup',pend); canvas.addEventListener('pointercancel',pend);
+canvas.addEventListener('wheel',function(e){ e.preventDefault(); cam.r=Math.min(45,Math.max(5,cam.r*Math.exp(e.deltaY*0.0012))); redraw(); },{passive:false});
+
+demo(); buildScene(); place(); resize(); refresh(true);
+var lastT=0,still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function loop(t){ var now=(t||0)/1000,dt=Math.min(.05,now-lastT); lastT=now; if(!still){ tick(dt,now); dirty=true; } else if(dirty) tick(0,1.3); if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
+})();
+</script>
+</body>
+</html>
