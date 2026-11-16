@@ -186,6 +186,13 @@
       </div>
     </div>
     <p class="src" id="srcLine"></p>
+    <h1 style="margin-top:22px">帳內睡鋪</h1>
+    <p class="sub">看第 1 頂帳篷的內帳排得下幾張床墊。</p>
+    <div class="row"><label class="f"><span>床墊</span><select id="matSel" aria-label="床墊尺寸"></select></label><label class="f"><span>數量</span><input type="number" id="matN" min="1" max="12" step="1" value="2"></label></div>
+    <div id="matBox" style="display:none">
+      <div class="row" style="margin-top:8px"><label class="f"><span>內帳長 cm</span><input type="number" id="inL" min="100" max="1200" step="5"></label><label class="f"><span>內帳寬 cm</span><input type="number" id="inW" min="60" max="800" step="5"></label></div>
+      <p class="note" id="matInfo"></p>
+    </div>
     <h1 style="margin-top:22px">第 2 頂帳篷</h1>
     <p class="sub">同一個營位再搭一頂，可各自拖曳與旋轉。</p>
     <select id="tent2Sel" aria-label="第 2 頂帳篷"></select>
@@ -224,7 +231,10 @@
       <div class="rng"><span>150</span><button type="button" id="tarpHReset" class="linkbtn">還原預設高度</button><span>320</span></div>
     </div>
     <div class="f" id="tarpColBox" style="display:none;margin-top:8px"><span>顏色</span><div class="sw" id="tSw"></div></div>
-    <p class="credit-p">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views"></span></p>
+    <h1 style="margin-top:22px">分享</h1>
+    <p class="sub">把目前的配置變成連結，對方打開就看到同一個畫面。</p>
+    <div class="mrow"><button type="button" id="sShare" class="pbtn">複製分享連結</button><button type="button" id="sShot" class="pbtn ghost">存成圖片</button></div>
+    <p class="credit-p" style="margin-top:18px">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views"></span></p>
     <p class="note">資訊僅供參考，請依官方資訊為準。</p>
     <p class="note">3D 外型是依結構類型做的通用造型（營柱、門窗、營繩），長寬高為原廠數字，不是該型號的複刻。</p>
     </div>
@@ -274,6 +284,7 @@
       <button type="button" id="bTop">俯視</button>
       <button type="button" id="bPersp">斜視</button>
       <button type="button" id="bShot">存圖</button>
+      <button type="button" id="bShare">分享</button>
     </div>
     <div class="credit">設計/Sleepoutside Camp <span>*非營利使用</span><span class="views" aria-live="polite"></span></div>
     </div>
@@ -354,7 +365,7 @@ var TENTS=[
  {id:'sp-amenity-m',brand:'Snow Peak',name:'Amenity Dome M',sku:'SDE-001RH',L:505,W:280,H:150,shape:'domeVest',cap:'4–5 人',color:0xb9a886,inner:{l:265,w:265,from:55},src:'https://www.snowpeak.co.uk/products/amenity-dome-m'},
  {id:'sp-landlock',brand:'Snow Peak',name:'Land Lock',sku:'TP-671R',L:625,W:405,H:205,shape:'tworoom',cap:'6 人',color:0x8c7b62,inner:{l:230,w:360,from:35},src:'https://www.snowpeak.co.uk/products/land-lock'},
  {id:'cm-tough2room',brand:'Coleman',name:'Tough Screen 2-Room House MDX',sku:'',L:560,W:340,H:215,shape:'tworoom',cap:'4–5 人',color:0x9aa37a,inner:{l:250,w:300,from:25},src:'https://www.bepal.net/archives/273739'},
- {id:'cm-toughdome',brand:'Coleman',name:'Tough Dome 3025',sku:'',L:300,W:250,H:175,shape:'dome',cap:'4–5 人',color:0xa9ad84,note:'內帳尺寸，不含前庭',src:'https://hinata.me/item/10481'},
+ {id:'cm-toughdome',brand:'Coleman',name:'Tough Dome 3025',sku:'',L:300,W:250,H:175,shape:'dome',cap:'4–5 人',color:0xa9ad84,full:true,note:'內帳尺寸，不含前庭',src:'https://hinata.me/item/10481'},
  {id:'cm-touring',brand:'Coleman',name:'Touring Dome ST+',sku:'',L:265,W:210,H:110,shape:'dome',cap:'1–2 人',color:0x6f8160,src:'https://www.bepal.net/archives/402245'},
  {id:'dod-kamaboko',brand:'DOD',name:'Kamaboko Tent 3M',sku:'T5-689',L:640,W:300,H:195,shape:'tunnel',cap:'5 人',color:0xc7a56c,inner:{l:220,w:280,from:15},src:'https://www.bepal.net/archives/522650'},
  {id:'nd-asgard126',brand:'Nordisk',name:'Asgard 12.6',sku:'',L:400,W:375,H:250,shape:'bell',cap:'6 人',color:0xe8dfc8,wall:75,src:'https://nordisk.eu/products/asgard-126-m2-glamping-tent-6-person-natural'},
@@ -371,7 +382,7 @@ var SITE_TYPES=[
 ];
 var PRESETS=[[3,3],[4,4],[4,6],[5,5],[6,5],[8,5],[8,6],[8,8]];
 
-var S={tent:TENTS[1],rot:0,tx:0,tz:0,siteType:'grass',sL:8,sW:6,roofH:2.8,margin:50,xray:false,person:true,labels:true,ropes:true,car:'suv',px:null,pz:null,pry:null,petKind:'none',petCoat:'orange',petSize:'m',petx:null,petz:null,petry:null,cx:null,cz:null,crot:0,cdx:0,cdz:0,mode:'single',aL:20,aW:15,sL0:8,sW0:6,pg:'m',ph:170,env:'meadow',wx:'sunny',tarp:null,trot:0,ttx:0,ttz:0,active:'tent'};
+var S={mat:'none',matN:2,inL:null,inW:null,tent:TENTS[1],rot:0,tx:0,tz:0,siteType:'grass',sL:8,sW:6,roofH:2.8,margin:50,xray:false,person:true,labels:true,ropes:true,car:'suv',px:null,pz:null,pry:null,petKind:'none',petCoat:'orange',petSize:'m',petx:null,petz:null,petry:null,cx:null,cz:null,crot:0,cdx:0,cdz:0,mode:'single',aL:20,aW:15,sL0:8,sW0:6,pg:'m',ph:170,env:'meadow',wx:'sunny',tarp:null,trot:0,ttx:0,ttz:0,active:'tent'};
 
 /* ---------- three setup ---------- */
 var canvas=$('c');
@@ -828,9 +839,60 @@ function with2(fn){ swap2(); try{ return fn(); } finally{ swap2(); } }
 function placeTent2(){ slot2.g.position.set(slot2.tx,siteY,slot2.tz); slot2.g.rotation.y=-slot2.rot; }
 function buildTent(){
   if(isArea()) areaBuildAll('tent');
-  buildTent1();
+  buildTent1(); if(!isArea()) buildMats();
   if(slot2.tent) with2(buildTent1);
   else{ while(slot2.g.children.length){ var o=slot2.g.children[0]; slot2.g.remove(o); dispose(o); } slot2.meshes=[]; slot2.ropeObjs=[]; slot2.outlineMat=slot2.ropeMat=slot2.zoneMat=slot2.shellMat=null; }
+}
+/* ---------- sleeping layout inside tent 1 ---------- */
+var MATS={single:{name:'單人睡墊 65 × 195',w:65,l:195},double:{name:'雙人床墊 140 × 200',w:140,l:200},large:{name:'加大雙人 200 × 200',w:200,l:200},xl:{name:'特大 270 × 200',w:270,l:200}};
+function sleepArea(){
+  var t=S.tent,L=t.L,W=t.W,a;
+  if(t.inner) a={l:t.inner.l,w:t.inner.w,cx:-L/2+t.inner.from+t.inner.l/2,est:false};
+  else if(t.shape==='tworoom'||t.shape==='tunnel'||t.shape==='air'){ var l=Math.max(Math.min(210,L-20),Math.min(L*.4,L-20)); a={l:l,w:W-40,cx:-L/2+20+l/2,est:true}; }
+  else if(t.shape==='domeVest'){ var l2=Math.max(L*.55,Math.min(L-40,210)); a={l:l2,w:W-10,cx:-L/2+5+l2/2,est:true}; }
+  else if(t.shape==='bell'||t.shape==='pyramid') a={l:Math.round(L*.7),w:Math.round(W*.7),cx:0,est:true};
+  else if(t.full) a={l:L,w:W,cx:0,est:false};
+  else a={l:L-10,w:W-10,cx:0,est:true};
+  a.l=Math.round(a.l); a.w=Math.round(a.w);
+  if(S.inL||S.inW){ var nl=S.inL||a.l,nw=S.inW||a.w; a.cx+= (nl-a.l)/2*(a.cx<0?1:0); a.l=nl; a.w=nw; a.est=false; a.user=true; }
+  return a;
+}
+function matPlan(){
+  var m=MATS[S.mat]; if(!m) return null;
+  var a=sleepArea(),c1=Math.floor(a.l/m.l)*Math.floor(a.w/m.w),c2=Math.floor(a.l/m.w)*Math.floor(a.w/m.l),alongX=c1>=c2;
+  return {a:a,m:m,cap:Math.max(c1,c2),alongX:alongX,nx:Math.floor(a.l/(alongX?m.l:m.w)),nz:Math.floor(a.w/(alongX?m.w:m.l))};
+}
+function buildMats(){
+  var q=matPlan(); if(!q) return;
+  var a=q.a,m=q.m,dx=(q.alongX?m.l:m.w)/100,dz=(q.alongX?m.w:m.l)/100,n=Math.min(S.matN,q.cap),i,cols=q.nx,rows=Math.max(1,Math.ceil(n/Math.max(1,cols)));
+  if(!S.tent.inner){ var fl=new THREE.Mesh(new THREE.PlaneGeometry(a.l/100,a.w/100),new THREE.MeshStandardMaterial({color:0xf2e6c4,roughness:1})); fl.rotation.x=-Math.PI/2; fl.position.set(a.cx/100,.012,0); tentG.add(fl); }
+  var mm=std(0x3f7fc0,{roughness:.9}),pm=std(0xf4f1ea,{roughness:.9}),usedX=Math.min(cols,n)*dx,usedZ=rows*dz;
+  for(i=0;i<n;i++){ var cx=i%cols,rz=Math.floor(i/cols),g=new THREE.Mesh(new THREE.BoxGeometry(dx-.03,.1,dz-.03),mm);
+    g.position.set(a.cx/100-usedX/2+dx*(cx+.5),.07,-usedZ/2+dz*(rz+.5)); g.castShadow=true; tentG.add(g); tentMeshes.push(g);
+    var pl=new THREE.Mesh(q.alongX?new THREE.BoxGeometry(.28,.05,Math.min(dz-.12,.6)):new THREE.BoxGeometry(Math.min(dx-.12,.6),.05,.28),pm);
+    pl.position.copy(g.position); pl.position.y=.145; if(q.alongX) pl.position.x-=dx/2-.2; else pl.position.z-=dz/2-.2; tentG.add(pl);
+    if(m.w>=140){ var p2=pl.clone(); if(q.alongX){ pl.scale.z=.45; p2.scale.z=.45; pl.position.z-=dz/4; p2.position.z+=dz/4; } else { pl.scale.x=.45; p2.scale.x=.45; pl.position.x-=dx/4; p2.position.x+=dx/4; } tentG.add(p2); } }
+}
+function matCheck(){
+  var q=matPlan(),r={bad:false,msg:''}; if(!q||isArea()) return r;
+  var src=q.a.user?'自訂':q.a.est?'估算':'原廠';
+  if(S.matN<=q.cap) r.msg='內帳 '+q.a.l+' × '+q.a.w+' cm（'+src+'）排得下 '+S.matN+' 張'+q.m.name.split(' ')[0]+(q.cap>S.matN?'，最多 '+q.cap+' 張':'');
+  else{ r.bad=true; r.msg='內帳 '+q.a.l+' × '+q.a.w+' cm（'+src+'）排不下 '+S.matN+' 張'+q.m.name.split(' ')[0]+(q.cap?'，最多 '+q.cap+' 張':'，一張也放不進去'); }
+  return r;
+}
+function syncMatUI(){
+  var q=matPlan(),a=sleepArea(); $('matSel').value=S.mat; $('matN').value=S.matN; $('matBox').style.display=q?'block':'none'; $('matN').disabled=!q;
+  $('inL').value=a.l; $('inW').value=a.w;
+  $('matInfo').textContent=!q?'':(a.user?'內帳尺寸是你輸入的數字。':a.est?'這頂帳沒有原廠內帳尺寸，上面是依帳型估算的睡眠區，知道實際數字可以直接改。':'內帳尺寸為原廠數字，也可以自行修改。')+'以平面長寬計算，沒有扣掉帳壁傾斜，貼邊的位置實際會比較擠。床墊為常見尺寸。';
+}
+function initMatUI(){
+  var s=$('matSel'),o=document.createElement('option'); o.value='none'; o.textContent='不顯示'; s.appendChild(o);
+  Object.keys(MATS).forEach(function(k){ var x=document.createElement('option'); x.value=k; x.textContent=MATS[k].name; s.appendChild(x); });
+  function go(){ syncMatUI(); buildTent(); updateFit(); }
+  s.addEventListener('change',function(){ S.mat=s.value; if(S.mat!=='none'&&!S.xray){ S.xray=true; $('xray').checked=true; } go(); });
+  $('matN').addEventListener('change',function(){ S.matN=Math.round(num(this,1,12,S.matN)); go(); });
+  ['inL','inW'].forEach(function(id){ $(id).addEventListener('change',function(){ S.inL=Math.round(num($('inL'),100,1200,0))||null; S.inW=Math.round(num($('inW'),60,800,0))||null; go(); }); });
+  syncMatUI();
 }
 function buildTent1(){
   while(tentG.children.length){ var o=tentG.children[0]; tentG.remove(o); dispose(o); }
@@ -1250,6 +1312,7 @@ function initPropsUI(){
       sel.addEventListener('change',function(){ p.size=sel.value; buildProp(k); }); l.appendChild(sp); l.appendChild(sel); box.appendChild(l); }
     if(p.kind==='fire'){ var fn=document.createElement('p'); fn.className='note'; fn.style.margin='0'; fn.appendChild(document.createTextNode('紅圈內太近、黃圈內要注意；有風要再拉遠。')); var fa=document.createElement('a'); fa.href='fire.html'; fa.textContent='焚火安全模擬 →'; fn.appendChild(fa); box.appendChild(fn); }
     else { var f=document.createElement('div'); f.className='f'; f.style.marginTop='8px'; var s2=document.createElement('span'); s2.textContent='顏色'; var sw=document.createElement('div'); sw.className='sw'; sw.id='sw_'+k; f.appendChild(s2); f.appendChild(sw); box.appendChild(f); }
+    p.ui={cb:cb,box:box,sel:sel};
     cb.addEventListener('change',function(){ p.on=cb.checked; box.style.display=p.on?'block':'none'; buildProp(k); if(k==='table') placeProp('lamp'); setActive(p.on?k:S.active); if(k==='fire') updateFit(); });
     root.appendChild(lab); root.appendChild(box);
     if(p.kind!=='fire') swatches('sw_'+k,p,function(){ buildProp(k); });
@@ -1407,7 +1470,62 @@ function b64u(s){ var by=new TextEncoder().encode(s),bin='',i; for(i=0;i<by.leng
 function unb64u(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; var bin=atob(s),by=new Uint8Array(bin.length),i; for(i=0;i<bin.length;i++) by[i]=bin.charCodeAt(i); return new TextDecoder().decode(by); }
 function r2(n){ return Math.round(n*100)/100; }
 function areaData(){ return {L:S.aL,W:S.aW,items:AREA.items.map(function(it){ return {t:it.type,x:r2(it.x),z:r2(it.z),r:r2(it.rot),c:areaCfg(it)}; })}; }
-function shareUrl(){ var d=areaData(); d.v=1; d.g=S.siteType; d.e=S.env; d.w=S.wx; d.m=S.margin; return location.origin+location.pathname+'#a='+b64u(JSON.stringify(d)); }
+function nn(v){ return v==null||!isFinite(+v)?null:r2(+v); }
+function cl(v,lo,hi,fb){ v=+v; return isFinite(v)?Math.min(hi,Math.max(lo,v)):fb; }
+function singleData(){
+  var c=TENTS[TENTS.length-1],tc=TARPS[TARPS.length-1],d={v:2,t:[S.tent.id,r2(S.rot),r2(S.tx),r2(S.tz)],s:[S.siteType,S.sL,S.sW,S.roofH],e:S.env,w:S.wx,m:S.margin,
+    f:(S.xray?1:0)|(S.ropes?2:0)|(S.labels?4:0)|(S.person?8:0),c:[S.car,nn(S.cx),nn(S.cz),r2(S.crot||0)],p:[S.pg,S.ph,nn(S.px),nn(S.pz),nn(S.pry)]};
+  if(S.tent===c) d.tc=[c.L,c.W,c.H,c.shape,c.color];
+  if(slot2.tent){ d.t2=[slot2.tent.id,r2(slot2.rot),r2(slot2.tx),r2(slot2.tz)]; if(slot2.tent===CUSTOM2) d.t2c=[CUSTOM2.L,CUSTOM2.W,CUSTOM2.H,CUSTOM2.shape,CUSTOM2.color]; }
+  if(S.tarp){ d.a=[S.tarp.id,r2(S.trot),r2(S.ttx),r2(S.ttz),S.tarp.H,S.tarp.color]; if(S.tarp===tc) d.ac=[tc.L,tc.W,tc.shape]; }
+  if(S.petKind!=='none') d.q=[S.petKind,S.petCoat,S.petSize,nn(S.petx),nn(S.petz),nn(S.petry)];
+  Object.keys(PROPS).forEach(function(k){ var p=PROPS[k]; if(p.on){ d.o=d.o||{}; d.o[k]=[p.size||0,p.color,nn(p.x),nn(p.z),nn(p.ry)]; } });
+  if(S.mat!=='none') d.b=[S.mat,S.matN,S.inL,S.inW];
+  return d;
+}
+function singleApply(d){
+  if(isArea()) setMode('single');
+  var A=function(x){ return Array.isArray(x)?x:[]; },s=A(d.s),t=A(d.t),c=TENTS[TENTS.length-1],tc=TARPS[TARPS.length-1],f=+d.f||0,SH=['dome','domeVest','tworoom','tunnel','bell','cabin','carside','pyramid','air'];
+  function custom(o,v,ids){ v=A(v); if(v.length<5) return; o.L=cl(v[0],100,1200,o.L); o.W=cl(v[1],80,800,o.W); o.H=cl(v[2],60,400,o.H); if(SH.indexOf(v[3])>=0) o.shape=v[3]; o.color=cl(v[4],0,0xffffff,o.color)|0; $(ids[0]).value=o.L; $(ids[1]).value=o.W; $(ids[2]).value=o.H; $(ids[3]).value=o.shape; }
+  if(SITE_TYPES.some(function(x){return x.id===s[0]})) S.siteType=s[0];
+  S.sL=cl(s[1],2,15,S.sL); S.sW=cl(s[2],2,15,S.sW); S.roofH=cl(s[3],2,4,S.roofH); $('sL').value=S.sL; $('sW').value=S.sW; $('roofH').value=S.roofH; $('roofHv').textContent=fmt(S.roofH)+' m';
+  if(ENVS.some(function(x){return x.id===d.e})) S.env=d.e; if(WX[d.w]) S.wx=d.w;
+  S.margin=Math.round(cl(d.m,0,150,S.margin)/5)*5; $('margin').value=S.margin; $('marginV').textContent='每邊 '+S.margin+' cm';
+  S.xray=!!(f&1); S.ropes=!!(f&2); S.labels=!!(f&4); S.person=!!(f&8); $('xray').checked=S.xray; $('ropes').checked=S.ropes; $('labels').checked=S.labels; $('person').checked=S.person; $('personBox').style.display=S.person?'grid':'none';
+  custom(c,d.tc,['cL','cW','cH','cShape']); renderSw();
+  S.tent=TENTS.filter(function(x){return x.id===t[0]})[0]||TENTS[1]; S.rot=cl(t[1],-7,7,0); S.tx=cl(t[2],-30,30,0); S.tz=cl(t[3],-30,30,0);
+  var b=A(d.b); S.mat=MATS[b[0]]?b[0]:'none'; S.matN=Math.round(cl(b[1],1,12,2)); S.inL=b[2]?Math.round(cl(b[2],100,1200,0))||null:null; S.inW=b[3]?Math.round(cl(b[3],60,800,0))||null:null;
+  custom(CUSTOM2,d.t2c,['c2L','c2W','c2H','c2Shape']); swatches('c2Sw',CUSTOM2,function(){ if(slot2.tent===CUSTOM2){ buildTent(); updateFit(); } });
+  var t2=A(d.t2),sel=$('tent2Sel'); slot2.tent=null; sel.value=t2[0]||''; if(sel.selectedIndex<0) sel.value=''; sel.dispatchEvent(new Event('change'));
+  if(slot2.tent){ slot2.rot=cl(t2[1],-7,7,0); slot2.tx=cl(t2[2],-30,30,0); slot2.tz=cl(t2[3],-30,30,0); }
+  var a=A(d.a),ac=A(d.ac); if(ac.length>=3){ tc.L=cl(ac[0],150,900,tc.L); tc.W=cl(ac[1],150,900,tc.W); if(ac[2]==='hexa'||ac[2]==='rect') tc.shape=ac[2]; $('tL').value=tc.L; $('tW').value=tc.W; $('tShape').value=tc.shape; }
+  var ts=$('tarpSel'); S.tarp=null; ts.value=a[0]||''; if(ts.selectedIndex<0) ts.value=''; ts.dispatchEvent(new Event('change'));
+  if(S.tarp){ S.tarp.color=cl(a[5],0,0xffffff,S.tarp.color)|0; var th=$('tarpH'); th.value=cl(a[4],150,320,S.tarp.H); th.dispatchEvent(new Event('input')); S.trot=cl(a[1],-7,7,0); S.ttx=cl(a[2],-30,30,0); S.ttz=cl(a[3],-30,30,0); }
+  var cr=A(d.c),cs=$('car'); cs.value=cr[0]; if(cs.selectedIndex<0) cs.value='none'; S.car=cs.value; S.cx=nn(cr[1]); S.cz=nn(cr[2]); S.crot=cl(cr[3],-7,7,0);
+  var pp=A(d.p); S.pg=pp[0]==='f'?'f':'m'; S.ph=Math.round(cl(pp[1],90,210,170)); $('pg').value=S.pg; $('ph').value=S.ph; S.px=nn(pp[2]); S.pz=nn(pp[3]); S.pry=nn(pp[4]);
+  var q=A(d.q),pk=$('petKind'); pk.value=q[0]||'none'; if(pk.selectedIndex<0) pk.value='none'; S.petKind=pk.value;
+  if(S.petKind!=='none'){ var pc=$('petCoat'),ps=$('petSize'); pc.value=q[1]; if(pc.selectedIndex<0) pc.selectedIndex=0; ps.value=q[2]; if(ps.selectedIndex<0) ps.value='m'; S.petCoat=pc.value; S.petSize=ps.value; S.petx=nn(q[3]); S.petz=nn(q[4]); S.petry=nn(q[5]); }
+  $('petBox').style.display=S.petKind==='none'?'none':'grid';
+  var o=d.o&&typeof d.o==='object'?d.o:{};
+  Object.keys(PROPS).forEach(function(k){ var p=PROPS[k],v=A(o[k]); p.on=v.length>0; p.x=p.z=p.ry=null;
+    if(p.on){ var sizes=p.kind==='chair'?CHAIR_SIZE:p.kind==='table'?TABLE_SIZE:null; if(sizes&&sizes[v[0]]) p.size=v[0]; if(p.kind!=='fire') p.color=cl(v[1],0,0xffffff,p.color)|0; p.x=nn(v[2]); p.z=nn(v[3]); p.ry=nn(v[4]); }
+    if(p.ui){ p.ui.cb.checked=p.on; p.ui.box.style.display=p.on?'block':'none'; if(p.ui.sel) p.ui.sel.value=p.size; if(p.kind!=='fire') swatches('sw_'+k,p,function(){ buildProp(k); }); } });
+  syncMatUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); renderTarpUI(); buildSite(); buildEnv(); buildTent(); buildTarp(); buildPerson(); buildPet();
+  ['chair1','chair2','table','lamp','fire'].forEach(buildProp);
+  placeTent(); placeTent2(); placeTarp(); placeCar(); placePerson(); placePet(); placeProps(); buildLabels(); setActive('tent'); fitCam(); updateFit();
+}
+function shareModal(){
+  if(isArea()&&!AREA.items.length){ modal(function(c,close){ var p=document.createElement('p'); p.textContent='還沒有任何物件，先加入帳篷再分享。'; c.appendChild(p); c.appendChild(mbtn('知道了',true,close)); }); return; }
+  var url=shareUrl();
+  function show(ok){ modal(function(c,close){
+    var h3=document.createElement('h3'),p=document.createElement('p'),inp=document.createElement('input'),row=document.createElement('div');
+    h3.textContent=ok?'已複製分享連結':'分享連結'; p.textContent=ok?'貼給朋友即可，對方打開會看到同一份配置。':'無法自動複製，請長按或全選下面這串網址手動複製。';
+    inp.type='text'; inp.readOnly=true; inp.value=url; inp.setAttribute('aria-label','分享連結'); inp.style.cssText='width:100%;margin:4px 0 12px'; inp.addEventListener('focus',function(){ inp.select(); });
+    row.className='mrow'; row.appendChild(mbtn('關閉',true,close));
+    c.appendChild(h3); c.appendChild(p); c.appendChild(inp); c.appendChild(row); if(!ok){ inp.focus(); inp.select(); } }); }
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(function(){ show(true); },function(){ show(false); }); else show(false);
+}
+function shareUrl(){ if(!isArea()) return location.origin+location.pathname+'#s='+b64u(JSON.stringify(singleData())); var d=areaData(); d.v=1; d.g=S.siteType; d.e=S.env; d.w=S.wx; d.m=S.margin; return location.origin+location.pathname+'#a='+b64u(JSON.stringify(d)); }
 function areaReplace(d){
   if(!isArea()) setMode('area');
   AREA.items.slice().forEach(areaRemove);
@@ -1420,7 +1538,14 @@ function areaReplace(d){
   renderSiteUI(); renderEnvUI(); buildSite(); AREA.items.forEach(areaPlace); buildLabels(); setActive(null); fitCam(); updateFit(); areaSave();
 }
 function checkShareHash(){
-  var h=location.hash||''; if(h.indexOf('#a=')!==0) return;
+  var h=location.hash||'';
+  if(h.indexOf('#s=')===0){
+    var sd=null; try{ sd=JSON.parse(unb64u(h.slice(3))); }catch(e){}
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+    if(!sd||!Array.isArray(sd.t)){ modal(function(c,close){ var p=document.createElement('p'); p.textContent='這個分享連結無法讀取，可能在傳送時被截斷了。請對方重新複製一次。'; c.appendChild(p); c.appendChild(mbtn('知道了',true,close)); }); return; }
+    singleApply(sd); return;
+  }
+  if(h.indexOf('#a=')!==0) return;
   var d=null; try{ d=JSON.parse(unb64u(h.slice(3))); }catch(e){}
   try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
   if(!d||!Array.isArray(d.items)){ modal(function(c,close){ var p=document.createElement('p'); p.textContent='這個分享連結無法讀取，可能在傳送時被截斷了。請對方重新複製一次。'; c.appendChild(p); c.appendChild(mbtn('知道了',true,close)); }); return; }
@@ -1666,6 +1791,7 @@ function updateFit(){
   }
   $('qDot').style.background=hex(t.color); $('qTentT').textContent=(t.id==='custom'?'自訂帳篷':t.name)+(b?' ＋帳2':'')+(S.tarp?' ＋天幕':''); $('qSiteT').textContent=fmt(S.sL)+' × '+fmt(S.sW)+' m '+typeName;
   var fc=fireCheck(); fc.msgs.forEach(function(x){ msg.push(x); }); if(fc.lvl===2){ st.className='status bad'; if(ok) T.textContent='放得下，但離火太近'; }
+  var mc=matCheck(); if(mc.msg) msg.push(mc.msg); if(mc.bad){ st.className='status bad'; if(ok&&fc.lvl<2) T.textContent='營位放得下，但睡鋪排不下'; }
   D.textContent=head+' · '+msg.join('，')+(S.margin>0?'（含每邊 '+S.margin+' cm 營繩預留）':'');
   redraw();
 }
@@ -1741,7 +1867,7 @@ function renderTents(){
     var m=document.createElement('span'); m.className='dm';
     m.textContent=t.id==='custom'?'輸入任意長寬高':(t.L+' × '+t.W+' × '+t.H+' cm'+(t.cap?' · '+t.cap:'')+(t.note?' · '+t.note:''));
     b.appendChild(d); b.appendChild(n); b.appendChild(m);
-    b.addEventListener('click',function(){ S.tent=t; S.tx=0; S.tz=0; S.rot=0; renderTents(); syncCustom(); buildTent(); fitCam(); updateFit(); });
+    b.addEventListener('click',function(){ S.tent=t; S.tx=0; S.tz=0; S.rot=0; S.inL=S.inW=null; syncMatUI(); renderTents(); syncCustom(); buildTent(); fitCam(); updateFit(); });
     box.appendChild(b);
   });
 }
@@ -1754,7 +1880,7 @@ function num(el,lo,hi,fb){ var v=parseFloat(el.value); if(!isFinite(v)) return f
 ['cL','cW','cH','cShape'].forEach(function(id){
   $(id).addEventListener('input',function(){
     var c=TENTS[TENTS.length-1]; c.L=num($('cL'),100,1200,c.L); c.W=num($('cW'),80,800,c.W); c.H=num($('cH'),60,400,c.H); c.shape=$('cShape').value;
-    if(S.tent===c||slot2.tent===c){ buildTent(); updateFit(); }
+    if(S.tent===c||slot2.tent===c){ if(S.tent===c){ S.inL=S.inW=null; syncMatUI(); } buildTent(); updateFit(); }
   });
 });
 var SW=[['卡其',0xc9a66b],['沙色',0xd9c7a3],['米白',0xece4cf],['橄欖綠',0x6f7d4f],['軍綠',0x4f5d43],['藍灰',0x4f7896],['酒紅',0x8c3b3b],['橘',0xc98a55],['深灰',0x4a4d4f],['黑',0x26282a]];
@@ -1824,17 +1950,17 @@ function applyTypeHash(){
   if(isArea()) setMode('single');
   var c=TENTS[TENTS.length-1]; c.L=q[0]; c.W=q[1]; c.H=q[2]; c.shape=q[3]; c.color=q[4];
   $('cL').value=c.L; $('cW').value=c.W; $('cH').value=c.H; $('cShape').value=c.shape;
-  S.tent=c; S.tx=0; S.tz=0; S.rot=0;
+  S.tent=c; S.tx=0; S.tz=0; S.rot=0; S.inL=S.inW=null; syncMatUI();
   var need=[c.L/100+S.margin/50,c.W/100+S.margin/50],best=null;
   PRESETS.forEach(function(pz){ if(!best&&pz[0]>=need[0]&&pz[1]>=need[1]) best=pz; });
   if(best&&(S.sL<need[0]||S.sW<need[1])){ S.sL=best[0]; S.sW=best[1]; $('sL').value=S.sL; $('sW').value=S.sW; }
   renderSw(); renderTents(); syncCustom(); siteChanged(); buildTent(); setActive('tent'); fitCam(); updateFit();
 }
 window.addEventListener('hashchange',function(){ applyTypeHash(); checkShareHash(); });
-$('areaShare').addEventListener('click',copyShare); $('areaShot').addEventListener('click',saveShot); $('bShot').addEventListener('click',saveShot);
+$('areaShare').addEventListener('click',copyShare); $('areaShot').addEventListener('click',saveShot); $('bShot').addEventListener('click',saveShot); $('bShare').addEventListener('click',shareModal); $('sShare').addEventListener('click',shareModal); $('sShot').addEventListener('click',saveShot);
 
 /* ---------- go ---------- */
-buildPerson(); initTent2UI(); initPropsUI(); initAreaUI(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit(); applyTypeHash(); checkShareHash();
+buildPerson(); initMatUI(); initTent2UI(); initPropsUI(); initAreaUI(); initTarpUI(); renderTents(); syncCustom(); renderSiteUI(); renderEnvUI(); buildSite(); buildTent(); buildLabels(); resize(); fitCam(); updateFit(); applyTypeHash(); checkShareHash();
 var lastT=0;
 (function loop(t){ if(anim){ tick(Math.min(.05,((t||0)-lastT)/1000)); dirty=true; } lastT=t||0; if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();
 })();
