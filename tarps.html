@@ -127,9 +127,9 @@ var PITCHES=[
   cons:['四面沒有遮擋，斜雨和風直接進來','營柱和營繩最多，佔地也最大','布面平，雨大時要注意積水'],
   fit:'天氣好、人多、需要一個大客廳的時候。',tip:'下雨前把其中一個角的副柱調低或拿掉，讓水有地方流。'},
  {id:'wall',name:'一側落地',lead:'把一邊直接釘到地上當牆，另一邊照常撐開。',
-  net:[[[-2,0,-.87],[-2,1.8,0],[-2,1.6,1.99]],[[2,0,-.87],[2,1.8,0],[2,1.6,1.99]]],
-  poles:[[-2,0,1.8],[2,0,1.8],[-2,1.99,1.6],[2,1.99,1.6]],
-  ropes:[[-2,1.8,0,-3.2,-.9],[-2,1.8,0,-3.2,.9],[2,1.8,0,3.2,-.9],[2,1.8,0,3.2,.9],[-2,1.6,1.99,-3,2.95],[2,1.6,1.99,3,2.95]],pegs:[[-2,-.87],[0,-.87],[2,-.87]],person:[.6,.9],
+  net:[[[-2,0,-.62],[-2,1.9,0],[-2,1.8,2]],[[2,0,-.62],[2,1.9,0],[2,1.8,2]]],
+  poles:[[-2,0,1.9],[2,0,1.9],[-2,2,1.8],[2,2,1.8]],
+  ropes:[[-2,1.9,0,-3.2,-.9],[-2,1.9,0,-3.2,.9],[2,1.9,0,3.2,-.9],[2,1.9,0,3.2,.9],[-2,1.8,2,-3,3],[2,1.8,2,3,3]],pegs:[[-2,-.62],[0,-.62],[2,-.62]],person:[.6,1.1],
   need:['營柱 4 支','營繩 6 條','營釘 9 支'],r:[4,4,4,3,3],
   pros:['落地的那面可以擋風、擋西曬、擋鄰居視線','雨會順著斜面流到地上','還保有一半的開放空間'],
   cons:['牆那側的空間變矮，只能放東西','要先看好風向和太陽方向再決定哪邊落地','主柱要調低，高個子容易撞頭'],
@@ -137,7 +137,7 @@ var PITCHES=[
  {id:'lean',name:'單斜面',lead:'一邊用兩支柱撐高，另一邊整排釘在地上，像一片斜屋頂。',
   net:[[[-2,0,-1.73],[-2,2,1.73]],[[2,0,-1.73],[2,2,1.73]]],
   poles:[[-2,1.73,2],[2,1.73,2]],
-  ropes:[[-2,2,1.73,-3.2,2.2],[-2,2,1.73,-2.4,3.1],[2,2,1.73,3.2,2.2],[2,2,1.73,2.4,3.1]],pegs:[[-2,-1.73],[0,-1.73],[2,-1.73]],person:[.6,1.0],
+  ropes:[[-2,2,1.73,-3.2,2.2],[-2,2,1.73,-2.4,3.1],[2,2,1.73,3.2,2.2],[2,2,1.73,2.4,3.1]],pegs:[[-2,-1.73],[0,-1.73],[2,-1.73]],person:[.6,1.45],
   need:['營柱 2 支','營繩 4 條','營釘 7 支'],r:[3,3,3,2,4],
   pros:['只要兩支營柱，搭起來快','前方視野完全打開，適合看風景、對著營火','斜面排水好，不會積水'],
   cons:['越往後越矮，能站的地方只有前半','風從正面來時完全擋不住，還會兜風','太陽在正前方時遮不到'],
@@ -503,7 +503,7 @@ PITCHES.forEach(function(t){ var b=document.createElement('button'); b.type='but
 
 var cam={az:.7,el:.36,r:13,target:new THREE.Vector3(0,.9,0)},spin=!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 function applyCam(){ var ce=Math.cos(cam.el); camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az)); camera.lookAt(cam.target); }
-function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?17:13; redraw(); }
+function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?15.5:11.5; redraw(); }
 if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElement); else window.addEventListener('resize',resize);
 function setSpin(v){ spin=v; $('spin').textContent='自動旋轉：'+(v?'開':'關'); }
 $('spin').addEventListener('click',function(){ setSpin(!spin); }); setSpin(spin);

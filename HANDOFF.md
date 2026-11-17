@@ -6,7 +6,7 @@
 
 ## 一定要知道的五件事
 
-1. **`types.html`、`fire.html`、`sleep.html` 是產生出來的，不要直接改。** 要改就改 `tools/tpl/` 裡的範本，再跑 `python3 tools/build.py`。直接改這三個檔，下次產生時會被蓋掉。
+1. **`types.html`、`tarps.html`、`fire.html`、`sleep.html` 是產生出來的，不要直接改。** 要改就改 `tools/tpl/` 裡的範本，再跑 `python3 tools/build.py`。直接改這三個檔，下次產生時會被蓋掉。
 2. **`index.html` 是所有 3D 造型的唯一來源。** 另外三頁的帳篷、人物、車子造型，都是 `tools/build.py` 從 `index.html` 複製過去的。改了 `index.html` 裡的造型函式或 `TENTS` 資料，就要重跑 `tools/build.py`。
 3. **每次改完要推兩個分支**：`main` 和 `gh-pages`。目前不確定 GitHub Pages 用哪一個，所以兩個都推（指令見下方）。
 4. **不可複刻真實產品的外觀。** 品牌帳款只使用廠商公布的尺寸，3D 外型一律是依結構類型做的通用造型；車子也是通用車型，不仿特定車款。這是站主的明確要求。
@@ -26,12 +26,13 @@
 |---|---|
 | `index.html` | 搭設模擬（主頁，約 2,000 行）。手寫，直接編輯 |
 | `types.html` | 帳型 3D 介紹與優缺點（11 種帳型＋2 種天幕）。**產生檔** |
+| `tarps.html` | 天幕搭法 3D 介紹（目前 5 種）。**產生檔** |
 | `fire.html` | 焚火安全模擬。**產生檔** |
 | `sleep.html` | 帳內睡鋪模擬。**產生檔** |
-| `og-*.jpg` | 四頁的分享預覽圖（1200×630） |
+| `og-*.jpg` | 各頁的分享預覽圖（1200×630） |
 | `tools/build.py` | 由 `index.html` + 範本產生上面三個頁面 |
 | `tools/tpl/types_head.html`、`types_tail.js` | 帳型頁範本（HTML/CSS/資料，與尾段程式） |
-| `tools/tpl/fire.html`、`tools/tpl/sleep.html` | 焚火頁、睡鋪頁範本，內有 `/*BUILDERS*/`（及 `/*DATA*/`）佔位符 |
+| `tools/tpl/tarps.html`、`fire.html`、`sleep.html` | 天幕搭法頁、焚火頁、睡鋪頁範本，內有 `/*BUILDERS*/`（及 `/*DATA*/`）佔位符 |
 | `tools/smoke.py` | 冒煙測試：四頁 × 電腦／手機尺寸，檢查 JS 錯誤與水平溢出 |
 | `tools/make_og.py` | 重新產生分享預覽圖 |
 | `README.md` | 功能清單（對外） |
@@ -84,11 +85,14 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 - **手機版（寬度 ≤ 900px）**：場景全螢幕；`.panel` 是底部選單，用 `display` 切換。不要改成 `transform` 動畫，iOS 會出現選單空白的繪製問題。選單打開時場景縮到上方（`body.sheet-open`）。
 - **包區模式上限**：帳篷 10、天幕 3、車 10；每頂帳篷配 2 人、2 椅、1 桌、1 寵物、1 燈。焚火台與帳內睡鋪目前只支援單一營位模式。
 
-## 其他三頁
+## 其他頁面
 
-三頁共用同一套寫法：自己的場景與鏡頭，加上一組「假的」全域變數（`S`、`WX`、`siteY`、`isArea()`、`placeTent()` 等）讓複製過來的 `buildTent1()` 能運作。若 `buildTent1()` 之後用到新的全域變數，三個範本都要補上對應的假變數，否則該頁會壞（`tools/smoke.py` 會抓到）。
+導覽方塊：除了 `index.html` 自己手寫一份之外，其他頁的導覽方塊與樣式由 `tools/build.py` 的 `CARDS`／`NAVCSS` 統一產生（範本裡的 `/*NAV*/`、`/*NAVCSS*/`）。**新增頁面時，在 `CARDS` 加一筆，並手動更新 `index.html` 的 `.navcards` 與手機版 `.qlink`。**
+
+各頁共用同一套寫法：自己的場景與鏡頭，加上一組「假的」全域變數（`S`、`WX`、`siteY`、`isArea()`、`placeTent()` 等）讓複製過來的 `buildTent1()` 能運作。若 `buildTent1()` 之後用到新的全域變數，每個範本都要補上對應的假變數，否則該頁會壞（`tools/smoke.py` 會抓到）。
 
 - **types.html**：`TYPES` 資料含 11 種帳型與 2 種天幕的尺寸、六項評分、優缺點。車頂帳只在這頁展示，不進搭設模擬。按鈕連到 `index.html#type-<id>`；天幕連到 `index.html#tarp-hexa`／`#tarp-rect`。
+- **tarps.html**：`PITCHES` 每筆是一種搭法，用 `net`（布面控制點，公尺）、`poles`、`ropes`、`pegs` 描述，`buildPitch()` 依此畫出布面、營柱、營繩。**新增搭法只要在 `PITCHES` 加一筆資料**，不用改造型程式。已規劃但還沒做的：雨天排水、車邊搭、蝶形天幕。這頁目前沒有「帶進搭設模擬」的按鈕。
 - **fire.html**：六種焚火台、五種燃料、風向風力；判斷邏輯在 `judge()`。
 - **sleep.html**：內帳範圍由 `sleepArea()`（複製自 `index.html`）決定；床墊可混搭、拖曳、轉向，`autoArrange()` 自動排列。
 

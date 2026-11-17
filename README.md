@@ -25,6 +25,8 @@
 
 設計/Sleepoutside Camp　*非營利使用
 
+另有「天幕搭法 3D 介紹」頁（tarps.html）：同一張 4 × 4 m 方形天幕的五種搭法（標準屋脊、一側落地、單斜面、全落地 A 字、菱形），含所需營柱營繩、五項評分與優缺點。
+
 ## 開發
 
-`types.html`、`fire.html`、`sleep.html` 由 `tools/build.py` 產生，請勿直接編輯。架構、流程與注意事項見 [HANDOFF.md](HANDOFF.md)。
+`types.html`、`tarps.html`、`fire.html`、`sleep.html` 由 `tools/build.py` 產生，請勿直接編輯。架構、流程與注意事項見 [HANDOFF.md](HANDOFF.md)。
