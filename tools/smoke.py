@@ -15,7 +15,7 @@ async def main():
     bad = 0
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path=CHROME, args=ARGS)
-        for name in ['index', 'types', 'fire', 'sleep']:
+        for name in ['index', 'types', 'tarps', 'fire', 'sleep']:
             for vp in [{'width': 1280, 'height': 800}, {'width': 390, 'height': 780}]:
                 pg = await b.new_page(viewport=vp); errs = []
                 pg.on('pageerror', lambda e: errs.append(str(e)))

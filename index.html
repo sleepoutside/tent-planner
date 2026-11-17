@@ -109,7 +109,7 @@
   .modal .card h3{margin:0 0 6px;font-size:16px}
   .modal .card p{margin:0 0 12px}
   .modal .card img{display:block;max-width:100%;max-height:62vh;border-radius:8px;margin:0 auto 12px;border:1px solid var(--line)}
-  .navcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 16px}
+  .navcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
   .navcards a{display:flex;flex-direction:column;justify-content:center;gap:1px;min-height:58px;padding:8px 6px;text-align:center;text-decoration:none;border-radius:10px;border:1px solid #c5dccd;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:14px;line-height:1.3}
   .navcards a small{font-weight:500;font-size:11px;color:var(--muted)}
   .navcards a:hover{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -175,7 +175,7 @@
 
   <aside class="panel left" aria-label="帳篷">
     <button type="button" class="sheet-x">收合 ▾</button>
-    <nav class="navcards" aria-label="其他頁面"><a href="types.html">帳型介紹<small>3D 與優缺點</small></a><a href="fire.html">焚火安全<small>距離與風向</small></a><a href="sleep.html">帳內睡鋪<small>睡得下幾人</small></a></nav>
+    <nav class="navcards" aria-label="其他頁面"><a href="types.html">帳型介紹<small>3D 與優缺點</small></a><a href="tarps.html">天幕搭法<small>五種搭法</small></a><a href="fire.html">焚火安全<small>距離與風向</small></a><a href="sleep.html">帳內睡鋪<small>睡得下幾人</small></a></nav>
     <div class="single-only">
     <h1>帳篷</h1>
     <p class="sub">選一頂帳篷，尺寸為原廠公布的搭設外尺寸。</p>
@@ -291,7 +291,7 @@
     <div class="status" id="status" role="status" aria-live="polite"><div class="t"></div><div class="d"></div></div>
     <div class="hint">拖曳空白處旋轉視角 · 滾輪縮放 · 畫面上的物件都可直接拖曳</div>
     <div class="dock">
-    <div class="quick"><button type="button" id="qTent" aria-label="展開帳篷與天幕選項"><i class="dot" id="qDot"></i><span id="qTentT"></span></button><button type="button" id="qSite" aria-label="展開營位與環境選項"><span id="qSiteT"></span></button><a class="qlink" href="types.html">帳型介紹</a><a class="qlink" href="fire.html">焚火安全</a><a class="qlink" href="sleep.html">睡鋪</a></div>
+    <div class="quick"><button type="button" id="qTent" aria-label="展開帳篷與天幕選項"><i class="dot" id="qDot"></i><span id="qTentT"></span></button><button type="button" id="qSite" aria-label="展開營位與環境選項"><span id="qSiteT"></span></button><a class="qlink" href="types.html">帳型</a><a class="qlink" href="tarps.html">天幕</a><a class="qlink" href="fire.html">焚火</a><a class="qlink" href="sleep.html">睡鋪</a></div>
     <div class="tools">
       <select id="actSel" class="actsel" aria-label="要移動或旋轉的對象" hidden></select>
       <button type="button" id="bRot">轉 90°</button>
