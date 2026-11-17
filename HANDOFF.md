@@ -26,7 +26,7 @@
 |---|---|
 | `index.html` | 搭設模擬（主頁，約 2,000 行）。手寫，直接編輯 |
 | `types.html` | 帳型 3D 介紹與優缺點（11 種帳型＋2 種天幕）。**產生檔** |
-| `tarps.html` | 天幕搭法 3D 介紹（目前 5 種）。**產生檔** |
+| `tarps.html` | 天幕搭法 3D 介紹（8 種）。**產生檔** |
 | `fire.html` | 焚火安全模擬。**產生檔** |
 | `sleep.html` | 帳內睡鋪模擬。**產生檔** |
 | `og-*.jpg` | 各頁的分享預覽圖（1200×630） |
@@ -92,7 +92,7 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 各頁共用同一套寫法：自己的場景與鏡頭，加上一組「假的」全域變數（`S`、`WX`、`siteY`、`isArea()`、`placeTent()` 等）讓複製過來的 `buildTent1()` 能運作。若 `buildTent1()` 之後用到新的全域變數，每個範本都要補上對應的假變數，否則該頁會壞（`tools/smoke.py` 會抓到）。
 
 - **types.html**：`TYPES` 資料含 11 種帳型與 2 種天幕的尺寸、六項評分、優缺點。車頂帳只在這頁展示，不進搭設模擬。按鈕連到 `index.html#type-<id>`；天幕連到 `index.html#tarp-hexa`／`#tarp-rect`。
-- **tarps.html**：`PITCHES` 每筆是一種搭法，用 `net`（布面控制點，公尺）、`poles`、`ropes`、`pegs` 描述，`buildPitch()` 依此畫出布面、營柱、營繩。**新增搭法只要在 `PITCHES` 加一筆資料**，不用改造型程式。已規劃但還沒做的：雨天排水、車邊搭、蝶形天幕。這頁目前沒有「帶進搭設模擬」的按鈕。
+- **tarps.html**：`PITCHES` 每筆是一種搭法，用 `net`（布面控制點，公尺）、`poles`、`ropes`、`pegs` 描述，`buildPitch()` 依此畫出布面、營柱、營繩。**新增搭法只要在 `PITCHES` 加一筆資料**，不用改造型程式。`net` 可以有兩排以上（蝶形天幕用四排，兩端各一排重合的點當尖端）；`car:[x,z]` 會放一台車。這頁目前沒有「帶進搭設模擬」的按鈕。
 - **fire.html**：六種焚火台、五種燃料、風向風力；判斷邏輯在 `judge()`。
 - **sleep.html**：內帳範圍由 `sleepArea()`（複製自 `index.html`）決定；床墊可混搭、拖曳、轉向，`autoArrange()` 自動排列。
 

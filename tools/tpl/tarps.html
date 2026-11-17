@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Sleepoutside Camp">
-<meta name="description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形，用 3D 看差別。">
+<meta name="description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形、雨天排水、車邊搭，再加蝶形天幕對照，用 3D 看差別。">
 <link rel="canonical" href="https://sleepoutside.github.io/tent-planner/tarps.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sleepoutside Camp">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:title" content="天幕搭法 3D 介紹｜同一張天幕的五種搭法">
-<meta property="og:description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形，用 3D 看差別。">
+<meta property="og:title" content="天幕搭法 3D 介紹｜八種搭法比較">
+<meta property="og:description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形、雨天排水、車邊搭，再加蝶形天幕對照，用 3D 看差別。">
 <meta property="og:url" content="https://sleepoutside.github.io/tent-planner/tarps.html">
 <meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-tarps.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<title>天幕搭法 3D 介紹｜同一張天幕的五種搭法</title>
+<title>天幕搭法 3D 介紹｜八種搭法比較</title>
 <style>
   :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;color-scheme:light}
   *{box-sizing:border-box}
@@ -70,7 +70,7 @@
 <body>
 <header>
   <h1>天幕搭法 3D 介紹</h1>
-  <p>同一張 4 × 4 公尺的方形天幕，換個搭法就是不同的遮蔽。拖曳畫面可以轉著看。</p>
+  <p>同一張 4 × 4 公尺的方形天幕，換個搭法就是不同的遮蔽；最後附上蝶形天幕作對照。拖曳畫面可以轉著看。</p>
   /*NAV*/
 </header>
 <main>
@@ -152,7 +152,31 @@ var PITCHES=[
   need:['營柱 1 支','營繩 4 條','營釘 5 支'],r:[2,2,2,1,5],
   pros:['只要一支營柱，一個人幾分鐘就能搭好','裝備最少，適合輕裝或單人','造型俐落，拍照好看'],
   cons:['真正能遮到的面積很小，只夠一兩個人','越往後越矮，後半段只能放東西','兩側敞開，下雨時能躲的範圍有限'],
-  fit:'單人或兩人、短暫休息遮陽，或裝備想帶到最少的時候。',tip:'把低的那個角朝向風吹來的方向，風會順著布面滑過去。'}
+  fit:'單人或兩人、短暫休息遮陽，或裝備想帶到最少的時候。',tip:'把低的那個角朝向風吹來的方向，風會順著布面滑過去。'},
+ {id:'rain',name:'雨天排水',lead:'標準屋脊的變化：把一個角壓低，讓雨水集中從那裡流走。',
+  net:[[[-2,1.7,-1.91],[-2,2.3,0],[-2,1.7,1.91]],[[2,1.7,-1.91],[2,2.3,0],[2,.7,1.25]]],
+  poles:[[-2,0,2.3],[2,0,2.3],[-2,-1.91,1.7],[-2,1.91,1.7],[2,-1.91,1.7]],
+  ropes:[[-2,2.3,0,-3.4,-1],[-2,2.3,0,-3.4,1],[2,2.3,0,3.4,-1],[2,2.3,0,3.4,1],[-2,1.7,-1.91,-3,-2.9],[-2,1.7,1.91,-3,2.9],[2,1.7,-1.91,3,-2.9],[2,.7,1.25,2.6,1.9]],pegs:[],person:[-.6,.2],
+  need:['營柱 5 支','營繩 8 條','營釘 8 支'],r:[4,4,1,1,3],
+  pros:['雨水有固定的出口，不會在布面上積成水袋','從標準屋脊改過來只要動一個角，下雨前臨時調整也來得及','其他三個角維持高度，底下還是好活動'],
+  cons:['壓低的那個角下方不能站人，也不要放怕濕的東西','水會集中流到同一處，地面容易泥濘','四面一樣沒有遮擋，擋不了斜雨'],
+  fit:'已經搭好標準屋脊、看天氣快要下雨的時候。',tip:'壓低的角選在地勢低、遠離帳篷門口和走道的那一側；下面放個水桶還能接水。'},
+ {id:'car',name:'車邊搭',lead:'一邊固定在車頂，另一邊用兩支營柱撐開，車子就是一面牆。',
+  net:[[[-2,1.88,-2],[-2,1.76,2]],[[2,1.88,-2],[2,1.76,2]]],car:[0,-2.98],
+  poles:[[-2,2,1.76],[2,2,1.76]],
+  ropes:[[-2,1.76,2,-3.1,2.4],[-2,1.76,2,-2.4,3.1],[2,1.76,2,3.1,2.4],[2,1.76,2,2.4,3.1]],pegs:[],person:[.7,-.6],
+  need:['營柱 2 支','營繩 4 條','營釘 4 支'],r:[4,3,3,3,4],
+  pros:['只要兩支營柱，車子幫你擋掉一整面的風','拿東西不用淋雨，後車廂或側門一開就是倉庫','佔地小，適合車宿或只有停車格大小的營位'],
+  cons:['車子不能動，臨時要開車就得先拆','固定在車上的那一邊要用吸盤、車頂架綁帶或專用配件，要另外準備','車身會被布面和雨水摩擦，固定點要墊好避免刮傷','外側要比車頂低一點，雨水才不會流回車上'],
+  fit:'車宿、車邊帳，或營位小到放不下六支營柱的時候。',tip:'車門開關的範圍先確認，別讓營柱或營繩擋住；引擎不要怠速，排氣會積在天幕下。'},
+ {id:'hexa',name:'蝶形天幕（對照）',lead:'另一種天幕：六角形的布，兩支主柱撐起兩個尖端，四個角用營繩往下拉。',
+  net:[[[-2.2,2.4,0],[-2.2,2.4,0],[-2.2,2.4,0]],[[-.97,1.1,-1.72],[-.97,2.25,0],[-.97,1.1,1.72]],[[.97,1.1,-1.72],[.97,2.25,0],[.97,1.1,1.72]],[[2.2,2.4,0],[2.2,2.4,0],[2.2,2.4,0]]],
+  poles:[[-2.2,0,2.4],[2.2,0,2.4]],
+  ropes:[[-2.2,2.4,0,-3.6,-.9],[-2.2,2.4,0,-3.6,.9],[2.2,2.4,0,3.6,-.9],[2.2,2.4,0,3.6,.9],[-.97,1.1,-1.72,-1.5,-2.75],[-.97,1.1,1.72,-1.5,2.75],[.97,1.1,-1.72,1.5,-2.75],[.97,1.1,1.72,1.5,2.75]],pegs:[],person:[.2,.3],
+  need:['營柱 2 支','營繩 8 條','營釘 8 支'],r:[3,3,3,2,4],
+  pros:['只要兩支營柱，收納比方形天幕小','曲線邊緣把布面繃緊，不容易積水','兩側自然下垂，比標準屋脊多擋一點斜雨和風'],
+  cons:['同樣大小的布，能站著活動的範圍比方形小','搭法變化少，基本上就是這個樣子','營繩往外拉得遠，實際佔地比布面大很多'],
+  fit:'想要好搭、好收、好看，人數不多的時候。',tip:'把其中一支主柱換短或把一側的兩個角拉低，就能擋住那個方向的風和西曬。'}
 ];
 /*BUILDERS*/
 
@@ -179,9 +203,9 @@ function clearG(g){ while(g.children.length){ var o=g.children[0]; g.remove(o); 
 function V(a){ return P(a[0],a[1],a[2]); }
 function buildPitch(t){
   clearG(tarpG);
-  var rows=t.net.map(function(r){ return r.map(V); }),n=rows[0].length-1;
+  var rows=t.net.map(function(r){ return r.map(V); }),n=rows[0].length-1,nr=rows.length-1;
   function along(r,v){ var f=Math.min(n-1e-6,v*n),i=Math.floor(f); return r[i].clone().lerp(r[i+1],f-i); }
-  var cloth=gridMesh(function(u,v){ var p=along(rows[0],v).lerp(along(rows[1],v),u); p.y-=.07*Math.sin(Math.PI*u)*Math.min(1,p.y/.6); p.y=Math.max(.012,p.y); return p; },20,n*12,
+  var cloth=gridMesh(function(u,v){ var fu=Math.min(nr-1e-6,u*nr),iu=Math.floor(fu),p=along(rows[iu],v).lerp(along(rows[iu+1],v),fu-iu); p.y-=.07*Math.sin(Math.PI*u)*Math.min(1,p.y/.6); p.y=Math.max(.012,p.y); return p; },nr*18,n*12,
     new THREE.MeshStandardMaterial({color:0xd9b77c,roughness:.9,side:THREE.DoubleSide}));
   cloth.castShadow=true; cloth.receiveShadow=true; tarpG.add(cloth);
   var pm=std(0x50544f,{metalness:.5,roughness:.45}),rm=new THREE.MeshStandardMaterial({color:0xffb300,emissive:0x7a5200,roughness:.6}),gm=std(0xd8d8d2,{metalness:.6,roughness:.4});
@@ -189,6 +213,7 @@ function buildPitch(t){
   function peg(x,z,dir){ tarpG.add(limb(P(x,.11,z).addScaledVector(dir,-.06),P(x,-.02,z).addScaledVector(dir,.04),.012,.012,gm,6)); }
   t.ropes.forEach(function(r){ var a=P(r[0],r[1],r[2]),b=P(r[3],.03,r[4]); tarpG.add(limb(a,b,.008,.008,rm,6)); peg(r[3],r[4],b.clone().sub(a).setY(0).normalize()); });
   t.pegs.forEach(function(p){ peg(p[0],p[1],P(p[0],0,p[1]).normalize()); });
+  if(t.car){ var c=car('suv'); c.position.set(t.car[0],0,t.car[1]); tarpG.add(c); }
   buildPerson(); personG.position.set(t.person[0],0,t.person[1]); personG.rotation.y=Math.atan2(-t.person[0],-t.person[1])+Math.PI;
 }
 var cur=null;

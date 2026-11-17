@@ -13,7 +13,7 @@ CHROME = os.environ.get('CHROME', '/usr/bin/google-chrome')
 ARGS = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']
 PAGES = {'index': ('帳篷 × 營位', '3D 搭設模擬', '選帳、選營位，放不放得下一眼就知道'),
          'types': ('帳篷型式', '3D 介紹與優缺點', '11 種帳型加 2 種天幕的優缺點'),
-         'tarps': ('天幕搭法', '3D 介紹', '同一張天幕的五種搭法'),
+         'tarps': ('天幕搭法', '3D 介紹', '同一張天幕的八種搭法'),
          'fire': ('焚火安全模擬', '', '焚火台、燃料、風向與安全距離'),
          'sleep': ('帳內睡鋪模擬', '', '這頂帳到底睡得下幾個人')}
 WIDE = '.stage > *:not(canvas){display:none!important} .stage{height:820px!important}'

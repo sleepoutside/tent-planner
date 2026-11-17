@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Sleepoutside Camp">
-<meta name="description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形，用 3D 看差別。">
+<meta name="description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形、雨天排水、車邊搭，再加蝶形天幕對照，用 3D 看差別。">
 <link rel="canonical" href="https://sleepoutside.github.io/tent-planner/tarps.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sleepoutside Camp">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:title" content="天幕搭法 3D 介紹｜同一張天幕的五種搭法">
-<meta property="og:description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形，用 3D 看差別。">
+<meta property="og:title" content="天幕搭法 3D 介紹｜八種搭法比較">
+<meta property="og:description" content="同一張方形天幕，換個搭法就是不同的遮蔽。標準屋脊、一側落地、單斜面、全落地 A 字、菱形、雨天排水、車邊搭，再加蝶形天幕對照，用 3D 看差別。">
 <meta property="og:url" content="https://sleepoutside.github.io/tent-planner/tarps.html">
 <meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-tarps.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<title>天幕搭法 3D 介紹｜同一張天幕的五種搭法</title>
+<title>天幕搭法 3D 介紹｜八種搭法比較</title>
 <style>
   :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;color-scheme:light}
   *{box-sizing:border-box}
@@ -75,7 +75,7 @@
 <body>
 <header>
   <h1>天幕搭法 3D 介紹</h1>
-  <p>同一張 4 × 4 公尺的方形天幕，換個搭法就是不同的遮蔽。拖曳畫面可以轉著看。</p>
+  <p>同一張 4 × 4 公尺的方形天幕，換個搭法就是不同的遮蔽；最後附上蝶形天幕作對照。拖曳畫面可以轉著看。</p>
   <nav class="navcards" aria-label="其他頁面"><a href="index.html">搭設模擬<small>放不放得下</small></a><a href="types.html">帳型介紹<small>3D 與優缺點</small></a><a href="fire.html">焚火安全<small>距離與風向</small></a><a href="sleep.html">帳內睡鋪<small>睡得下幾人</small></a></nav>
 </header>
 <main>
@@ -157,7 +157,31 @@ var PITCHES=[
   need:['營柱 1 支','營繩 4 條','營釘 5 支'],r:[2,2,2,1,5],
   pros:['只要一支營柱，一個人幾分鐘就能搭好','裝備最少，適合輕裝或單人','造型俐落，拍照好看'],
   cons:['真正能遮到的面積很小，只夠一兩個人','越往後越矮，後半段只能放東西','兩側敞開，下雨時能躲的範圍有限'],
-  fit:'單人或兩人、短暫休息遮陽，或裝備想帶到最少的時候。',tip:'把低的那個角朝向風吹來的方向，風會順著布面滑過去。'}
+  fit:'單人或兩人、短暫休息遮陽，或裝備想帶到最少的時候。',tip:'把低的那個角朝向風吹來的方向，風會順著布面滑過去。'},
+ {id:'rain',name:'雨天排水',lead:'標準屋脊的變化：把一個角壓低，讓雨水集中從那裡流走。',
+  net:[[[-2,1.7,-1.91],[-2,2.3,0],[-2,1.7,1.91]],[[2,1.7,-1.91],[2,2.3,0],[2,.7,1.25]]],
+  poles:[[-2,0,2.3],[2,0,2.3],[-2,-1.91,1.7],[-2,1.91,1.7],[2,-1.91,1.7]],
+  ropes:[[-2,2.3,0,-3.4,-1],[-2,2.3,0,-3.4,1],[2,2.3,0,3.4,-1],[2,2.3,0,3.4,1],[-2,1.7,-1.91,-3,-2.9],[-2,1.7,1.91,-3,2.9],[2,1.7,-1.91,3,-2.9],[2,.7,1.25,2.6,1.9]],pegs:[],person:[-.6,.2],
+  need:['營柱 5 支','營繩 8 條','營釘 8 支'],r:[4,4,1,1,3],
+  pros:['雨水有固定的出口，不會在布面上積成水袋','從標準屋脊改過來只要動一個角，下雨前臨時調整也來得及','其他三個角維持高度，底下還是好活動'],
+  cons:['壓低的那個角下方不能站人，也不要放怕濕的東西','水會集中流到同一處，地面容易泥濘','四面一樣沒有遮擋，擋不了斜雨'],
+  fit:'已經搭好標準屋脊、看天氣快要下雨的時候。',tip:'壓低的角選在地勢低、遠離帳篷門口和走道的那一側；下面放個水桶還能接水。'},
+ {id:'car',name:'車邊搭',lead:'一邊固定在車頂，另一邊用兩支營柱撐開，車子就是一面牆。',
+  net:[[[-2,1.88,-2],[-2,1.76,2]],[[2,1.88,-2],[2,1.76,2]]],car:[0,-2.98],
+  poles:[[-2,2,1.76],[2,2,1.76]],
+  ropes:[[-2,1.76,2,-3.1,2.4],[-2,1.76,2,-2.4,3.1],[2,1.76,2,3.1,2.4],[2,1.76,2,2.4,3.1]],pegs:[],person:[.7,-.6],
+  need:['營柱 2 支','營繩 4 條','營釘 4 支'],r:[4,3,3,3,4],
+  pros:['只要兩支營柱，車子幫你擋掉一整面的風','拿東西不用淋雨，後車廂或側門一開就是倉庫','佔地小，適合車宿或只有停車格大小的營位'],
+  cons:['車子不能動，臨時要開車就得先拆','固定在車上的那一邊要用吸盤、車頂架綁帶或專用配件，要另外準備','車身會被布面和雨水摩擦，固定點要墊好避免刮傷','外側要比車頂低一點，雨水才不會流回車上'],
+  fit:'車宿、車邊帳，或營位小到放不下六支營柱的時候。',tip:'車門開關的範圍先確認，別讓營柱或營繩擋住；引擎不要怠速，排氣會積在天幕下。'},
+ {id:'hexa',name:'蝶形天幕（對照）',lead:'另一種天幕：六角形的布，兩支主柱撐起兩個尖端，四個角用營繩往下拉。',
+  net:[[[-2.2,2.4,0],[-2.2,2.4,0],[-2.2,2.4,0]],[[-.97,1.1,-1.72],[-.97,2.25,0],[-.97,1.1,1.72]],[[.97,1.1,-1.72],[.97,2.25,0],[.97,1.1,1.72]],[[2.2,2.4,0],[2.2,2.4,0],[2.2,2.4,0]]],
+  poles:[[-2.2,0,2.4],[2.2,0,2.4]],
+  ropes:[[-2.2,2.4,0,-3.6,-.9],[-2.2,2.4,0,-3.6,.9],[2.2,2.4,0,3.6,-.9],[2.2,2.4,0,3.6,.9],[-.97,1.1,-1.72,-1.5,-2.75],[-.97,1.1,1.72,-1.5,2.75],[.97,1.1,-1.72,1.5,-2.75],[.97,1.1,1.72,1.5,2.75]],pegs:[],person:[.2,.3],
+  need:['營柱 2 支','營繩 8 條','營釘 8 支'],r:[3,3,3,2,4],
+  pros:['只要兩支營柱，收納比方形天幕小','曲線邊緣把布面繃緊，不容易積水','兩側自然下垂，比標準屋脊多擋一點斜雨和風'],
+  cons:['同樣大小的布，能站著活動的範圍比方形小','搭法變化少，基本上就是這個樣子','營繩往外拉得遠，實際佔地比布面大很多'],
+  fit:'想要好搭、好收、好看，人數不多的時候。',tip:'把其中一支主柱換短或把一側的兩個角拉低，就能擋住那個方向的風和西曬。'}
 ];
 /* ---------- builders shared with the simulator (copied from index.html by tools/build.py) ---------- */
 function rnd(seed){var s=seed;return function(){s=(s*9301+49297)%233280;return s/233280}}
@@ -452,6 +476,69 @@ function buildPerson(){
   }
   personG.scale.setScalar(S.ph/170);
 }
+function car(type){
+  var c=CARS[type]||CARS.suv,g=new THREE.Group(),i;
+  var body=std(c.col,{roughness:.28,metalness:.45}),glass=std(0x141d23,{roughness:.1,metalness:.6}),dark=std(0x202325,{roughness:.75}),tyre=std(0x161616),alloy=std(0xc9cdd0,{metalness:.8,roughness:.3});
+  var hl=c.len/2,w=c.w,r=c.wr,ra=r+.06,xf=hl-c.fo,xr=-hl+c.ro,by=.22,cc=Math.sqrt(ra*ra-(r-by)*(r-by)),a0=Math.asin((by-r)/ra);
+  function ext(shape,depth,bt,bs,mat,z){
+    var geo=new THREE.ExtrudeGeometry(shape,{depth:depth,bevelEnabled:bt>0,bevelThickness:bt,bevelSize:bs,bevelSegments:3,curveSegments:16,steps:1});
+    geo.translate(0,0,-depth/2); var m=new THREE.Mesh(geo,mat); m.position.z=z||0; m.castShadow=true; g.add(m); return m;
+  }
+  function bx(sx,sy,sz,m,x,y,z){ var o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m); o.position.set(x,y,z); g.add(o); return o; }
+  function smooth(pts,n){ return new THREE.SplineCurve(pts.map(function(p){return new THREE.Vector2(p[0],p[1])})).getPoints(n).map(function(v){return [v.x,v.y]}); }
+  function poly(pts){ var s=new THREE.Shape(); s.moveTo(pts[0][0],pts[0][1]); for(var k=1;k<pts.length;k++) s.lineTo(pts[k][0],pts[k][1]); s.closePath(); return s; }
+  /* lower body: smooth shoulder line, wheel arches */
+  var top=smooth(c.top,48),s=new THREE.Shape(); s.moveTo(-hl+.12,by); s.lineTo(xr-cc,by); s.absarc(xr,r,ra,Math.PI-a0,a0,true); s.lineTo(xf-cc,by); s.absarc(xf,r,ra,Math.PI-a0,a0,true); s.lineTo(hl-.12,by);
+  for(i=top.length-1;i>=0;i--) s.lineTo(top[i][0],top[i][1]); s.closePath();
+  ext(s,w-.12,.06,.03,body);
+  /* glasshouse with a curved roofline */
+  var cab=smooth(c.cab,36),n=cab.length,gw=w-.3,cx=0,cy=0,roofY=0,baseY=c.cab[0][1];
+  cab.forEach(function(p){ cx+=p[0]/n; cy+=p[1]/n; roofY=Math.max(roofY,p[1]); });
+  ext(poly(cab),gw,.03,.012,glass);
+  var rf=cab.filter(function(p){ return p[1]>=roofY-.16; }),rp=rf.map(function(p){return [p[0],p[1]+.02]}).concat(rf.slice().reverse().map(function(p){return [p[0],p[1]-.05]}));
+  ext(poly(rp),w-.24,.03,.015,c.darkRoof?glass:body);
+  var fy=c.top[c.top.length-2][1]-.07,ry=c.top[2][1]-.14,led=std(0xffffff,{emissive:0xdfe8ff,emissiveIntensity:.9}),red=std(0xd0241c,{emissive:0x8a100c,emissiveIntensity:.8});
+  [1,-1].forEach(function(sg){
+    c.pil.forEach(function(px){ bx(.09,roofY-.07-baseY,.05,body,px,(roofY-.07+baseY)/2,sg*(gw/2+.035)); });
+    bx(.1,.09,.2,body,c.cab[c.cab.length-1][0]-.18,baseY+.1,sg*(w/2+.06));
+    if(c.rails) g.add(limb(P(rf[0][0]+.2,roofY+.07,sg*(w/2-.3)),P(rf[rf.length-1][0]-.2,roofY+.07,sg*(w/2-.3)),.016,.016,dark,6));
+    bx(.05,.045,.5,led,hl+.01,fy,sg*(w/2-.36)); bx(.05,.1,.26,glass,hl+.008,fy-.09,sg*(w/2-.3));
+    bx(.05,.06,.34,red,-hl-.01,ry,sg*(w/2-.24));
+    [xf,xr].forEach(function(wx){
+      var z=sg*(w/2-.11),t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.23,24),tyre); t.rotation.x=Math.PI/2; t.position.set(wx,r,z); t.castShadow=true; g.add(t);
+      var well=new THREE.Mesh(new THREE.CylinderGeometry(r*.74,r*.74,.235,20),dark); well.rotation.x=Math.PI/2; well.position.copy(t.position); g.add(well);
+      for(var k=0;k<5;k++){ var a=k/5*Math.PI*2,sp=bx(r*.66,.06,.02,alloy,wx+Math.cos(a)*r*.36,r+Math.sin(a)*r*.36,z+sg*.115); sp.rotation.z=a; }
+      var hub=new THREE.Mesh(new THREE.CylinderGeometry(r*.17,r*.17,.26,12),alloy); hub.rotation.x=Math.PI/2; hub.position.copy(t.position); g.add(hub);
+      var rim=new THREE.Mesh(new THREE.TorusGeometry(r*.72,.018,6,24),alloy); rim.position.set(wx,r,z+sg*.115); g.add(rim);
+    });
+  });
+  [xf,xr].forEach(function(wx){
+    bx(ra*2,ra*1.1,w-.52,dark,wx,r+ra*.4,0);
+    if(c.clad){ var cs=new THREE.Shape(); cs.absarc(wx,r,ra+.07,a0,Math.PI-a0,false); cs.absarc(wx,r,ra,Math.PI-a0,a0,true); cs.closePath(); ext(cs,w+.02,0,0,dark); }
+  });
+  if(c.clad) bx(xf-xr-ra*2,.12,w+.02,dark,(xf+xr)/2,by+.06,0);
+  bx(.14,.2,w-.16,dark,hl-.03,.36,0); bx(.14,.2,w-.16,dark,-hl+.03,.36,0);
+  bx(.04,.04,w*.8,red,-hl-.012,ry,0);
+  bx(.03,.11,.42,std(0xf4f4f0),hl+.05,.4,0); bx(.03,.11,.42,std(0xf4f4f0),-hl-.05,.4,0);
+  return g;
+}
+var CARS={
+  hatch:{name:'小型車',len:4.0,w:1.74,wr:.32,fo:.8,ro:.72,col:0x3f7f8c,
+    top:[[-2.0,.48],[-1.99,.8],[-1.9,.98],[-1.0,1.0],[.7,.97],[1.45,.9],[1.9,.76],[2.0,.5]],
+    cab:[[-1.9,.98],[-1.72,1.3],[-1.2,1.47],[-.3,1.52],[.3,1.42],[.95,.97]],pil:[-.55]},
+  sedan:{name:'轎車',len:4.7,w:1.84,wr:.34,fo:.92,ro:.95,col:0x5b6168,
+    top:[[-2.35,.5],[-2.34,.82],[-2.2,.98],[-1.2,1.0],[.9,.96],[1.7,.88],[2.25,.74],[2.35,.5]],
+    cab:[[-2.0,.99],[-1.3,1.3],[-.6,1.42],[.1,1.44],[.55,1.33],[1.2,.96]],pil:[-.2]},
+  suv:{name:'休旅車',len:4.6,w:1.87,wr:.38,fo:.9,ro:.88,col:0xeceeed,rails:true,clad:true,darkRoof:true,
+    top:[[-2.3,.55],[-2.29,.95],[-2.18,1.12],[-1.0,1.14],[.85,1.1],[1.6,1.04],[2.2,.9],[2.3,.58]],
+    cab:[[-2.18,1.12],[-1.95,1.48],[-1.3,1.66],[-.2,1.7],[.35,1.6],[1.05,1.1]],pil:[-.3,-1.35]},
+  van:{name:'MPV',len:4.8,w:1.88,wr:.35,fo:.85,ro:.9,col:0xcfd3d6,
+    top:[[-2.4,.55],[-2.39,1.0],[-2.3,1.15],[-1.0,1.16],[1.45,1.1],[2.0,.98],[2.34,.8],[2.4,.55]],
+    cab:[[-2.32,1.15],[-2.25,1.62],[-1.6,1.78],[.3,1.8],[1.0,1.6],[1.7,1.1]],pil:[.7,-.5,-1.5]},
+  pickup:{name:'皮卡',len:5.3,w:1.9,wr:.4,fo:.95,ro:1.15,col:0x3f4d44,clad:true,
+    top:[[-2.65,.62],[-2.64,1.05],[-2.58,1.2],[-.7,1.2],[1.0,1.18],[1.9,1.14],[2.55,1.02],[2.65,.62]],
+    cab:[[-.72,1.18],[-.62,1.62],[-.2,1.8],[.45,1.8],[.85,1.66],[1.35,1.16]],pil:[.15]}
+};
 
 var canvas=$('c'),renderer;
 try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true}); }
@@ -476,9 +563,9 @@ function clearG(g){ while(g.children.length){ var o=g.children[0]; g.remove(o); 
 function V(a){ return P(a[0],a[1],a[2]); }
 function buildPitch(t){
   clearG(tarpG);
-  var rows=t.net.map(function(r){ return r.map(V); }),n=rows[0].length-1;
+  var rows=t.net.map(function(r){ return r.map(V); }),n=rows[0].length-1,nr=rows.length-1;
   function along(r,v){ var f=Math.min(n-1e-6,v*n),i=Math.floor(f); return r[i].clone().lerp(r[i+1],f-i); }
-  var cloth=gridMesh(function(u,v){ var p=along(rows[0],v).lerp(along(rows[1],v),u); p.y-=.07*Math.sin(Math.PI*u)*Math.min(1,p.y/.6); p.y=Math.max(.012,p.y); return p; },20,n*12,
+  var cloth=gridMesh(function(u,v){ var fu=Math.min(nr-1e-6,u*nr),iu=Math.floor(fu),p=along(rows[iu],v).lerp(along(rows[iu+1],v),fu-iu); p.y-=.07*Math.sin(Math.PI*u)*Math.min(1,p.y/.6); p.y=Math.max(.012,p.y); return p; },nr*18,n*12,
     new THREE.MeshStandardMaterial({color:0xd9b77c,roughness:.9,side:THREE.DoubleSide}));
   cloth.castShadow=true; cloth.receiveShadow=true; tarpG.add(cloth);
   var pm=std(0x50544f,{metalness:.5,roughness:.45}),rm=new THREE.MeshStandardMaterial({color:0xffb300,emissive:0x7a5200,roughness:.6}),gm=std(0xd8d8d2,{metalness:.6,roughness:.4});
@@ -486,6 +573,7 @@ function buildPitch(t){
   function peg(x,z,dir){ tarpG.add(limb(P(x,.11,z).addScaledVector(dir,-.06),P(x,-.02,z).addScaledVector(dir,.04),.012,.012,gm,6)); }
   t.ropes.forEach(function(r){ var a=P(r[0],r[1],r[2]),b=P(r[3],.03,r[4]); tarpG.add(limb(a,b,.008,.008,rm,6)); peg(r[3],r[4],b.clone().sub(a).setY(0).normalize()); });
   t.pegs.forEach(function(p){ peg(p[0],p[1],P(p[0],0,p[1]).normalize()); });
+  if(t.car){ var c=car('suv'); c.position.set(t.car[0],0,t.car[1]); tarpG.add(c); }
   buildPerson(); personG.position.set(t.person[0],0,t.person[1]); personG.rotation.y=Math.atan2(-t.person[0],-t.person[1])+Math.PI;
 }
 var cur=null;

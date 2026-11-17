@@ -37,7 +37,7 @@ NAVCSS = '''  .navcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr
   .navcards a:hover{background:var(--accent);border-color:var(--accent);color:#fff}
   .navcards a:hover small{color:#e2eee6}
   @media (max-width: 880px){ .navcards{flex:1 1 100%;margin-top:4px;gap:6px} .navcards a{font-size:13px} .navcards a small{font-size:10px} }'''
-CARDS = [('index', '搭設模擬', '放不放得下'), ('types', '帳型介紹', '3D 與優缺點'), ('tarps', '天幕搭法', '五種搭法'),
+CARDS = [('index', '搭設模擬', '放不放得下'), ('types', '帳型介紹', '3D 與優缺點'), ('tarps', '天幕搭法', '八種搭法'),
          ('fire', '焚火安全', '距離與風向'), ('sleep', '帳內睡鋪', '睡得下幾人')]
 def nav(me):
     """Navigation cards to every page except `me`. index.html keeps its own hand-written copy."""
@@ -69,5 +69,5 @@ page('sleep', t.replace('/*DATA*/', '/* tent data copied from index.html */\n' +
 
 # tarps.html
 t = rd(TPL, 'tarps.html'); assert t.count('/*BUILDERS*/') == 1
-page('tarps', t.replace('/*BUILDERS*/', NOTE + funcs(BASE + ['buildPerson'])))
+page('tarps', t.replace('/*BUILDERS*/', NOTE + funcs(BASE + ['buildPerson', 'car']) + '\n' + block('var CARS=') + ';'))
 print('generated types.html, fire.html, sleep.html, tarps.html')
