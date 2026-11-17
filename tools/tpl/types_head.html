@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Sleepoutside Camp">
-<meta name="description" content="圓頂帳、隧道帳、一房一廳、神殿帳、充氣帳……11 種帳型的 3D 樣子、評分和優缺點一次看。">
+<meta name="description" content="圓頂帳、隧道帳、一房一廳、神殿帳、充氣帳……11 種帳型加 2 種天幕的 3D 樣子、評分和優缺點一次看。">
 <link rel="canonical" href="https://sleepoutside.github.io/tent-planner/types.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sleepoutside Camp">
 <meta property="og:locale" content="zh_TW">
 <meta property="og:title" content="帳篷型式 3D 介紹與優缺點">
-<meta property="og:description" content="圓頂帳、隧道帳、一房一廳、神殿帳、充氣帳……11 種帳型的 3D 樣子、評分和優缺點一次看。">
+<meta property="og:description" content="圓頂帳、隧道帳、一房一廳、神殿帳、充氣帳……11 種帳型加 2 種天幕的 3D 樣子、評分和優缺點一次看。">
 <meta property="og:url" content="https://sleepoutside.github.io/tent-planner/types.html">
 <meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-types.jpg">
 <meta property="og:image:width" content="1200">
@@ -84,7 +84,7 @@
 <body>
 <header>
   <h1>帳篷型式 3D 介紹</h1>
-  <p>十一種常見帳型的概念造型與優缺點，拖曳畫面可以轉著看。</p>
+  <p>十一種常見帳型和兩種天幕的概念造型與優缺點，拖曳畫面可以轉著看。</p>
   <nav class="navcards" aria-label="其他頁面"><a href="index.html">搭設模擬<small>放不放得下</small></a><a href="fire.html">焚火安全<small>距離與風向</small></a><a href="sleep.html">帳內睡鋪<small>睡得下幾人</small></a></nav>
 </header>
 <main>
@@ -175,5 +175,15 @@ var TYPES=[
   size:'約 250 × 110 × 高 100 cm（含前庭）',cap:'1 人',time:'5–10 分鐘',crew:'1 人',r:[4,1,4,5,3,3],
   pros:['重量輕、收納小，可以背著走，也適合機車或單車旅行','佔地小，找營地容易','低矮的流線外型，抗風好'],
   cons:['裡面只能坐著或躺著','裝備多半要放在前庭','輕量布料比較薄，使用時要小心','內外帳距離近，容易結露'],
-  fit:'登山、徒步、單車或機車旅行等需要自己背負裝備的人。'}
+  fit:'登山、徒步、單車或機車旅行等需要自己背負裝備的人。'},
+ {id:'tarpHexa',name:'蝶形／六角天幕',lead:'兩支主柱撐起一片六角形的布，線條最好看的遮蔽。',m:{L:440,W:420,H:240,shape:'hexa',tarp:true,color:0xc7a56c},
+  size:'約 440 × 420 cm，主柱高 240 cm',cap:'遮蔽 4–6 人',time:'10–15 分鐘',crew:'1–2 人',r:[4,2,3,5,4,5],
+  pros:['只要兩支主柱，零件少、收納小','曲線邊緣讓布面繃得緊，不容易積水','四面通透，夏天最涼快','可以壓低一側擋風或擋西曬'],
+  cons:['有效遮蔽面積比同尺寸的方形天幕小','營繩往外拉得遠，實際佔地比布面大很多','側面沒有遮擋，斜雨和冷風擋不住','一個人立主柱需要一點技巧'],
+  fit:'帳篷沒有客廳、想加一塊遮陽遮雨空間，又在意收納體積的人。'},
+ {id:'tarpRect',name:'方形天幕',lead:'長方形的布配上四到六支營柱，遮蔽面積最實在。',m:{L:400,W:300,H:220,shape:'rect',tarp:true,color:0xd9c7a3},
+  size:'約 400 × 300 cm，主柱高 220 cm',cap:'遮蔽 4–8 人',time:'15–20 分鐘',crew:'2 人',r:[3,4,2,4,4,5],
+  pros:['同樣的布面，遮蔽面積比蝶形大','四個角都有營柱，邊緣高度夠，人可以站著走動','搭法變化多：可以放下一側當牆，或搭成各種斜面','容易和帳篷、車子連接'],
+  cons:['營柱和營繩比較多，搭設較花時間','布面平，沒拉好容易積水，下雨要壓低一角排水','受風面積大，強風時要多加營繩或直接收起來','零件多，收納體積比蝶形大'],
+  fit:'人數多、需要一個大客廳，或想把天幕和帳篷、車子連在一起用的人。'}
 ];

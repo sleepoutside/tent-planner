@@ -1962,6 +1962,17 @@ $('bPersp').addEventListener('click',function(){ cam.el=0.44; cam.az=0.78; fitCa
 var TYPE_PRESET={dome:[270,270,170,'dome',0xa9ad84],domeVest:[500,280,150,'domeVest',0xb9a886],tworoom:[600,380,210,'tworoom',0x8c7b62],tunnel:[640,300,195,'tunnel',0xc7a56c],
   bell:[400,400,250,'bell',0xe8dfc8],cabin:[300,300,210,'cabin',0x6d8794],carside:[250,250,200,'carside',0xb9a886],pyramid:[400,400,250,'pyramid',0xd8c9a3],air:[600,320,200,'air',0x7d9aa6],solo:[250,110,100,'domeVest',0x6f8160]};
 function applyTypeHash(){
+  var tm=/^#tarp-(hexa|rect)$/.exec(location.hash||'');
+  if(tm){
+    if(isArea()) setMode('single');
+    var tc=TARPS[TARPS.length-1],hx=tm[1]==='hexa'; tc.L=hx?440:400; tc.W=hx?420:300; tc.H=hx?240:220; tc.shape=tm[1];
+    $('tL').value=tc.L; $('tW').value=tc.W; $('tShape').value=tc.shape;
+    var ts=$('tarpSel'); S.tarp=null; S.rot=0; ts.value='tcustom'; ts.dispatchEvent(new Event('change'));
+    var d=S.tent.L/200+tc.L/200-.6,c=Math.round((d+tc.L/200-S.tent.L/200)/2*20)/20,sizes=[[S.sL,S.sW],[8,8],[10,8],[12,8],[12,10],[14,10],[15,12]],i;
+    S.tx=-c; S.tz=0; S.ttx=Math.round((d-c)*20)/20; S.ttz=0; S.trot=0;
+    for(i=0;i<sizes.length;i++){ if(sizes[i][0]<S.sL||sizes[i][1]<S.sW) continue; S.sL=sizes[i][0]; S.sW=sizes[i][1]; $('sL').value=S.sL; $('sW').value=S.sW; siteChanged(); placeTent(); placeTarp(); updateFit(); if(!/bad/.test($('status').className)) break; }
+    setActive('tarp'); fitCam(); return;
+  }
   var mt=/^#type-([A-Za-z]+)$/.exec(location.hash||''),q=mt&&TYPE_PRESET[mt[1]]; if(!q) return;
   if(isArea()) setMode('single');
   var c=TENTS[TENTS.length-1]; c.L=q[0]; c.W=q[1]; c.H=q[2]; c.shape=q[3]; c.color=q[4];

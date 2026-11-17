@@ -38,7 +38,7 @@ BASE = ['rnd', 'tex', 'label', 'dispose', 'profile', 'loft', 'sections', 'shade'
 NOTE = '/* ---------- builders shared with the simulator (copied from index.html by tools/build.py) ---------- */\n'
 
 # types.html = head template + builders + tail script
-wr('types.html', rd(TPL, 'types_head.html') + '\n' + NOTE + funcs(BASE + ['buildPerson', 'car']) + '\n'
+wr('types.html', rd(TPL, 'types_head.html') + '\n' + NOTE + funcs(BASE + ['buildPerson', 'car', 'buildTarp1']) + '\n'
    + block('var CARS=') + ';\n' + rd(TPL, 'types_tail.js'))
 
 # fire.html

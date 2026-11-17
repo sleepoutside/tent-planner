@@ -25,7 +25,7 @@
 | 檔案 | 說明 |
 |---|---|
 | `index.html` | 搭設模擬（主頁，約 2,000 行）。手寫，直接編輯 |
-| `types.html` | 帳型 3D 介紹與優缺點（11 種）。**產生檔** |
+| `types.html` | 帳型 3D 介紹與優缺點（11 種帳型＋2 種天幕）。**產生檔** |
 | `fire.html` | 焚火安全模擬。**產生檔** |
 | `sleep.html` | 帳內睡鋪模擬。**產生檔** |
 | `og-*.jpg` | 四頁的分享預覽圖（1200×630） |
@@ -77,7 +77,7 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 - **放置判斷**：`updateFit()` 產生上方結果列，內部呼叫 `tentFit()`、`tarpCheck()`、`fireCheck()`（焚火台 3 m／4.5 m）、`matCheck()`（睡鋪）。帳篷重疊用 `bodyRect()` + `rectsOverlap()`（只算帳體，不算營繩）。
 - **render-on-dirty**：畫面只有在 `redraw()` 被呼叫後才重畫；下雨、水面等動畫用 `anim`／`tick(dt)`。
 - **網址參數**：
-  - `#type-<id>`：從帳型頁帶入帳型（`applyTypeHash`）。
+  - `#type-<id>`：從帳型頁帶入帳型（`applyTypeHash`）；`#tarp-hexa`／`#tarp-rect`：帶入自訂天幕。
   - `#s=<base64url JSON>`：單一營位分享連結（`singleData`／`singleApply`）。
   - `#a=<base64url JSON>`：包區分享連結（`areaData`／`areaReplace`）。
   - 讀取分享資料時所有數值都經過範圍限制；格式壞掉會跳提示而不是讓頁面出錯。**改動 `S` 的欄位時，記得同步更新 `singleData` 與 `singleApply`，並保持舊連結可讀。**
@@ -88,7 +88,7 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 
 三頁共用同一套寫法：自己的場景與鏡頭，加上一組「假的」全域變數（`S`、`WX`、`siteY`、`isArea()`、`placeTent()` 等）讓複製過來的 `buildTent1()` 能運作。若 `buildTent1()` 之後用到新的全域變數，三個範本都要補上對應的假變數，否則該頁會壞（`tools/smoke.py` 會抓到）。
 
-- **types.html**：`TYPES` 資料含 11 種帳型的尺寸、六項評分、優缺點。車頂帳只在這頁展示，不進搭設模擬。按鈕連到 `index.html#type-<id>`。
+- **types.html**：`TYPES` 資料含 11 種帳型與 2 種天幕的尺寸、六項評分、優缺點。車頂帳只在這頁展示，不進搭設模擬。按鈕連到 `index.html#type-<id>`；天幕連到 `index.html#tarp-hexa`／`#tarp-rect`。
 - **fire.html**：六種焚火台、五種燃料、風向風力；判斷邏輯在 `judge()`。
 - **sleep.html**：內帳範圍由 `sleepArea()`（複製自 `index.html`）決定；床墊可混搭、拖曳、轉向，`autoArrange()` 自動排列。
 

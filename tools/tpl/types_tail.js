@@ -18,6 +18,8 @@ var dirty=true; function redraw(){ dirty=true; }
 /* state the borrowed builders expect */
 var S={tent:null,rot:0,tx:0,tz:0,xray:false,margin:60,labels:false,ropes:true,wx:'sunny',mode:'single',pg:'m',ph:170,sL:40,sW:40,siteType:'grass'};
 var WX={sunny:{}},siteY=0,areaNo=0;
+var tarpG=new THREE.Group(),tarpMeshes=[],tarpPegs=[],tarpPlan=[],tarpOutMat=null,tarpTop=0; scene.add(tarpG);
+function placeTarp(){ tarpG.position.set(0,0,0); tarpG.rotation.y=0; }
 var tentG=new THREE.Group(),extraG=new THREE.Group(),personG=new THREE.Group(),tentMeshes=[],outlineMat=null,ropeMat=null,shellMat=null,zoneMat=null,ropeObjs=[];
 scene.add(tentG,extraG,personG);
 function isArea(){ return false; }
@@ -52,9 +54,12 @@ function buildRooftop(m){
 /* ---------- show one type ---------- */
 var cam={az:.75,el:.34,r:10,target:new THREE.Vector3(0,.9,0)},spin=true,cur=null;
 function show(t){
-  cur=t; clearG(extraG); clearG(tentG); tentMeshes=[];
+  cur=t; clearG(extraG); clearG(tentG); tentMeshes=[]; S.tarp=null; clearG(tarpG);
   var m=t.m,L=m.L/100,W=m.W/100,H=m.H/100,px=L/2+.5,pz=-(W/2+.5),top=H;
-  if(m.shape){
+  if(m.tarp){
+    S.tarp={id:t.id,L:m.L,W:m.W,H:m.H,shape:m.shape,color:m.color}; buildTarp1(); if(tarpOutMat) tarpOutMat.visible=false;
+    tarpG.traverse(function(o){ if(o.geometry&&o.geometry.type==='RingGeometry') o.visible=false; });
+  }else if(m.shape){
     S.tent={id:t.id,brand:'',name:t.name,L:m.L,W:m.W,H:m.H,shape:m.shape,color:m.color,inner:m.inner,wall:m.wall};
     buildTent1();
     [outlineMat,ropeMat,zoneMat].forEach(function(x){ if(x) x.visible=false; });
@@ -65,7 +70,7 @@ function show(t){
   var span=Math.max(L,W,top*1.6)+(t.car?2.2:0);
   cam.r=Math.max(7.5,span*1.75+2.2)*(camera.aspect<.9?1.25:1); cam.target.set(t.car?-.9:0,Math.min(1.3,top*.42),0);
   $('tag').textContent='人物身高 170 cm';
-  var cta=$('cta'); if(t.id==='rooftop'){ cta.href='index.html'; cta.textContent='前往搭設模擬（車頂帳不在模擬範圍）→'; } else { cta.href='index.html#type-'+t.id; cta.textContent='用搭設模擬看這頂放不放得下 →'; }
+  var cta=$('cta'); if(t.id==='rooftop'){ cta.href='index.html'; cta.textContent='前往搭設模擬（車頂帳不在模擬範圍）→'; } else if(m.tarp){ cta.href='index.html#tarp-'+m.shape; cta.textContent='用搭設模擬看這張天幕放不放得下 →'; } else { cta.href='index.html#type-'+t.id; cta.textContent='用搭設模擬看這頂放不放得下 →'; }
   $('tName').textContent=t.name; $('tLead').textContent=t.lead; $('tFit').textContent=t.fit;
   var sp=$('tSpecs'); sp.textContent=''; [['常見尺寸',t.size],['適合人數',t.cap],['搭設時間',t.time],['搭設人數',t.crew]].forEach(function(x){ var d=document.createElement('div'),a=document.createElement('dt'),b=document.createElement('dd'); a.textContent=x[0]; b.textContent=x[1]; d.appendChild(a); d.appendChild(b); sp.appendChild(d); });
   var rt=$('tRates'); rt.textContent=''; ASPECTS.forEach(function(a,i){ var row=document.createElement('div'),lab=document.createElement('span'),bar=document.createElement('span'),k; row.className='rate'; lab.textContent=a; bar.className='bar'; bar.setAttribute('role','img'); bar.setAttribute('aria-label',a+' '+t.r[i]+' 分，滿分 5 分');
