@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Sleepoutside Camp">
+<meta name="description" content="圓頂帳、隧道帳、一房一廳、神殿帳、充氣帳……11 種帳型的 3D 樣子、評分和優缺點一次看。">
+<link rel="canonical" href="https://sleepoutside.github.io/tent-planner/types.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sleepoutside Camp">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="帳篷型式 3D 介紹與優缺點">
+<meta property="og:description" content="圓頂帳、隧道帳、一房一廳、神殿帳、充氣帳……11 種帳型的 3D 樣子、評分和優缺點一次看。">
+<meta property="og:url" content="https://sleepoutside.github.io/tent-planner/types.html">
+<meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-types.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<title>帳篷型式 3D 介紹與優缺點</title>
+<style>
+  :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;color-scheme:light}
+  *{box-sizing:border-box}
+  html,body{margin:0;overflow-x:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.55}
+  a{color:var(--accent)}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:16px 20px 10px;max-width:1180px;margin:0 auto}
+  header h1{font-size:20px;margin:0;letter-spacing:.02em}
+  header p{margin:0;color:var(--muted);font-size:13px;flex:1 1 260px}
+  .back{font-weight:600;white-space:nowrap}
+  main{max-width:1180px;margin:0 auto;padding:0 20px 40px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+  .view{position:sticky;top:12px}
+  .stage{position:relative;height:min(62vh,560px);border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#dfe8e2}
+  canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  .stage .tag{position:absolute;left:12px;top:12px;background:rgba(251,249,243,.93);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted)}
+  .stage .spin{position:absolute;right:12px;top:12px;font:inherit;font-size:12px;background:rgba(251,249,243,.93);border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer;color:var(--ink)}
+  .view{min-width:0}
+  .types{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;max-width:100%}
+  .types button{font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+  .types button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .info h2{font-size:24px;margin:2px 0 2px}
+  .info .lead{margin:0 0 14px;color:var(--muted)}
+  .specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
+  .specs div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+  .specs dt{font-size:12px;color:var(--muted)}
+  .specs dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+  .rates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin:0 0 18px}
+  .rate{display:grid;grid-template-columns:5.5em 1fr;align-items:center;gap:8px;font-size:13px}
+  .bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .bar i{height:9px;border-radius:3px;background:#e4dfd1}
+  .bar i.on{background:var(--accent)}
+  .pc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .box{border-radius:12px;padding:12px 14px 14px;border:1px solid var(--line)}
+  .box h3{margin:0 0 6px;font-size:14px;letter-spacing:.08em}
+  .box ul{margin:0;padding-left:1.15em}
+  .box li{margin:5px 0}
+  .pros{background:var(--accent-soft);border-color:#c5dccd}
+  .pros h3{color:var(--accent)}
+  .cons{background:var(--warn-soft);border-color:#ecc9bc}
+  .cons h3{color:var(--warn)}
+  .fit{margin:14px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+  .fit b{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.08em}
+  .cta{display:inline-block;margin-top:16px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border-radius:10px;padding:10px 16px}
+  .foot{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:12px}
+  .foot b{color:var(--ink)}
+  .err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--warn)}
+  @media (max-width: 860px){
+    main{grid-template-columns:1fr;padding:0 12px 30px;gap:14px}
+    header{padding:12px 12px 8px}
+    .view{position:static}
+    .stage{height:46vh}
+    .types{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+    .types button{white-space:nowrap}
+    .pc,.rates{grid-template-columns:1fr}
+    .foot{padding:0 12px 24px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>帳篷型式 3D 介紹</h1>
+  <p>十一種常見帳型的概念造型與優缺點，拖曳畫面可以轉著看。</p>
+  <a class="back" href="index.html">前往搭設模擬 →</a><a class="back" href="fire.html" style="margin-left:14px">焚火安全模擬 →</a><a class="back" href="sleep.html" style="margin-left:14px">帳內睡鋪模擬 →</a>
+</header>
+<main>
+  <section class="view" aria-label="3D 展示">
+    <div class="stage">
+      <canvas id="c" aria-label="帳篷 3D 概念造型，可拖曳旋轉、滾輪縮放"></canvas>
+      <div class="tag" id="tag"></div>
+      <button type="button" class="spin" id="spin" aria-pressed="true">自動旋轉：開</button>
+      <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
+    </div>
+    <div class="types" id="types" role="group" aria-label="帳篷型式"></div>
+  </section>
+  <section class="info" aria-live="polite">
+    <h2 id="tName"></h2>
+    <p class="lead" id="tLead"></p>
+    <dl class="specs" id="tSpecs"></dl>
+    <div class="rates" id="tRates"></div>
+    <div class="pc">
+      <div class="box pros"><h3>優點</h3><ul id="tPros"></ul></div>
+      <div class="box cons"><h3>缺點</h3><ul id="tCons"></ul></div>
+    </div>
+    <p class="fit"><b>適合</b><span id="tFit"></span></p>
+    <a class="cta" id="cta" href="index.html">用搭設模擬看放不放得下 →</a>
+  </section>
+</main>
+<p class="foot">優缺點與評分是對整個帳型的一般性比較，同一類型裡不同款式的差異可能很大，選購前請以實際商品規格為準。3D 為依結構類型製作的概念造型，不是特定品牌型號；尺寸為該類型的常見大小。<br><b>設計/Sleepoutside Camp</b> *非營利使用　資訊僅供參考，請依官方資訊為準。</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script data-goatcounter="https://tent-planner.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+if(!window.THREE){ $('err').style.display='flex'; return; }
+var ASPECTS=['搭設容易','居住空間','抗風','收納輕便','價格親民','通風'];
+var TYPES=[
+ {id:'dome',name:'圓頂帳',lead:'兩支營柱交叉撐起的半球形，最普遍的入門帳型。',m:{L:270,W:270,H:170,shape:'dome',color:0xa9ad84},
+  size:'約 270 × 270 × 高 170 cm',cap:'2–4 人',time:'10–15 分鐘',crew:'1–2 人',r:[4,3,4,4,5,3],
+  pros:['結構簡單，新手也容易上手','自立式，搭好後可以整頂搬動調整位置','交叉營柱受力平均，抗風表現穩定','款式多、價格選擇廣，入門門檻低','收納體積小'],
+  cons:['邊緣高度低，只有中央能坐直或站立','沒有客廳，雨天活動空間不足，通常要另搭天幕','前庭小，鞋子與裝備容易淋雨'],
+  fit:'剛開始露營的人、小家庭，或打算搭配天幕使用的人。'},
+ {id:'domeVest',name:'圓頂帳＋前庭',lead:'圓頂主體往前延伸出一段有遮蔽的前庭。',m:{L:500,W:280,H:150,shape:'domeVest',color:0xb9a886,inner:{l:265,w:265,from:55}},
+  size:'約 500 × 280 × 高 150 cm',cap:'4–5 人',time:'15–20 分鐘',crew:'2 人',r:[3,3,4,3,4,3],
+  pros:['前庭可以放鞋子與裝備，下雨時進出不會直接淋到內帳','主體仍是自立式，結構穩','比一房一廳輕巧，收納與重量負擔較小'],
+  cons:['總長度拉長，小營位要先確認放不放得下','前庭高度低，不能站著活動','營繩與營釘數量比單純圓頂帳多'],
+  fit:'想要一點遮蔽空間、但不想帶大型帳的家庭。'},
+ {id:'tworoom',name:'一房一廳',lead:'臥室與客廳合在同一頂帳裡的大型家庭帳。',m:{L:600,W:380,H:210,shape:'tworoom',color:0x8c7b62,inner:{l:230,w:340,from:35}},
+  size:'約 600 × 380 × 高 210 cm',cap:'4–6 人',time:'30–40 分鐘',crew:'2 人',r:[2,5,3,1,2,4],
+  pros:['睡覺與活動空間一頂搞定，不必另搭天幕','內部可以站立，長時間待在帳內也舒服','四面可開紗網或全部關上，雨天、冬天都好用','客廳能關起來，隱私性好'],
+  cons:['體積大、重量重，很佔車內空間','搭設需要兩個人和比較長的時間','佔地大，訂位前要確認營位尺寸','價格偏高','迎風面積大，強風時要確實下釘、拉好營繩'],
+  fit:'以舒適為優先的家庭，或常在雨天、冬天露營的人。'},
+ {id:'tunnel',name:'隧道帳',lead:'多支拱形營柱平行排列，撐出長條形的空間。',m:{L:640,W:300,H:195,shape:'tunnel',color:0xc7a56c,inner:{l:220,w:280,from:15}},
+  size:'約 640 × 300 × 高 195 cm',cap:'4–5 人',time:'20–30 分鐘',crew:'2 人',r:[3,5,3,2,3,4],
+  pros:['同樣的佔地下，內部空間方正、好利用','營柱等長又平行，穿桿的步驟單純','客廳長，適合多人圍坐或併桌'],
+  cons:['不是自立式，一定要下釘拉繩才站得住，硬地或棧板比較麻煩','側面受風面積大，要順著風向搭設','長度長，營位的長邊要夠'],
+  fit:'多人同行、重視客廳空間，而且營地可以確實下釘的人。'},
+ {id:'bell',name:'神殿／鐘型帳',lead:'一根中柱加一圈矮牆，圓形的經典造型。',m:{L:400,W:400,H:250,shape:'bell',color:0xe8dfc8,wall:75},
+  size:'直徑約 400 × 高 250 cm',cap:'4–6 人',time:'20–30 分鐘',crew:'1–2 人',r:[3,4,3,1,2,3],
+  pros:['外型好看，適合佈置風格露營','中央挑高，空間感好','多為棉布或混紡材質，透氣、不容易結露','只有一根中柱，結構簡單'],
+  cons:['棉布材質重，淋濕後更重，收帳後要曬乾否則容易發霉','圓形佔地大，而且一整圈都要下釘拉繩','中柱立在正中央，會影響擺設','邊牆低，靠邊的空間不能站','價格偏高'],
+  fit:'重視氛圍與拍照、開車露營且不介意重量的人。'},
+ {id:'cabin',name:'速搭方形帳',lead:'骨架與帳體連在一起，撐開就成形。',m:{L:300,W:300,H:210,shape:'cabin',color:0x6d8794},
+  size:'約 300 × 300 × 高 210 cm',cap:'4–5 人',time:'3–5 分鐘',crew:'1 人',r:[5,4,2,1,3,4],
+  pros:['把骨架撐開就完成，搭設最快','牆面接近垂直，空間利用率高，可以站立','一個人就能搭好'],
+  cons:['收納長度長，常超過 100 cm，小車不好放','重量重','骨架關節多，強風下比較容易受損，維修也不容易','多數需要另搭天幕或前庭才有客廳'],
+  fit:'想省下搭帳時間、車內空間夠放長件裝備的人。'},
+ {id:'carside',name:'車邊帳',lead:'一側靠在車上，把車身當成一面牆的斜頂帳。',m:{L:250,W:250,H:200,shape:'carside',color:0xb9a886},car:true,
+  size:'約 250 × 250 × 高 200 cm',cap:'2–4 人（當客廳用）',time:'10–15 分鐘',crew:'1–2 人',r:[4,3,2,4,4,4],
+  pros:['利用車身當牆，用料少、收納小','和車內連通，拿東西方便，也適合搭配車泊','很快就有一個遮陽擋雨的客廳'],
+  cons:['車子一開走，帳就得拆掉或另外支撐','和車身的接縫不容易完全密合，雨水與蚊蟲可能跑進來','會受車高與車型限制','抗風主要靠車身與營繩，強風時要留意'],
+  fit:'車泊、短天數的輕便露營，或想加一個客廳空間的人。'},
+ {id:'pyramid',name:'金字塔帳（印地安帳）',lead:'一根中柱把帳布撐成錐形，四周用營釘固定。',m:{L:400,W:400,H:250,shape:'pyramid',color:0xd8c9a3},
+  size:'約 400 × 400 × 高 250 cm',cap:'3–5 人',time:'10–15 分鐘',crew:'1 人',r:[4,3,4,3,3,3],
+  pros:['一根中柱加一圈營釘就完成，搭設快','錐形受風面小，抗風表現好','中央挑高','結構簡單，收納相對小'],
+  cons:['不是自立式，一定要下釘','中柱在正中間，會影響床位配置','牆面是斜的，靠邊的可用高度低，實際能用的空間比佔地小','門開在斜面上，下雨時開門雨水容易進來'],
+  fit:'人數不多、喜歡簡單結構，或會遇到風的營地。'},
+ {id:'air',name:'充氣帳',lead:'用充氣的氣柱取代營柱，打氣就立起來。',m:{L:600,W:320,H:200,shape:'air',color:0x7d9aa6},
+  size:'約 600 × 320 × 高 200 cm',cap:'4–6 人',time:'10–15 分鐘',crew:'1 人',r:[5,5,3,1,1,4],
+  pros:['打氣就能立起來，不用穿營柱，一個人也能完成','沒有金屬營柱，不會折斷；遇到強風氣柱會彎曲再回彈','多為大型家庭帳，空間大'],
+  cons:['價格高','重量與收納體積都大','要帶打氣筒；氣柱破損或漏氣就無法使用，需要準備修補包','高溫曝曬下氣壓會升高，要留意','收帳時排氣、摺疊比較費工'],
+  fit:'預算充足、想省下穿營柱力氣的家庭。'},
+ {id:'rooftop',name:'車頂帳',lead:'固定在車頂架上，打開就能睡的帳篷。',m:{L:210,W:130,H:120,color:0x5f6b63},
+  size:'約 210 × 130 × 高 120 cm（展開後）',cap:'2–3 人',time:'2–5 分鐘',crew:'1 人',r:[5,1,3,2,1,3],
+  pros:['打開就能睡，搭設最快','睡在離地的高度，不受地面潮濕、不平或蟲蛇影響','不佔營位地面，有車位就能過夜','寢具可以留在帳內一起收'],
+  cons:['價格高，還需要車頂架與足夠的車頂荷重','增加車高與風阻，進地下停車場要注意高度','上下要爬梯子，夜間、小孩與長輩比較不方便','車子一開走，營地就跟著走','只有睡覺的空間'],
+  fit:'常移動、公路旅行式的玩法，或營地地面條件不好的時候。'},
+ {id:'solo',name:'單人登山帳',lead:'以輕量與小體積為優先的低矮小帳。',m:{L:250,W:110,H:100,shape:'domeVest',color:0x6f8160},
+  size:'約 250 × 110 × 高 100 cm（含前庭）',cap:'1 人',time:'5–10 分鐘',crew:'1 人',r:[4,1,4,5,3,3],
+  pros:['重量輕、收納小，可以背著走，也適合機車或單車旅行','佔地小，找營地容易','低矮的流線外型，抗風好'],
+  cons:['裡面只能坐著或躺著','裝備多半要放在前庭','輕量布料比較薄，使用時要小心','內外帳距離近，容易結露'],
+  fit:'登山、徒步、單車或機車旅行等需要自己背負裝備的人。'}
+];

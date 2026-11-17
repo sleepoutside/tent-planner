@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Sleepoutside Camp">
+<meta name="description" content="選一頂帳，把床墊一張張放進內帳，拖一拖、轉一轉，看看到底睡得下幾個人。">
+<link rel="canonical" href="https://sleepoutside.github.io/tent-planner/sleep.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sleepoutside Camp">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="帳內睡鋪模擬｜這頂帳睡得下幾個人">
+<meta property="og:description" content="選一頂帳，把床墊一張張放進內帳，拖一拖、轉一轉，看看到底睡得下幾個人。">
+<meta property="og:url" content="https://sleepoutside.github.io/tent-planner/sleep.html">
+<meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-sleep.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <title>帳內睡鋪模擬｜這頂帳睡得下幾個人</title>
 <style>
   :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;color-scheme:light}
@@ -155,7 +167,7 @@ var TENTS=[
  {id:'custom',brand:'自訂',name:'自訂尺寸',sku:'',L:450,W:300,H:180,shape:'dome',cap:'',color:0xc98a55}
 ];
 var MATS=[{id:'single',name:'單人睡墊',w:65,l:195,col:0x3f7fc0},{id:'double',name:'雙人床墊',w:140,l:200,col:0x4c9a7a},{id:'large',name:'加大雙人',w:200,l:200,col:0xc08a3f},{id:'xl',name:'特大',w:270,l:200,col:0x9a5fb0}];
-/* builders shared with the simulator (copied from index.html) */
+/* ---------- builders shared with the simulator (copied from index.html by tools/build.py) ---------- */
 function rnd(seed){var s=seed;return function(){s=(s*9301+49297)%233280;return s/233280}}
 function tex(kind){
   var cv=document.createElement('canvas'); cv.width=cv.height=256; var g=cv.getContext('2d'); var r=rnd(7),i;

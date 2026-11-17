@@ -24,3 +24,7 @@
 3D 外型為依結構類型製作的通用造型，非各型號的複刻。資訊僅供參考，請依官方資訊為準。
 
 設計/Sleepoutside Camp　*非營利使用
+
+## 開發
+
+`types.html`、`fire.html`、`sleep.html` 由 `tools/build.py` 產生，請勿直接編輯。架構、流程與注意事項見 [HANDOFF.md](HANDOFF.md)。

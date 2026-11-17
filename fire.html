@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Sleepoutside Camp">
+<meta name="description" content="換焚火台、換燃料、調風向，把帳篷和天幕拖來拖去，看看離火多遠才安心。">
+<link rel="canonical" href="https://sleepoutside.github.io/tent-planner/fire.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sleepoutside Camp">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="焚火安全模擬｜焚火台、燃料與安全距離">
+<meta property="og:description" content="換焚火台、換燃料、調風向，把帳篷和天幕拖來拖去，看看離火多遠才安心。">
+<meta property="og:url" content="https://sleepoutside.github.io/tent-planner/fire.html">
+<meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-fire.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <title>焚火安全模擬｜焚火台、燃料與安全距離</title>
 <style>
   :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;--amber:#a86a12;--amber-soft:#fbefd2;color-scheme:light}
@@ -164,7 +176,7 @@ var CHECK=[
  ['燒的時候',['火邊隨時有大人在，離開就先把火處理好','小孩和寵物保持距離，不在火邊追跑','不用酒精、汽油、去漬油這類液體助燃','柴少量多次加，不堆到超出爐口','穿棉質或防火材質的衣服，化纖外套遇到火星會熔出洞','風變大就不再加柴，必要時提早滅火']],
  ['收的時候',['睡前和離開前，把火完全熄滅，不留著讓它自己燒完','慢慢澆水或放進滅火桶，翻一翻，再澆一次','用手背靠近確認沒有餘溫，才算真的熄了','灰和炭放涼後裝袋帶走或丟到營區指定的地方，不埋在土裡','檢查地面有沒有燒焦的痕跡，恢復原狀']]
 ];
-/* ---------- builders shared with the simulator (copied from index.html) ---------- */
+/* ---------- builders shared with the simulator (copied from index.html by tools/build.py) ---------- */
 function rnd(seed){var s=seed;return function(){s=(s*9301+49297)%233280;return s/233280}}
 function tex(kind){
   var cv=document.createElement('canvas'); cv.width=cv.height=256; var g=cv.getContext('2d'); var r=rnd(7),i;
