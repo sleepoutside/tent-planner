@@ -2,11 +2,11 @@
 
 給之後接手這個專案的人或 AI。先讀完「一定要知道的五件事」，再動手。
 
-最後更新：2026-11-17
+最後更新：2026-11-19
 
 ## 一定要知道的五件事
 
-1. **`types.html`、`tarps.html`、`fire.html`、`sleep.html` 是產生出來的，不要直接改。** 要改就改 `tools/tpl/` 裡的範本，再跑 `python3 tools/build.py`。直接改這三個檔，下次產生時會被蓋掉。
+1. **`types.html`、`tarps.html`、`fire.html`、`sleep.html`、`weather.html` 是產生出來的，不要直接改。** 要改就改 `tools/tpl/` 裡的範本，再跑 `python3 tools/build.py`。直接改這三個檔，下次產生時會被蓋掉。
 2. **`index.html` 是所有 3D 造型的唯一來源。** 另外三頁的帳篷、人物、車子造型，都是 `tools/build.py` 從 `index.html` 複製過去的。改了 `index.html` 裡的造型函式或 `TENTS` 資料，就要重跑 `tools/build.py`。
 3. **每次改完要推兩個分支**：`main` 和 `gh-pages`。目前不確定 GitHub Pages 用哪一個，所以兩個都推（指令見下方）。
 4. **不可複刻真實產品的外觀。** 品牌帳款只使用廠商公布的尺寸，3D 外型一律是依結構類型做的通用造型；車子也是通用車型，不仿特定車款。這是站主的明確要求。
@@ -29,11 +29,12 @@
 | `tarps.html` | 天幕搭法 3D 介紹（8 種）。**產生檔** |
 | `fire.html` | 焚火安全模擬。**產生檔** |
 | `sleep.html` | 帳內睡鋪模擬。**產生檔** |
+| `weather.html` | 營地天氣模擬。**產生檔** |
 | `og-*.jpg` | 各頁的分享預覽圖（1200×630） |
 | `tools/build.py` | 由 `index.html` + 範本產生上面三個頁面 |
 | `tools/tpl/types_head.html`、`types_tail.js` | 帳型頁範本（HTML/CSS/資料，與尾段程式） |
-| `tools/tpl/tarps.html`、`fire.html`、`sleep.html` | 天幕搭法頁、焚火頁、睡鋪頁範本，內有 `/*BUILDERS*/`（及 `/*DATA*/`）佔位符 |
-| `tools/smoke.py` | 冒煙測試：四頁 × 電腦／手機尺寸，檢查 JS 錯誤與水平溢出 |
+| `tools/tpl/tarps.html`、`fire.html`、`sleep.html`、`weather.html` | 天幕搭法頁、焚火頁、睡鋪頁、天氣頁範本，內有 `/*BUILDERS*/`（及 `/*DATA*/`）佔位符 |
+| `tools/smoke.py` | 冒煙測試：六頁 × 電腦／手機尺寸，檢查 JS 錯誤與水平溢出 |
 | `tools/make_og.py` | 重新產生分享預覽圖 |
 | `README.md` | 功能清單（對外） |
 
@@ -95,6 +96,14 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 - **tarps.html**：`PITCHES` 每筆是一種搭法，用 `net`（布面控制點，公尺）、`poles`、`ropes`、`pegs` 描述，`buildPitch()` 依此畫出布面、營柱、營繩。**新增搭法只要在 `PITCHES` 加一筆資料**，不用改造型程式。`net` 可以有兩排以上（蝶形天幕用四排，兩端各一排重合的點當尖端）；`car:[x,z]` 會放一台車。這頁目前沒有「帶進搭設模擬」的按鈕。
 - **fire.html**：六種焚火台、五種燃料、風向風力；判斷邏輯在 `judge()`。
 - **sleep.html**：內帳範圍由 `sleepArea()`（複製自 `index.html`）決定；床墊可混搭、拖曳、轉向，`autoArrange()` 自動排列。
+- **weather.html**（營地天氣模擬，2026-11-19 第一階段）：
+  - **資料都來自另一個 repo `sleepoutside/hero-camping-map`（勇者露營天氣查詢）**，同網域直接讀：`places.json`（熱點與營地清單，營地索引與天氣站的 `?camp=` 一致）、`cwa.json`（氣象署鄉鎮預報）、`om_hot.json`（熱點的 Open-Meteo 預報，含多模型雨量，由那邊的 GitHub Actions 排程每 6 小時更新）。在 `*.github.io` 用相對路徑 `/hero-camping-map/`，其他地方（含本機 file://）用完整網址。
+  - 熱點優先用 `om_hot.json`（12 小時內且有風向欄位才用）；營地或資料過期時即時向 Open-Meteo 抓單點每小時資料，多模型雨量另外抓、晚到也沒關係。
+  - 時間軸：週五 12:00 到週日 12:00（已過的部分從現在開始），一律用台灣時間的字串鍵 `YYYY-MM-DDTHH:00`（`keyMs`／`msKey`），不依賴瀏覽器時區。
+  - 太陽位置 `sunPos()` 依經緯度計算；場景北方是 -z、東方是 +x。風向是「風從哪裡來」（氣象慣例），畫箭頭與雨絲時要加 180°。
+  - 網址參數：`?camp=<索引>` 或 `?hot=<鄉鎮名>`，加 `&h=MM-DD-HH` 指定時間。天氣站冒險情報的「3D 天氣模擬」按鈕會帶 `camp`／`hot` 過來。
+  - 分享預覽圖 `og-weather.jpg`：`tools/make_og.py weather` 需要能連到天氣站與 Open-Meteo 才畫得出天氣，連不到時頁面只會顯示讀取訊息。
+  - **第二階段（還沒做）**：帶入搭設模擬的單一營位配置（`#s=`），依配置判斷門口迎風、天幕遮雨範圍；星空月相與帳篷結露水氣的視覺。
 
 ## 內容來源與站主已知的限制
 
@@ -104,12 +113,12 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 
 ## 計數器
 
-- **GoatCounter**：`https://tent-planner.goatcounter.com`，四頁都有載入，供站主在後台看流量。
+- **GoatCounter**：`https://tent-planner.goatcounter.com`，每頁都有載入，供站主在後台看流量。
 - **畫面上的「瀏覽 N 次」**：用 Abacus（`abacus.jasoncameron.dev`，鍵 `sleepoutside-tent-planner/views`）。只在 `*.github.io` 網域下才累加，其他地方只讀取。站主要求畫面上只顯示瀏覽次數，不顯示人次。
 
 ## 分享預覽
 
-四頁的 `<head>` 都有 `og:*` 與 `twitter:card` 標籤，圖片是 `og-*.jpg`。網址寫死為 `https://sleepoutside.github.io/tent-planner/`；若日後換網域，要改 `index.html` 與三個範本裡的網址。LINE、臉書會快取預覽，更新圖片後可能要一段時間才會生效。
+每頁的 `<head>` 都有 `og:*` 與 `twitter:card` 標籤，圖片是 `og-*.jpg`。網址寫死為 `https://sleepoutside.github.io/tent-planner/`；若日後換網域，要改 `index.html` 與三個範本裡的網址。LINE、臉書會快取預覽，更新圖片後可能要一段時間才會生效。
 
 ## 討論過但還沒做的
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the 1200x630 share-preview images (og-index.jpg, og-types.jpg, og-tarps.jpg, og-fire.jpg, og-sleep.jpg).
+"""Render the 1200x630 share-preview images (og-index.jpg, og-types.jpg, og-tarps.jpg, og-fire.jpg, og-sleep.jpg, og-weather.jpg).
 
 Needs: playwright (python) + Google Chrome, and a local copy of three.js r128:
     THREE_JS=/path/to/three.min.js python3 tools/make_og.py
@@ -15,7 +15,8 @@ PAGES = {'index': ('帳篷 × 營位', '3D 搭設模擬', '選帳、選營位，
          'types': ('帳篷型式', '3D 介紹與優缺點', '11 種帳型加 2 種天幕的優缺點'),
          'tarps': ('天幕搭法', '3D 介紹', '同一張天幕的八種搭法'),
          'fire': ('焚火安全模擬', '', '焚火台、燃料、風向與安全距離'),
-         'sleep': ('帳內睡鋪模擬', '', '這頂帳到底睡得下幾個人')}
+         'sleep': ('帳內睡鋪模擬', '', '這頂帳到底睡得下幾個人'),
+         'weather': ('營地天氣模擬', '', '拖曳時間軸，用 3D 看週末每小時的雨、風和日夜')}
 WIDE = '.stage > *:not(canvas){display:none!important} .stage{height:820px!important}'
 BOX = ('.stage > *:not(canvas){display:none!important} .stage{position:fixed!important;left:0;top:0;'
        'width:860px!important;height:630px!important;z-index:999;border-radius:0!important;border:0!important}')
@@ -23,7 +24,10 @@ BOX = ('.stage > *:not(canvas){display:none!important} .stage{position:fixed!imp
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path=CHROME, args=ARGS)
+        import sys
+        only = sys.argv[1:]
         for n, (t1, t2, sub) in PAGES.items():
+            if only and n not in only: continue
             pg = await b.new_page(viewport={'width': 2200, 'height': 1000}, device_scale_factor=1 if n == 'index' else 2)
             async def three(r):
                 if THREE: await r.fulfill(path=THREE, content_type='application/javascript')
