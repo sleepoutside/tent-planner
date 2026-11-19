@@ -44,6 +44,11 @@
   .tlh b{color:var(--ink);font-size:14px}
   .tlh .sp{flex:1}
   .tlh button,.tools button,.tools a{font:inherit;font-size:13px;color:inherit;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+  .recwrap{position:relative;display:inline-block}
+  .recmenu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:190px}
+  .recmenu[hidden]{display:none}
+  .tlh .recmenu button{border-radius:8px;text-align:left;width:100%}
+  .recmenu small{display:block;font-size:11.5px;color:var(--muted)}
   .tlh button#rec.on{background:var(--warn);border-color:var(--warn);color:#fff}
   .tlh button:hover,.tools button:hover,.tools a:hover{border-color:var(--accent);color:var(--accent)}
   .bars{position:relative;height:72px;display:flex;align-items:flex-end;gap:1px;border-bottom:1px solid var(--line);cursor:pointer;touch-action:none}
@@ -155,7 +160,7 @@
       <div class="err" id="err">3D 元件載入失敗，請重新整理頁面再試一次。</div>
     </div>
     <div class="tl">
-      <div class="tlh"><b id="tlNow">—</b><span class="sp"></span><button type="button" id="play" aria-label="自動播放">▶ 播放</button><button type="button" id="rec" title="從頭播完整個週末，存成影片">🎬 錄成影片</button><button type="button" id="nowBtn">回到現在</button></div>
+      <div class="tlh"><b id="tlNow">—</b><span class="sp"></span><button type="button" id="play" aria-label="自動播放">▶ 播放</button><span class="recwrap"><button type="button" id="rec" title="從頭播完整個週末，存成影片" aria-haspopup="true" aria-expanded="false">🎬 錄成影片</button><span class="recmenu" id="recMenu" hidden><button type="button" data-v="0">▭ 橫式 16:9</button><button type="button" data-v="1">▯ 直式 9:16<small>手機全螢幕、限時動態</small></button></span></span><button type="button" id="nowBtn">回到現在</button></div>
       <div class="bars" id="bars" role="presentation"></div>
       <div class="ax" id="ax"></div>
       <input type="range" id="slider" min="0" max="0" value="0" aria-label="選擇時間">
@@ -418,7 +423,8 @@ function rainHour(h){ return h&&!h.miss&&(h.mm>=.3||h.maybe); }
 function sunHour(h){ return h&&!h.miss&&h.sun>3&&h.sun<45&&(h.cc==null||h.cc<60)&&h.mm<.1&&+h.k.slice(11,13)>=12; }
 function wetList(h){ var out=[]; if(!rainHour(h)) return out; ITEMS.forEach(function(it){ if(it.k!=='fire'&&wetAt(it.pw,it.h,h)) out.push(it.n); }); DOORS.forEach(function(d){ if(wetAt(d.pw,1.0,h)) out.push(d.n); }); return out; }
 function sunList(h){ var out=[]; if(!sunHour(h)) return out; ITEMS.forEach(function(it){ if((it.k==='table'||it.k==='chair')&&!shadeAt(it.pw,it.h,h)) out.push(it.n); }); return out; }
-function doorWind(h){ var d=DOORS[0]; if(!d||h.wd==null||h.ws==null) return null; var x=angDiff(d.b,h.wd); return x<=45?2:x<=100?1:0; }
+function doorWind(h){ var d=DOORS[0]; if(!d||h.wd==null||h.ws==null) return null; if(Math.max(h.ws||0,h.wg||0)<3) return -1; var x=angDiff(d.b,h.wd); return x<=45?2:x<=100?1:0; }
+function doorTxt(x){ return x<0?'風小':['背風','側風','迎風'][x]; }
 
 /* labels drawn on the scene for the selected hour */
 var judgeG=new THREE.Group(); scene.add(judgeG);
@@ -594,7 +600,7 @@ function drawHour(){
     +'<dt>雲量</dt><dd>'+(h.cc!=null?Math.round(h.cc)+'%':'—')+'</dd>'
     +'<dt>濕度</dt><dd>'+(h.rh!=null?Math.round(h.rh)+'%':'—')+(dr!=null?'，結露 '+['低','中','高'][dr]:'')+'</dd>'
     +'<dt>能見度</dt><dd>'+visT+'</dd>'
-    +(DOORS[0]&&h.wd!=null?'<dt>門口（朝'+dirName(DOORS[0].b)+'）</dt><dd style="color:'+['var(--accent)','var(--amber)','var(--warn)'][doorWind(h)]+'">'+['背風','側風','迎風'][doorWind(h)]+'</dd>':'')
+    +(DOORS[0]&&h.wd!=null?'<dt>門口（朝'+dirName(DOORS[0].b)+'）</dt><dd style="color:'+(['var(--accent)','var(--amber)','var(--warn)'][doorWind(h)]||'inherit')+'">'+doorTxt(doorWind(h))+'</dd>':'')
     +(rainHour(h)?'<dt>會淋到</dt><dd style="color:'+(wetList(h).length?'var(--rain)':'var(--accent)')+'">'+(wetList(h).length?esc(wetList(h).join('、')):'都在天幕下')+'</dd>':'')
     +(sunHour(h)&&ITEMS.some(function(i){ return i.k==='table'||i.k==='chair'; })?'<dt>日曬</dt><dd>'+(sunList(h).length?esc(sunList(h).join('、'))+'曬得到':'桌椅在陰影下')+'</dd>':'')
     +(h.sun<0&&h.moon?'<dt>月亮</dt><dd>'+h.moon.name+'（'+Math.round(h.moon.frac*100)+'%）'+(h.moon.alt>0?'，在'+dirName(h.moon.az)+'方':'，還沒升起')+'</dd>':'')
@@ -690,7 +696,7 @@ var REC=null;
 function recType(){ var c=['video/mp4;codecs=avc1.42E01E','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']; for(var i=0;i<c.length;i++){ if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(c[i])) return c[i]; } return ''; }
 function rrect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
 function recFrame(){
-  var R=REC,g=R.g,W=R.c.width,H=R.c.height,k=W/1280,h=HRS[CUR]; if(!h) return;
+  var R=REC,g=R.g,W=R.c.width,H=R.c.height,k=W/1280,h=HRS[CUR]; if(!h) return; if(R.v){ recFrameV(R,h); return; }
   g.drawImage(renderer.domElement,0,0,W,H);
   var F='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
   /* caption box */
@@ -710,21 +716,52 @@ function recFrame(){
   g.fillText('營地天氣模擬',W-24*k,H-66*k-bh); g.font='600 '+Math.round(16*k)+'px '+F; g.fillText('依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',W-24*k,H-66*k-bh-26*k);
   g.shadowBlur=0; g.textAlign='left';
 }
+function recFrameV(R,h){
+  var g=R.g,W=1080,VA=R.va,F='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif',y0=VA;
+  g.drawImage(renderer.domElement,0,0,W,VA);
+  g.fillStyle='#f4f0e6'; g.fillRect(0,y0,W,1920-y0); g.fillStyle='#d9d3c3'; g.fillRect(0,y0,W,3);
+  function t(x,y,str,size,col,wt,al){ g.font=(wt||700)+' '+size+'px '+F; g.fillStyle=col||'#22302a'; g.textAlign=al||'left'; g.fillText(str,x,y); }
+  function fit(str,size,maxw,wt){ g.font=(wt||700)+' '+size+'px '+F; while(g.measureText(str).width>maxw&&str.length>3) str=str.slice(0,-2)+'…'; return str; }
+  var vb=$('verdict').querySelector('b').textContent||'',lv=/不建議/.test(vb)?2:/普通/.test(vb)?1:0,vc=['#2f6b4f','#a86a12','#b8472a'][lv],vbg=['#e2eee6','#fbefd2','#f8e4dc'][lv];
+  g.font='900 34px '+F; var vw=g.measureText(vb).width+40; g.fillStyle=vbg; rrect(g,W-60-vw,y0+38,vw,56,12); g.fill(); t(W-60-vw/2,y0+78,vb,34,vc,900,'center');
+  t(60,y0+82,fit(PL?PL.name:'',46,W-180-vw,900),46,'#22302a',900);
+  t(60,y0+138,kLabel(h.k)+(h.miss?'':'　'+(h.mm>=.3?'下雨':h.maybe?'可能下雨':wlabel(h.code))),34,'#66736b',700);
+  if(!h.miss){
+    t(60,y0+270,(h.temp!=null?Math.round(h.temp)+'°':'—'),130,'#22302a',900); g.font='900 130px '+F; var tw=g.measureText(h.temp!=null?Math.round(h.temp)+'°':'—').width;
+    t(80+tw,y0+232,wicon(h),70,'#22302a',400); t(80+tw,y0+272,'雨 '+(Math.round(h.mm*10)/10)+' mm',34,h.mm>=.1?'#2f7fb8':'#66736b',700);
+    var rows=[['風',h.wd!=null?dirName(h.wd)+'風 '+bft(Math.max(h.ws||0,h.wg||0))+' 級'+(h.wg!=null?'（陣風 '+Math.round(h.wg)+' m/s）':''):'—'],['濕度',(h.rh!=null?Math.round(h.rh)+'%':'—')+(dewRisk(h)!=null?'，結露 '+['低','中','高'][dewRisk(h)]:'')]];
+    if(DOORS[0]&&h.wd!=null) rows.push(['門口（朝'+dirName(DOORS[0].b)+'）',doorTxt(doorWind(h))]);
+    if(rainHour(h)) rows.push(['會淋到',wetList(h).length?wetList(h).join('、'):'都在天幕下']);
+    else if(sunHour(h)&&ITEMS.some(function(i){ return i.k==='table'||i.k==='chair'; })) rows.push(['日曬',sunList(h).length?sunList(h).join('、')+'曬得到':'桌椅在陰影下']);
+    else if(h.sun<0&&h.moon) rows.push(['月亮',h.moon.name+'（'+Math.round(h.moon.frac*100)+'%）']);
+    var y=y0+340; rows.slice(0,4).forEach(function(r){ t(60,y,r[0],32,'#66736b',600); t(W-60,y,fit(r[1],36,W-380,800),36,r[1]==='迎風'||r[0]==='會淋到'&&r[1]!=='都在天幕下'?'#b8472a':'#22302a',800,'right'); y+=62; });
+  }
+  /* mini timeline with day labels */
+  var x0=60,x1=W-60,yb=y0+660,bh=70,n=HRS.length,cw=(x1-x0)/n,mx=Math.max(2,Math.max.apply(null,HRS.map(function(q){ return q.mm||0; })));
+  g.fillStyle='#fbf9f3'; rrect(g,x0-14,yb-bh-14,x1-x0+28,bh+66,14); g.fill();
+  HRS.forEach(function(q,i){ var x=x0+i*cw; if(q.sun<-3){ g.fillStyle='rgba(28,41,68,.13)'; g.fillRect(x,yb-bh,cw,bh); }
+    var v=q.miss?0:q.mm>=.1?Math.max(.12,Math.sqrt(q.mm/mx)):q.maybe?.2:0; if(v){ g.fillStyle=q.mm>=.3?'#2f7fb8':q.mm>=.1?'rgba(47,127,184,.45)':'rgba(47,127,184,.3)'; g.fillRect(x+.5,yb-bh*v,cw-1,bh*v); }
+    if(q.k.slice(11,13)==='00'||i===0){ t(x+4,yb+36,'週'+WDN[kDow(q.k)],26,'#66736b',700); g.fillStyle='#b9b2a0'; g.fillRect(x,yb-bh,1.5,bh); } });
+  g.fillStyle='#b8472a'; g.fillRect(x0+CUR*cw-1,yb-bh-8,Math.max(4,cw+2),bh+16);
+  t(W/2,1920-34,'營地天氣模擬 · 依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',24,'#66736b',600,'center'); g.textAlign='left';
+}
 function recStop(save){
-  var R=REC; if(!R) return; REC=null; clearInterval(R.t); if(renderer.getPixelRatio()!==R.pr){ renderer.setPixelRatio(R.pr); renderer.setSize(canvas.clientWidth,canvas.clientHeight,false); } var b=$('rec'); b.classList.remove('on'); b.textContent='🎬 錄成影片'; $('play').disabled=false;
+  var R=REC; if(!R) return; REC=null; clearInterval(R.t); canvas.style.objectFit=''; if(renderer.getPixelRatio()!==R.pr) renderer.setPixelRatio(R.pr); resize(); if(HRS[CUR]) buildWind(HRS[CUR]); var b=$('rec'); b.classList.remove('on'); b.textContent='🎬 錄成影片'; $('play').disabled=false;
   if(R.mr.state!=='inactive'){ R.save=save; R.mr.stop(); }
 }
-function recStart(){
+function recStart(vert){
   if(REC){ recStop(false); toast('已取消錄影'); return; }
   if(!HRS.length) return; var type=recType(),src=renderer.domElement;
   if(!type||!src.captureStream&&!HTMLCanvasElement.prototype.captureStream){ toast('這個瀏覽器不支援錄影，請改用電腦版 Chrome 或 Edge'); return; }
-  stopPlay(); var cw0=canvas.clientWidth||src.width,pr0=renderer.getPixelRatio(); if(cw0*pr0<1280){ renderer.setPixelRatio(Math.min(3,1280/cw0)); renderer.setSize(canvas.clientWidth,canvas.clientHeight,false); }
-  var W=Math.min(1280,src.width),H=Math.round(W*src.height/src.width/2)*2; W=Math.round(W/2)*2;
+  stopPlay(); var cw0=canvas.clientWidth||src.width,pr0=renderer.getPixelRatio(),W,H,VA=1100;
+  if(vert){ canvas.style.objectFit='cover'; renderer.setPixelRatio(1); renderer.setSize(864,Math.round(VA*.8),false); camera.aspect=1080/VA; camera.updateProjectionMatrix(); cam.r=(cam.base||17)*1.02; W=1080; H=1920; }
+  else{ if(cw0*pr0<1280){ renderer.setPixelRatio(Math.min(3,1280/cw0)); renderer.setSize(canvas.clientWidth,canvas.clientHeight,false); } W=Math.min(1280,src.width); H=Math.round(W*src.height/src.width/2)*2; W=Math.round(W/2)*2; }
   var c=document.createElement('canvas'); c.width=W; c.height=H; var st=c.captureStream(30),chunks=[],mr;
-  try{ mr=new MediaRecorder(st,{mimeType:type,videoBitsPerSecond:6e6}); }catch(e){ toast('這個瀏覽器不支援錄影'); return; }
-  REC={c:c,g:c.getContext('2d'),mr:mr,save:true,pr:pr0};
+  try{ mr=new MediaRecorder(st,{mimeType:type,videoBitsPerSecond:vert?8e6:6e6}); }catch(e){ canvas.style.objectFit=''; renderer.setPixelRatio(pr0); resize(); toast('這個瀏覽器不支援錄影'); return; }
+  REC={c:c,g:c.getContext('2d'),mr:mr,save:true,pr:pr0,v:!!vert,va:VA}; if(vert&&HRS[CUR]) buildWind(HRS[CUR]);
+  var R0v=!!vert;
   mr.ondataavailable=function(e){ if(e.data&&e.data.size) chunks.push(e.data); };
-  mr.onstop=function(){ if(!mr._save) return; var mp4=type.indexOf('mp4')>=0,blob=new Blob(chunks,{type:mp4?'video/mp4':'video/webm'}),fn=(PL?PL.name:'營地')+'_週末天氣.'+(mp4?'mp4':'webm'),file=null;
+  mr.onstop=function(){ if(!mr._save) return; var mp4=type.indexOf('mp4')>=0,blob=new Blob(chunks,{type:mp4?'video/mp4':'video/webm'}),fn=(PL?PL.name:'營地')+'_週末天氣'+(R0v?'_直式':'')+'.'+(mp4?'mp4':'webm'),file=null;
     try{ file=new File([blob],fn,{type:blob.type}); }catch(e){}
     var mob=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
     if(mob&&file&&navigator.canShare&&navigator.canShare({files:[file]})){ navigator.share({files:[file],title:fn}).catch(function(){ dl(); }); } else dl();
@@ -735,7 +772,11 @@ function recStart(){
   var i=0,N=HRS.length; b.textContent='■ 錄影中 0%（再按取消）';
   REC.t=setInterval(function(){ i++; if(i>=N){ clearInterval(REC.t); setTimeout(function(){ if(REC){ mr._save=true; recStop(true); } },900); return; } setHour(i,true); b.textContent='■ 錄影中 '+Math.round(i/(N-1)*100)+'%（再按取消）'; },500);
 }
-$('rec').addEventListener('click',function(){ if(REC){ REC.mr._save=false; recStop(false); toast('已取消錄影'); return; } recStart(); });
+$('rec').addEventListener('click',function(e){ if(REC){ REC.mr._save=false; recStop(false); toast('已取消錄影'); return; }
+  var m=$('recMenu'),open=m.hidden; m.hidden=!open; $('rec').setAttribute('aria-expanded',String(open));
+  if(open){ var mob=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent); m.querySelectorAll('button')[mob?1:0].focus(); } e.stopPropagation(); });
+Array.prototype.forEach.call($('recMenu').querySelectorAll('button'),function(b){ b.addEventListener('click',function(e){ e.stopPropagation(); $('recMenu').hidden=true; $('rec').setAttribute('aria-expanded','false'); recStart(b.dataset.v==='1'); }); });
+document.addEventListener('click',function(){ if(!$('recMenu').hidden){ $('recMenu').hidden=true; $('rec').setAttribute('aria-expanded','false'); } });
 function stopPlay(){ if(playT){ clearInterval(playT); playT=null; $('play').textContent='▶ 播放'; } }
 $('play').addEventListener('click',function(){ if(playT){ stopPlay(); return; } if(!HRS.length) return; if(CUR>=HRS.length-1) setHour(0,true); $('play').textContent='⏸ 暫停'; playT=setInterval(function(){ if(CUR>=HRS.length-1){ stopPlay(); setURL(); return; } setHour(CUR+1,true); },700); });
 $('nowBtn').addEventListener('click',function(){ stopPlay(); var n=msKey(Date.now()),j=HRS.findIndex(function(h){ return h.k===n; }); setHour(j>=0?j:0); });
@@ -750,7 +791,7 @@ function hFromURL(v){ if(!v||!/^\d\d-\d\d-\d\d$/.test(v)) return null; var y=new
 /* ---------- camera + pointer ---------- */
 var cam={az:.62,el:.42,r:17,target:new THREE.Vector3(0,1,.8)};
 function applyCam(){ var ce=Math.cos(cam.el); camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az)); camera.lookAt(cam.target); }
-function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?(cam.base||17)*1.25:(cam.base||17); redraw(); }
+function resize(){ if(REC&&REC.v) return; var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?(cam.base||17)*1.25:(cam.base||17); redraw(); }
 if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElement); else window.addEventListener('resize',resize);
 var ptrs=new Map(),mode=null,last={x:0,y:0},pinch={d:1,r:1};
 function pdist(){ var a=Array.from(ptrs.values()); return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1; }
