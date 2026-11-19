@@ -460,11 +460,11 @@ function buildDew(){
 /* wind arrow on the ground */
 var windG=new THREE.Group(); scene.add(windG);
 function buildWind(h){
-  clearG(windG); if(!h||h.wd==null||h.ws==null||h.ws<.8) return;
+  clearG(windG); applyCam(); if(!h||h.wd==null||h.ws==null||h.ws<.8) return;
   var to=(h.wd+180)*Math.PI/180,dx=Math.sin(to),dz=-Math.cos(to),len=1.4+Math.min(4,h.ws*.35),am=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85});
-  var c=P(cam.target.x-dz*WR,.06,cam.target.z+dx*WR),s=c.clone().add(P(-dx*len/2,0,-dz*len/2)),e=c.clone().add(P(dx*len/2,0,dz*len/2));
+  var c1=P(cam.target.x-dz*WR,.06,cam.target.z+dx*WR),c2=P(cam.target.x+dz*WR,.06,cam.target.z-dx*WR),c=c1.distanceTo(camera.position)>=c2.distanceTo(camera.position)?c1:c2,s=c.clone().add(P(-dx*len/2,0,-dz*len/2)),e=c.clone().add(P(dx*len/2,0,dz*len/2));
   windG.add(limb(s,e,.05,.05,am,6)); var hd=new THREE.Mesh(new THREE.ConeGeometry(.18,.45,10),am); hd.position.copy(e); hd.quaternion.setFromUnitVectors(P(0,1,0),e.clone().sub(s).normalize()); windG.add(hd);
-  if(!REC){ var wl=label(dirName(h.wd)+'風 '+bft(h.ws)+' 級',1.8,'rgba(40,50,70,.85)'); wl.position.copy(s).setY(.55); windG.add(wl); }
+  var wl=label(dirName(h.wd)+'風 '+bft(h.ws)+' 級',1.8,'rgba(40,50,70,.85)'); wl.position.copy(s).setY(.55); windG.add(wl);
 }
 
 /* rain streaks */
@@ -711,7 +711,7 @@ function recFrame(){
   g.shadowBlur=0; g.textAlign='left';
 }
 function recStop(save){
-  var R=REC; if(!R) return; REC=null; clearInterval(R.t); if(renderer.getPixelRatio()!==R.pr){ renderer.setPixelRatio(R.pr); renderer.setSize(canvas.clientWidth,canvas.clientHeight,false); } if(HRS[CUR]) buildWind(HRS[CUR]); var b=$('rec'); b.classList.remove('on'); b.textContent='🎬 錄成影片'; $('play').disabled=false;
+  var R=REC; if(!R) return; REC=null; clearInterval(R.t); if(renderer.getPixelRatio()!==R.pr){ renderer.setPixelRatio(R.pr); renderer.setSize(canvas.clientWidth,canvas.clientHeight,false); } var b=$('rec'); b.classList.remove('on'); b.textContent='🎬 錄成影片'; $('play').disabled=false;
   if(R.mr.state!=='inactive'){ R.save=save; R.mr.stop(); }
 }
 function recStart(){
@@ -758,7 +758,7 @@ canvas.addEventListener('pointerdown',function(e){ try{canvas.setPointerCapture(
 canvas.addEventListener('pointermove',function(e){ if(!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(mode==='orbit'){ cam.az-=(e.clientX-last.x)*0.008; cam.el=Math.min(1.45,Math.max(0.06,cam.el+(e.clientY-last.y)*0.006)); last.x=e.clientX; last.y=e.clientY; redraw(); }
   else if(mode==='pinch'&&ptrs.size===2){ cam.r=Math.min(45,Math.max(6,pinch.r*pinch.d/pdist())); redraw(); } });
-function pend(e){ ptrs.delete(e.pointerId); if(!ptrs.size) mode=null; else if(ptrs.size===1){ mode='orbit'; var p=Array.from(ptrs.values())[0]; last.x=p.x; last.y=p.y; } }
+function pend(e){ ptrs.delete(e.pointerId); if(!ptrs.size){ mode=null; if(cur&&!cur.miss) buildWind(cur); } else if(ptrs.size===1){ mode='orbit'; var p=Array.from(ptrs.values())[0]; last.x=p.x; last.y=p.y; } }
 canvas.addEventListener('pointerup',pend); canvas.addEventListener('pointercancel',pend);
 canvas.addEventListener('wheel',function(e){ e.preventDefault(); cam.r=Math.min(45,Math.max(6,cam.r*Math.exp(e.deltaY*0.0012))); redraw(); },{passive:false});
 window.addEventListener('keydown',function(e){ if(!HRS.length||/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')) return; if(e.key==='ArrowRight'){ setHour(CUR+1); } else if(e.key==='ArrowLeft'){ setHour(CUR-1); } });
