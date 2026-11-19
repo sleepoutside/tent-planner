@@ -16,7 +16,7 @@ PAGES = {'index': ('帳篷 × 營位', '3D 搭設模擬', '選帳、選營位，
          'tarps': ('天幕搭法', '3D 介紹', '同一張天幕的八種搭法'),
          'fire': ('焚火安全模擬', '', '焚火台、燃料、風向與安全距離'),
          'sleep': ('帳內睡鋪模擬', '', '這頂帳到底睡得下幾個人'),
-         'weather': ('營地天氣模擬', '', '拖曳時間軸，用 3D 看週末每小時的雨、風和日夜')}
+         'weather': ('你的露營天氣online', '', '拖曳時間軸，用 3D 看週末每小時的雨、風和日夜')}
 WIDE = '.stage > *:not(canvas){display:none!important} .stage{height:820px!important}'
 BOX = ('.stage > *:not(canvas){display:none!important} .stage{position:fixed!important;left:0;top:0;'
        'width:860px!important;height:630px!important;z-index:999;border-radius:0!important;border:0!important}')

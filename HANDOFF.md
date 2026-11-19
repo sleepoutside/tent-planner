@@ -29,7 +29,7 @@
 | `tarps.html` | 天幕搭法 3D 介紹（8 種）。**產生檔** |
 | `fire.html` | 焚火安全模擬。**產生檔** |
 | `sleep.html` | 帳內睡鋪模擬。**產生檔** |
-| `weather.html` | 營地天氣模擬。**產生檔** |
+| `weather.html` | 你的露營天氣online。**產生檔** |
 | `og-*.jpg` | 各頁的分享預覽圖（1200×630） |
 | `tools/build.py` | 由 `index.html` + 範本產生上面三個頁面 |
 | `tools/tpl/types_head.html`、`types_tail.js` | 帳型頁範本（HTML/CSS/資料，與尾段程式） |
@@ -96,7 +96,7 @@ git add -A && git commit -m "..." && git push origin main && git push origin mai
 - **tarps.html**：`PITCHES` 每筆是一種搭法，用 `net`（布面控制點，公尺）、`poles`、`ropes`、`pegs` 描述，`buildPitch()` 依此畫出布面、營柱、營繩。**新增搭法只要在 `PITCHES` 加一筆資料**，不用改造型程式。`net` 可以有兩排以上（蝶形天幕用四排，兩端各一排重合的點當尖端）；`car:[x,z]` 會放一台車。這頁目前沒有「帶進搭設模擬」的按鈕。
 - **fire.html**：六種焚火台、五種燃料、風向風力；判斷邏輯在 `judge()`。
 - **sleep.html**：內帳範圍由 `sleepArea()`（複製自 `index.html`）決定；床墊可混搭、拖曳、轉向，`autoArrange()` 自動排列。
-- **weather.html**（營地天氣模擬，2026-11-19 第一階段）：
+- **weather.html**（你的露營天氣online，2026-11-19 第一階段）：
   - **資料都來自另一個 repo `sleepoutside/hero-camping-map`（勇者露營天氣查詢）**，同網域直接讀：`places.json`（熱點與營地清單，營地索引與天氣站的 `?camp=` 一致）、`cwa.json`（氣象署鄉鎮預報）、`om_hot.json`（熱點的 Open-Meteo 預報，含多模型雨量，由那邊的 GitHub Actions 排程每 6 小時更新）。在 `*.github.io` 用相對路徑 `/hero-camping-map/`，其他地方（含本機 file://）用完整網址。
   - 熱點優先用 `om_hot.json`（12 小時內且有風向欄位才用）；營地或資料過期時即時向 Open-Meteo 抓單點每小時資料，多模型雨量另外抓、晚到也沒關係。
   - 時間軸：週五 12:00 到週日 12:00（已過的部分從現在開始），一律用台灣時間的字串鍵 `YYYY-MM-DDTHH:00`（`keyMs`／`msKey`），不依賴瀏覽器時區。

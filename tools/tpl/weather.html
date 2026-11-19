@@ -9,14 +9,14 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sleepoutside Camp">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:title" content="營地天氣模擬｜用 3D 看週末每小時的天氣">
+<meta property="og:title" content="你的露營天氣online｜用 3D 看週末每小時的天氣">
 <meta property="og:description" content="選一個營地，拖曳時間軸，用 3D 看這個週末每個小時的雨、風、日夜和霧。">
 <meta property="og:url" content="https://sleepoutside.github.io/tent-planner/weather.html">
 <meta property="og:image" content="https://sleepoutside.github.io/tent-planner/og-weather.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<title>營地天氣模擬｜用 3D 看週末每小時的天氣</title>
+<title>你的露營天氣online｜用 3D 看週末每小時的天氣</title>
 <style>
   :root{--paper:#f4f0e6;--panel:#fbf9f3;--ink:#22302a;--muted:#66736b;--line:#d9d3c3;--accent:#2f6b4f;--accent-soft:#e2eee6;--warn:#b8472a;--warn-soft:#f8e4dc;--amber:#a86a12;--amber-soft:#fbefd2;--rain:#2f7fb8;color-scheme:light}
   *{box-sizing:border-box}
@@ -145,7 +145,7 @@
 </head>
 <body>
 <header>
-  <h1>營地天氣模擬</h1>
+  <h1>你的露營天氣online</h1>
   <p>選一個營地，拖曳時間軸，看這個週末每個小時的雨、風、日夜和霧會是什麼樣子。</p>
   /*NAV*/
 </header>
@@ -713,7 +713,7 @@ function recFrame(){
   g.fillStyle='#b8472a'; g.fillRect(x0+CUR*cw,y1-bh-4*k,Math.max(2,cw),bh+8*k);
   /* credit */
   g.font='700 '+Math.round(20*k)+'px '+F; g.textAlign='right'; g.fillStyle='rgba(255,255,255,.92)'; g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=6*k;
-  g.fillText('營地天氣模擬',W-24*k,H-66*k-bh); g.font='600 '+Math.round(16*k)+'px '+F; g.fillText('依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',W-24*k,H-66*k-bh-26*k);
+  g.fillText('你的露營天氣online',W-24*k,H-66*k-bh); g.font='600 '+Math.round(16*k)+'px '+F; g.fillText('依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',W-24*k,H-66*k-bh-26*k);
   g.shadowBlur=0; g.textAlign='left';
 }
 function recFrameV(R,h){
@@ -743,7 +743,7 @@ function recFrameV(R,h){
     var v=q.miss?0:q.mm>=.1?Math.max(.12,Math.sqrt(q.mm/mx)):q.maybe?.2:0; if(v){ g.fillStyle=q.mm>=.3?'#2f7fb8':q.mm>=.1?'rgba(47,127,184,.45)':'rgba(47,127,184,.3)'; g.fillRect(x+.5,yb-bh*v,cw-1,bh*v); }
     if(q.k.slice(11,13)==='00'||i===0){ t(x+4,yb+36,'週'+WDN[kDow(q.k)],26,'#66736b',700); g.fillStyle='#b9b2a0'; g.fillRect(x,yb-bh,1.5,bh); } });
   g.fillStyle='#b8472a'; g.fillRect(x0+CUR*cw-1,yb-bh-8,Math.max(4,cw+2),bh+16);
-  t(W/2,1920-34,'營地天氣模擬 · 依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',24,'#66736b',600,'center'); g.textAlign='left';
+  t(W/2,1920-34,'你的露營天氣online · 依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',24,'#66736b',600,'center'); g.textAlign='left';
 }
 function recStop(save){
   var R=REC; if(!R) return; REC=null; clearInterval(R.t); canvas.style.objectFit=''; if(renderer.getPixelRatio()!==R.pr) renderer.setPixelRatio(R.pr); resize(); if(HRS[CUR]) buildWind(HRS[CUR]); var b=$('rec'); b.classList.remove('on'); b.textContent='🎬 錄成影片'; $('play').disabled=false;
