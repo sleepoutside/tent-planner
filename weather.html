@@ -112,6 +112,16 @@
   .tip.go{cursor:pointer}
   .tip.go:hover{border-color:var(--accent)}
   .tip.wr b{color:var(--warn)} .tip.md b{color:var(--amber)} .tip.ok b{color:var(--accent)}
+  .cfg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13.5px}
+  .cfg p{margin:0 0 6px}
+  .cfg .dirs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:6px 0}
+  .cfg .dirs button{font:inherit;font-size:13px;padding:5px 0;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;color:var(--ink);position:relative}
+  .cfg .dirs button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .cfg .dirs button.best:after{content:"★";position:absolute;top:-7px;right:-3px;font-size:11px;color:var(--amber)}
+  .cfg .row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .cfg .row a{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 11px;text-decoration:none}
+  .cfg .row a:hover{border-color:var(--accent)}
+  .cfg small{color:var(--muted)}
   .tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .src{font-size:12px;color:var(--muted);margin-top:8px}
   .wide{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font-size:12.5px}
@@ -164,6 +174,8 @@
     <div class="verdict" id="verdict" role="status" aria-live="polite" hidden><b></b><span></span></div>
   </section>
   <section class="side">
+    <h2>你的配置</h2>
+    <div class="cfg" id="cfg"></div>
     <h2>這個週末</h2>
     <div class="days" id="days"></div>
     <h2>這個小時</h2>
@@ -534,6 +546,113 @@ function car(type){
   bx(.03,.11,.42,std(0xf4f4f0),hl+.05,.4,0); bx(.03,.11,.42,std(0xf4f4f0),-hl-.05,.4,0);
   return g;
 }
+function buildTarp1(){
+  while(tarpG.children.length){ var o=tarpG.children[0]; tarpG.remove(o); dispose(o); }
+  tarpMeshes=[]; tarpPegs=[]; tarpPlan=[]; tarpOutMat=null;
+  var t=S.tarp; if(!t){ redraw(); return; }
+  var L=t.L/100,W=t.W/100,hF=t.H/100,hR=(t.H2||t.H)/100,hl=L/2,hw=W/2,hexa=t.shape==='hexa',cxp=hexa?L*.22:hl,hc=hexa?Math.min(1.2,hR*.55):Math.min(1.6,hR*.75),sag=hexa?.2:.12,i;
+  tarpTop=Math.max(hF,hR);
+  function add(o){ tarpG.add(o); return o; }
+  function hp(x){ return hR+(hF-hR)*(x+hl)/L; }
+  function wh(x){ var a=Math.abs(x); return a<=cxp?hw:Math.max(.001,hw*(hl-a)/(hl-cxp)); }
+  function he(x){ var a=Math.abs(x); if(!hexa||a<=cxp) return hc; var k=(a-cxp)/(hl-cxp); return hc+(hp(x)-hc)*k; }
+  var mat=new THREE.MeshStandardMaterial({color:t.color,roughness:.9,side:THREE.DoubleSide});
+  var cloth=add(gridMesh(function(u,v){
+    var x=(u-.5)*L,w=wh(x),z=(v*2-1)*w,rd=hp(x)-sag*(1-Math.pow(2*x/L,2)),ed=he(x);
+    return P(x,rd-(rd-ed)*Math.pow(Math.abs(z)/Math.max(w,.001),1.15),z);
+  },28,14,mat)); cloth.castShadow=true; tarpMeshes.push(cloth);
+  var poleMat=std(0x50544f,{metalness:.5,roughness:.45}),ropes=[];
+  [[hl,hF],[-hl,hR]].forEach(function(p){
+    var sx=p[0]>0?1:-1,h=p[1]; add(limb(P(p[0],0,0),P(p[0],h+.06,0),.017,.017,poleMat,8)).castShadow=true;
+    [1,-1].forEach(function(sz){ ropes.push(P(p[0],h,0),P(p[0]+sx*.62*h,0,sz*.62*h)); });
+  });
+  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(function(c){
+    var cx=c[0]*cxp,cz=c[1]*hw,dx=hexa?c[0]*.45:c[0]*.707,dz=hexa?c[1]*.89:c[1]*.707,d=hc*1.05;
+    if(!hexa) add(limb(P(cx,0,cz),P(cx,hc+.05,cz),.014,.014,poleMat,8)).castShadow=true;
+    ropes.push(P(cx,hc,cz),P(cx+dx*d,0,cz+dz*d));
+  });
+  for(i=0;i<ropes.length;i+=2){
+    var ra=ropes[i],rb=ropes[i+1],ent={p:P(rb.x,0,rb.z),mat:null,disc:null};
+    if(S.ropes){
+      var gp=P(rb.x,.035,rb.z),dir=gp.clone().sub(ra).normalize();
+      ent.mat=new THREE.MeshStandardMaterial({color:0xffb300,emissive:0x7a5200,roughness:.6});
+      add(limb(ra,gp,.008,.008,ent.mat,6));
+      add(limb(gp.clone().addScaledVector(dir,.1),gp.clone().addScaledVector(dir,-.1).setY(.11),.011,.011,std(0xd8d8d2,{metalness:.6,roughness:.4}),6));
+      ent.disc=new THREE.MeshBasicMaterial({color:0xffb300,transparent:true,opacity:.9});
+      var dc=add(new THREE.Mesh(new THREE.RingGeometry(.05,.085,16),ent.disc)); dc.rotation.x=-Math.PI/2; dc.position.set(rb.x,.017,rb.z);
+    }
+    tarpPegs.push(ent);
+  }
+  tarpPlan=hexa?[P(hl,0,0),P(cxp,0,hw),P(-cxp,0,hw),P(-hl,0,0),P(-cxp,0,-hw),P(cxp,0,-hw)]:[P(hl,0,hw),P(-hl,0,hw),P(-hl,0,-hw),P(hl,0,-hw)];
+  tarpOutMat=new THREE.LineDashedMaterial({color:0x2f6b4f,dashSize:.12,gapSize:.08});
+  var ol=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(tarpPlan.map(function(p){return P(p.x,.022,p.z)}).concat([P(tarpPlan[0].x,.022,tarpPlan[0].z)])),tarpOutMat); ol.computeLineDistances(); add(ol);
+  if(S.labels){ var tl=label('天幕 '+t.L+' × '+t.W+' cm',.9,'rgba(92,72,40,.92)'); tl.position.set(0,tarpTop+.4,0); add(tl); }
+  placeTarp();
+}
+function buildProp(k){
+  var p=PROPS[k],g=p.g,i; while(g.children.length){ var o=g.children[0]; g.remove(o); dispose(o); }
+  if(!p.on){ redraw(); return; }
+  function add(o){ o.castShadow=true; g.add(o); return o; }
+  function bx(sx,sy,sz,m,x,y,z){ var o=add(new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m)); o.position.set(x,y,z); return o; }
+  if(p.kind==='chair'){
+    var wood=std(0xb98d5e,{roughness:.7}),fab=std(p.color,{roughness:.95,side:THREE.DoubleSide});
+    [1,-1].forEach(function(s){
+      add(limb(P(s*.25,0,.2),P(s*.25,.46,.16),.016,.016,wood,8)); add(limb(P(s*.25,0,-.2),P(s*.25,.62,-.3),.016,.016,wood,8));
+      bx(.045,.018,.5,wood,s*.25,.47,-.04);
+    });
+    add(limb(P(-.25,.3,.18),P(.25,.3,.18),.013,.013,wood,8)); add(limb(P(-.25,.26,-.22),P(.25,.26,-.22),.013,.013,wood,8));
+    add(quad(P(-.23,.3,.18),P(.23,.3,.18),P(.23,.26,-.22),P(-.23,.26,-.22),fab));
+    add(quad(P(-.23,.36,-.245),P(.23,.36,-.245),P(.23,.6,-.295),P(-.23,.6,-.295),fab));
+    g.scale.setScalar(CHAIR_SIZE[p.size].k);
+  }else if(p.kind==='table'){
+    var d=TABLE_SIZE[p.size],top=std(p.color,{roughness:.6}),leg=std(shade(p.color,.78),{roughness:.7}); p.dim=d;
+    bx(d.w,.03,d.d,top,0,d.h-.015,0);
+    [1,-1].forEach(function(sx){ [1,-1].forEach(function(sz){ bx(.04,d.h-.03,.04,leg,sx*(d.w/2-.05),(d.h-.03)/2,sz*(d.d/2-.05)); }); bx(.02,.05,d.d-.14,leg,sx*(d.w/2-.05),d.h-.055,0); });
+    [1,-1].forEach(function(sz){ bx(d.w-.14,.05,.02,leg,0,d.h-.055,sz*(d.d/2-.05)); });
+    g.scale.setScalar(1);
+  }else if(p.kind==='fire'){
+    var steel=std(0x8d9296,{metalness:.75,roughness:.4,side:THREE.DoubleSide}),dk=std(0x3a3d40,{metalness:.5,roughness:.6}),wd=std(0x7a5236),dim=S.wx==='night'?1:S.wx==='dusk'?.6:.25;
+    var cg=new THREE.ConeGeometry(.3,.26,4,1,true); cg.rotateY(Math.PI/4); var cone=add(new THREE.Mesh(cg,steel)); cone.rotation.x=Math.PI; cone.position.y=.25;
+    for(i=0;i<4;i++){ var la=i/4*TAU+Math.PI/4; add(limb(P(Math.cos(la)*.26,0,Math.sin(la)*.26),P(Math.cos(la)*.2,.16,Math.sin(la)*.2),.012,.012,dk,6)); }
+    for(i=0;i<5;i++){ var wa=i/5*TAU; add(limb(P(Math.cos(wa)*.13,.29,Math.sin(wa)*.13),P(Math.cos(wa+2.4)*.07,.5,Math.sin(wa+2.4)*.07),.03,.026,wd,7)); }
+    [[.1,.55,0xff8a2a],[.07,.42,0xffd060],[.06,.34,0xff8a2a]].forEach(function(f,n){ var fl=new THREE.Mesh(new THREE.ConeGeometry(f[0],f[1],7),new THREE.MeshBasicMaterial({color:f[2],transparent:true,opacity:.8,depthWrite:false})); fl.position.set(n===1?.05:n===2?-.06:0,.34+f[1]/2,n===2?.05:0); fl.raycast=function(){}; g.add(fl); });
+    var pm=new THREE.Mesh(new THREE.BoxGeometry(.9,.012,.9),std(0x4a4d50,{roughness:.9})); pm.position.y=.007; pm.receiveShadow=true; g.add(pm);
+    [[FIRE_OUT,0xf2b233,.12],[FIRE_IN,0xe5391f,.18]].forEach(function(q,n){
+      var fm=new THREE.Mesh(new THREE.CircleGeometry(q[0],64),new THREE.MeshBasicMaterial({color:q[1],transparent:true,opacity:q[2],depthWrite:false})); fm.rotation.x=-Math.PI/2; fm.position.y=.03+n*.004; fm.raycast=function(){}; fm.renderOrder=2; g.add(fm);
+      var pts=[]; for(var a=0;a<=64;a++) pts.push(P(Math.cos(a/64*TAU)*q[0],.04,Math.sin(a/64*TAU)*q[0])); var ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:q[1]})); ln.raycast=function(){}; g.add(ln);
+      var lb=label(q[0]+' m',1.2,n?'rgba(184,71,42,.92)':'rgba(168,106,18,.92)'); lb.position.set(q[0],.3,0); lb.raycast=function(){}; g.add(lb); });
+    var fp=new THREE.PointLight(0xff9a40,1.6*dim,10,1.5); fp.position.y=.6; g.add(fp);
+    g.scale.setScalar(1);
+  }else{
+    var lit=S.wx==='night'?1:S.wx==='dusk'?.45:0,en=std(p.color,{roughness:.3,metalness:.45}),chrome=std(0xc9cdd0,{metalness:.85,roughness:.25});
+    function cyl(rt,rb,h,m,y){ var c=add(new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,22),m)); c.position.y=y; return c; }
+    cyl(.086,.09,.012,chrome,.006); cyl(.074,.086,.07,en,.047); cyl(.046,.062,.035,chrome,.1);
+    cyl(.058,.058,.11,new THREE.MeshStandardMaterial({color:0xfff6dc,transparent:true,opacity:.72,roughness:.1,emissive:0xffd27a,emissiveIntensity:.15+lit*1.6}),.172);
+    var mantle=add(new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xfff0c0,emissiveIntensity:.3+lit*2}))); mantle.position.y=.175; mantle.castShadow=false;
+    cyl(.07,.07,.016,en,.235); cyl(.04,.066,.05,en,.268); cyl(.012,.012,.02,chrome,.303);
+    var hd=add(new THREE.Mesh(new THREE.TorusGeometry(.098,.0045,6,24,Math.PI),chrome)); hd.position.y=.21;
+    if(lit){ var pl=new THREE.PointLight(0xffc878,1.5*lit,11,1.6); pl.position.y=.2; g.add(pl); }
+    g.scale.setScalar(1);
+  }
+  placeProp(k);
+}
+function placeProp(k){
+  var p=PROPS[k],x=p.x==null?p.dx:p.x,z=p.z==null?S.sW/2+(p.dz||.75):p.z,ins=Math.abs(x)<S.sL/2&&Math.abs(z)<S.sW/2,y=ins?siteY:0,t=PROPS.table;
+  if(k==='lamp'&&t.on&&t.dim&&Math.hypot(x-t.g.position.x,z-t.g.position.z)<Math.min(t.dim.w,t.dim.d)/2) y=t.g.position.y+t.dim.h;
+  p.g.position.set(x,y,z); p.g.rotation.y=p.ry==null?p.dry:p.ry;
+  if(k==='table') placeProp('lamp'); else if(k==='fire'&&p.on&&!isArea()) updateFit(); else redraw();
+}
+function swapS(slot2){
+  var x;
+  x=S.tent; S.tent=slot2.tent; slot2.tent=x; x=S.rot; S.rot=slot2.rot; slot2.rot=x; x=S.tx; S.tx=slot2.tx; slot2.tx=x; x=S.tz; S.tz=slot2.tz; slot2.tz=x;
+  x=tentG; tentG=slot2.g; slot2.g=x; x=tentMeshes; tentMeshes=slot2.meshes; slot2.meshes=x; x=shellMat; shellMat=slot2.shellMat; slot2.shellMat=x;
+  x=outlineMat; outlineMat=slot2.outlineMat; slot2.outlineMat=x; x=ropeMat; ropeMat=slot2.ropeMat; slot2.ropeMat=x; x=zoneMat; zoneMat=slot2.zoneMat; slot2.zoneMat=x; x=ropeObjs; ropeObjs=slot2.ropeObjs; slot2.ropeObjs=x;
+}
+function b64u(s){ var by=new TextEncoder().encode(s),bin='',i; for(i=0;i<by.length;i++) bin+=String.fromCharCode(by[i]); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function unb64u(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; var bin=atob(s),by=new Uint8Array(bin.length),i; for(i=0;i<bin.length;i++) by[i]=bin.charCodeAt(i); return new TextDecoder().decode(by); }
+function r2(n){ return Math.round(n*100)/100; }
+function nn(v){ return v==null||!isFinite(+v)?null:r2(+v); }
+function cl(v,lo,hi,fb){ v=+v; return isFinite(v)?Math.min(hi,Math.max(lo,v)):fb; }
 var CARS={
   hatch:{name:'小型車',len:4.0,w:1.74,wr:.32,fo:.8,ro:.72,col:0x3f7f8c,
     top:[[-2.0,.48],[-1.99,.8],[-1.9,.98],[-1.0,1.0],[.7,.97],[1.45,.9],[1.9,.76],[2.0,.5]],
@@ -551,6 +670,43 @@ var CARS={
     top:[[-2.65,.62],[-2.64,1.05],[-2.58,1.2],[-.7,1.2],[1.0,1.18],[1.9,1.14],[2.55,1.02],[2.65,.62]],
     cab:[[-.72,1.18],[-.62,1.62],[-.2,1.8],[.45,1.8],[.85,1.66],[1.35,1.16]],pil:[.15]}
 };
+/* data copied from index.html */
+var TENTS=[
+ {id:'sp-amenity-m',brand:'Snow Peak',name:'Amenity Dome M',sku:'SDE-001RH',L:505,W:280,H:150,shape:'domeVest',cap:'4–5 人',color:0xb9a886,inner:{l:265,w:265,from:55},src:'https://www.snowpeak.co.uk/products/amenity-dome-m'},
+ {id:'sp-landlock',brand:'Snow Peak',name:'Land Lock',sku:'TP-671R',L:625,W:405,H:205,shape:'tworoom',cap:'6 人',color:0x8c7b62,inner:{l:230,w:360,from:35},src:'https://www.snowpeak.co.uk/products/land-lock'},
+ {id:'cm-tough2room',brand:'Coleman',name:'Tough Screen 2-Room House MDX',sku:'',L:560,W:340,H:215,shape:'tworoom',cap:'4–5 人',color:0x9aa37a,inner:{l:250,w:300,from:25},src:'https://www.bepal.net/archives/273739'},
+ {id:'cm-toughdome',brand:'Coleman',name:'Tough Dome 3025',sku:'',L:300,W:250,H:175,shape:'dome',cap:'4–5 人',color:0xa9ad84,full:true,note:'內帳尺寸，不含前庭',src:'https://hinata.me/item/10481'},
+ {id:'cm-touring',brand:'Coleman',name:'Touring Dome ST+',sku:'',L:265,W:210,H:110,shape:'dome',cap:'1–2 人',color:0x6f8160,src:'https://www.bepal.net/archives/402245'},
+ {id:'dod-kamaboko',brand:'DOD',name:'Kamaboko Tent 3M',sku:'T5-689',L:640,W:300,H:195,shape:'tunnel',cap:'5 人',color:0xc7a56c,inner:{l:220,w:280,from:15},src:'https://www.bepal.net/archives/522650'},
+ {id:'nd-asgard126',brand:'Nordisk',name:'Asgard 12.6',sku:'',L:400,W:375,H:250,shape:'bell',cap:'6 人',color:0xe8dfc8,wall:75,src:'https://nordisk.eu/products/asgard-126-m2-glamping-tent-6-person-natural'},
+ {id:'nd-asgard196',brand:'Nordisk',name:'Asgard 19.6',sku:'',L:500,W:470,H:300,shape:'bell',cap:'8–10 人',color:0xe8dfc8,wall:80,src:'https://nordisk.eu/products/asgard-196-m2-glamping-tent-8-10-person-natural'},
+ {id:'bw-turbo300',brand:'BlackWolf',name:'Turbo Lite Tent 300',sku:'',L:300,W:300,H:210,shape:'cabin',cap:'5 人',color:0x6d8794,src:'https://blackwolf.com.au/products/turbo-lite-tent-300'},
+ {id:'gen-carside',brand:'通用',name:'車邊帳',sku:'',L:250,W:250,H:200,shape:'carside',cap:'',color:0xb9a886,note:'常見規格，非特定型號；高的開口側靠車'},
+ {id:'gen-pyramid',brand:'通用',name:'金字塔帳',sku:'',L:400,W:400,H:250,shape:'pyramid',cap:'',color:0xd8c9a3,note:'常見規格，非特定型號'},
+ {id:'gen-air',brand:'通用',name:'充氣帳',sku:'',L:600,W:320,H:200,shape:'air',cap:'',color:0x7d9aa6,note:'常見規格，非特定型號'},
+ {id:'gen-solo',brand:'通用',name:'單人登山帳',sku:'',L:250,W:110,H:100,shape:'domeVest',cap:'',color:0x6f8160,note:'含前庭；常見規格，非特定型號'},
+ {id:'custom',brand:'自訂',name:'自訂尺寸',sku:'',L:450,W:300,H:180,shape:'dome',cap:'',color:0xc98a55}
+];
+var TARPS=[
+ {id:'sp-hexa-l',brand:'Snow Peak',name:'Amenity Tarp Hexa L',L:570,W:500,H:280,H2:240,shape:'hexa',color:0x8c7b62,src:'https://www.rentio.jp/products/tp-851sr'},
+ {id:'cm-xphexa',brand:'Coleman',name:'XP Hexa Tarp MDX',L:460,W:435,H:230,shape:'hexa',color:0x8f9a6c,src:'https://hinata.me/item/10166'},
+ {id:'dod-itsuka',brand:'DOD',name:'Itsuka no Tarp',L:420,W:410,H:230,shape:'hexa',color:0xc7a56c,src:'https://hinata.me/article/925188844083452243'},
+ {id:'rect-33',brand:'通用',name:'方形天幕 3 × 3 m',L:300,W:300,H:210,shape:'rect',color:0xd9c7a3},
+ {id:'rect-43',brand:'通用',name:'方形天幕 4 × 3 m',L:400,W:300,H:220,shape:'rect',color:0xd9c7a3},
+ {id:'rect-54',brand:'通用',name:'方形天幕 5 × 4 m',L:500,W:400,H:240,shape:'rect',color:0xd9c7a3},
+ {id:'tcustom',brand:'自訂',name:'自訂天幕',L:450,W:400,H:230,shape:'hexa',color:0xc98a55}
+];
+var CHAIR_SIZE={s:{k:.8,name:'小（寬 43 高 50）'},m:{k:1,name:'標準（寬 54 高 62）'},l:{k:1.15,name:'加大（寬 62 高 71）'}};
+var TABLE_SIZE={s:{w:.6,d:.6,h:.4,name:'60 × 60 低桌（高 40）'},m:{w:.8,d:.8,h:.7,name:'80 × 80（高 70）'},l:{w:1.2,d:.6,h:.7,name:'120 × 60（高 70）'}};
+var PROPS={
+  chair1:{name:'椅子 1',kind:'chair',on:false,size:'m',color:0x6f7d4f,dx:-1.85,dry:Math.PI/2},
+  chair2:{name:'椅子 2',kind:'chair',on:false,size:'m',color:0x6f7d4f,dx:-.15,dry:-Math.PI/2},
+  table:{name:'桌子',kind:'table',on:false,size:'m',color:0xb98d5e,dx:-1,dry:0},
+  lamp:{name:'汽化燈',kind:'lamp',on:false,color:0x8c3b3b,dx:-1,dry:0},
+  fire:{name:'焚火台',kind:'fire',on:false,color:0x8d9296,dx:1.5,dz:3.6,dry:0}
+};
+var FIRE_IN=3,FIRE_OUT=4.5;
+var CUSTOM2={id:'custom2',brand:'自訂',name:'自訂尺寸',sku:'',L:300,W:250,H:170,shape:'dome',cap:'',color:0x4f7896};
 
 /* ---------- helpers ---------- */
 var DIRN=['北','東北','東','東南','南','西南','西','西北'],WDN=['日','一','二','三','四','五','六'];
@@ -652,10 +808,15 @@ var groundMat,groundBase=new THREE.Color(0xb9c7a6);
 var dirty=true; function redraw(){ dirty=true; }
 
 /* state the borrowed builders expect */
-var S={tent:null,rot:0,tx:0,tz:0,xray:false,margin:50,labels:false,ropes:true,wx:'sunny',mode:'single',pg:'m',ph:170,sL:60,sW:60,siteType:'grass'};
-var WX={sunny:{}},siteY=0,areaNo=0;
+var S={tent:null,rot:0,tx:0,tz:0,xray:false,margin:50,labels:false,ropes:true,wx:'sunny',mode:'single',pg:'m',ph:170,sL:8,sW:8.6,siteType:'grass',env:'grass',roofH:2.5,tarp:null,trot:0,ttx:0,ttz:0,car:'none',person:false,petKind:'none',mat:'none'};
+var WX={sunny:{},dusk:{},night:{night:true}},siteY=0,areaNo=0,TAU=Math.PI*2,tarpPegs=[],tarpPlan=[],tarpOutMat=null,tarpTop=0;
+function updateFit(){}
+function placeTarp(){ tarpG.position.set(S.ttx,siteY,S.ttz); tarpG.rotation.y=-S.trot; }
 var tentG=new THREE.Group(),tarpG=new THREE.Group(),zoneG=new THREE.Group(),personG=new THREE.Group(),propG=new THREE.Group(),tentMeshes=[],tarpMeshes=[],outlineMat=null,ropeMat=null,shellMat=null,zoneMat=null,ropeObjs=[];
-scene.add(zoneG,tentG,tarpG,personG,propG);
+var slot2={tent:null,rot:0,tx:0,tz:0,g:new THREE.Group(),meshes:[],shellMat:null,outlineMat:null,ropeMat:null,zoneMat:null,ropeObjs:[]};
+/* everything that belongs to the camp turns together (門口朝向); weather, trees and the compass stay fixed to north */
+var layG=new THREE.Group(),compassG=new THREE.Group(); layG.add(zoneG,tentG,tarpG,personG,propG,slot2.g); scene.add(layG,compassG); layG.add(lamp);
+Object.keys(PROPS).forEach(function(k){ var p=PROPS[k]; p.g=new THREE.Group(); p.x=p.z=p.ry=null; propG.add(p.g); });
 function isArea(){ return false; }
 function placeTent(){ tentG.position.set(S.tx,0,S.tz); tentG.rotation.y=-S.rot; }
 function clearG(g){ while(g.children.length){ var o=g.children[0]; g.remove(o); dispose(o); } }
@@ -663,18 +824,20 @@ function clearG(g){ while(g.children.length){ var o=g.children[0]; g.remove(o); 
 /* tent + tarp + car + person + trees; north is -z, east is +x */
 var cloth=null,clothBase=null,flag=null,flagBase=null,trees=[],TARP={x:0,z:2.75,L:4,W:3,H:2.2,hc:1.5};
 function buildScene(){
-  S.tx=0; S.tz=-.6; S.tent={id:'t',brand:'',name:'',L:300,W:300,H:180,shape:'dome',color:0xa9ad84}; buildTent1(); placeTent();
+  var gen=!(LAY&&typeof LAY==='object');
+  if(gen){
+  S.tx=0; S.tz=-.6; S.rot=Math.PI/2; S.tent={id:'t',brand:'',name:'',L:300,W:300,H:180,shape:'dome',color:0xa9ad84}; buildTent1(); placeTent();
   [outlineMat,ropeMat,zoneMat].forEach(function(x){ if(x) x.visible=false; });
   tentG.traverse(function(o){ if(o.geometry&&o.geometry.type==='RingGeometry') o.visible=false; });
   var t=TARP,hl=t.L/2,hw=t.W/2,mat=new THREE.MeshStandardMaterial({color:0xc7a56c,roughness:.9,side:THREE.DoubleSide}),pm=std(0x50544f,{metalness:.5,roughness:.45});
   cloth=gridMesh(function(u,v){ var x=(u-.5)*t.L,z=(v*2-1)*hw,rd=t.H-.1*(1-Math.pow(2*x/t.L,2)); return P(x,rd-(rd-t.hc)*Math.pow(Math.abs(z)/hw,1.15),z); },16,10,mat); cloth.castShadow=true; tarpG.add(cloth);
   clothBase=Float32Array.from(cloth.geometry.attributes.position.array);
   [hl,-hl].forEach(function(x){ tarpG.add(limb(P(x,0,0),P(x,t.H+.05,0),.017,.017,pm,8)); [hw,-hw].forEach(function(z){ tarpG.add(limb(P(x,0,z),P(x,t.hc+.04,z),.014,.014,pm,8)); }); });
-  tarpG.position.set(t.x,0,t.z);
+  tarpG.position.set(t.x,0,t.z); TP={L:t.L,W:t.W,hexa:false,cxp:t.L/2,He:(t.hc+t.H)/2,name:'方形天幕 4 × 3 m'};
   buildPerson(); personG.position.set(1.2,0,3.1); personG.rotation.y=.4;
   var cr=car('suv'); cr.position.set(-4.6,0,.6); cr.rotation.y=Math.PI/2; propG.add(cr);
   /* table + lantern under the tarp */
-  var wood=std(0x9a7650,{roughness:.8}),tb=new THREE.Mesh(new THREE.BoxGeometry(.9,.04,.6),wood); tb.position.set(.4,.7,2.6); tb.castShadow=true; propG.add(tb);
+  var wood=std(0x9a7650,{roughness:.8}),tb=new THREE.Mesh(new THREE.BoxGeometry(.9,.04,.6),wood); tb.position.set(.4,.7,2.6); tb.castShadow=true; propG.add(tb); ITEMS.push({n:'桌子',o:tb,h:.7,k:'table'});
   [[-.4,-.25],[.4,-.25],[-.4,.25],[.4,.25]].forEach(function(q){ propG.add(limb(P(.4+q[0],0,2.6+q[1]),P(.4+q[0],.7,2.6+q[1]),.015,.015,std(0x333333),6)); });
   var lb=new THREE.Mesh(new THREE.SphereGeometry(.07,12,10),new THREE.MeshBasicMaterial({color:0xffe0a8})); lb.position.set(.4,1.9,2.6); propG.add(lb); lamp.userData.bulb=lb;
   propG.add(limb(P(.4,1.97,2.6),P(.4,2.15,2.6),.004,.004,std(0x222222),4));
@@ -683,15 +846,118 @@ function buildScene(){
   /* flag pole: shows the wind */
   var pole=limb(P(3.4,0,3.6),P(3.4,3.2,3.6),.02,.02,std(0x8d9296,{metalness:.6}),8); propG.add(pole);
   flag=gridMesh(function(u,v){ return P(u*.9,-v*.5,0); },10,4,new THREE.MeshStandardMaterial({color:0xe0452b,roughness:.8,side:THREE.DoubleSide})); flag.position.set(3.4,3.15,3.6); flag.castShadow=true; propG.add(flag);
-  flagBase=Float32Array.from(flag.geometry.attributes.position.array);
+  }
+  else{ flag=gridMesh(function(u,v){ return P(u*.9,-v*.5,0); },10,4,new THREE.MeshStandardMaterial({color:0xe0452b,roughness:.8,side:THREE.DoubleSide})); flag.castShadow=true; flagBase=Float32Array.from(flag.geometry.attributes.position.array); }
+  if(gen){ flagBase=Float32Array.from(flag.geometry.attributes.position.array); }
   /* trees */
   var r=rnd(11),lm=std(0x4d7a43,{flatShading:true,roughness:.9}),dm=std(0x3b6340,{flatShading:true,roughness:.9}),tm=std(0x6b4a33);
   for(var i=0;i<26;i++){ var a=r()*Math.PI*2,d=(LOW?26:15)+r()*14,g=new THREE.Group(),h=3+r()*3;
     g.add(limb(P(0,0,0),P(0,h*.45,0),.12,.09,tm,6)); var top=r()>.5?new THREE.Mesh(new THREE.ConeGeometry(1+r()*.6,h*.8,7),dm):new THREE.Mesh(new THREE.IcosahedronGeometry(1.1+r()*.6,0),lm); top.position.y=h*.45+(top.geometry.type==='ConeGeometry'?h*.35:.9); top.castShadow=true; g.add(top);
     g.position.set(Math.cos(a)*d,0,Math.sin(a)*d); g.userData.ph=r()*6; scene.add(g); trees.push(g); }
-  /* compass on the ground */
-  var nl=label('N 北',2.2,'rgba(184,71,42,.92)'); nl.position.set(0,.4,-6.6); zoneG.add(nl);
-  var am=new THREE.MeshBasicMaterial({color:0xb8472a}); zoneG.add(limb(P(0,.04,-4.6),P(0,.04,-5.9),.05,.05,am,6)); var hd=new THREE.Mesh(new THREE.ConeGeometry(.16,.4,10),am); hd.position.set(0,.04,-6.0); hd.rotation.x=-Math.PI/2; zoneG.add(hd);
+  buildGenericOrLayout(); buildCompass(); buildDew();
+}
+function buildCompass(){
+  clearG(compassG); compassG.position.set(cam?cam.target.x:0,0,cam?cam.target.z:0); var R=Math.max(6.2,Math.hypot(S.sL,S.sW)/2+1.6),nl=label('N 北',1.7,'rgba(184,71,42,.92)'); nl.position.set(0,.4,-R-.7); compassG.add(nl);
+  var am=new THREE.MeshBasicMaterial({color:0xb8472a}); compassG.add(limb(P(0,.04,-R+1.4),P(0,.04,-R+.1),.05,.05,am,6)); var hd=new THREE.Mesh(new THREE.ConeGeometry(.16,.4,10),am); hd.position.set(0,.04,-R); hd.rotation.x=-Math.PI/2; compassG.add(hd);
+}
+
+/* ---------- your own layout from the simulator (#s= share link) ---------- */
+var LAY=null,LAYRAW='',TP=null,ITEMS=[],DOORS=[],ORI=180,FLAGP={x:3.4,z:3.6};
+(function(){ var h=location.hash||''; if(h.indexOf('#s=')===0){ LAYRAW=h.slice(3); try{ LAY=JSON.parse(unb64u(LAYRAW)); }catch(e){ LAY=false; } if(LAY&&!Array.isArray(LAY.t)) LAY=false; } else if(h.indexOf('#a=')===0) LAY='area'; })();
+function tarpParams(t){ var L=t.L/100,W=t.W/100,hF=t.H/100,hR=(t.H2||t.H)/100,hexa=t.shape==='hexa',hc=hexa?Math.min(1.2,hR*.55):Math.min(1.6,hR*.75); return {L:L,W:W,hexa:hexa,cxp:hexa?L*.22:L/2,He:(hc+Math.max(hF,hR))/2,name:(t.brand&&t.brand!=='通用'&&t.brand!=='自訂'?t.brand+' ':'')+t.name}; }
+function buildLayout(d){
+  var A=function(x){ return Array.isArray(x)?x:[]; },s=A(d.s),t=A(d.t),f=+d.f||0,SH=['dome','domeVest','tworoom','tunnel','bell','cabin','carside','pyramid','air'];
+  function custom(o,v){ v=A(v); if(v.length<5) return; o.L=cl(v[0],100,1200,o.L); o.W=cl(v[1],80,800,o.W); o.H=cl(v[2],60,400,o.H); if(SH.indexOf(v[3])>=0) o.shape=v[3]; o.color=cl(v[4],0,0xffffff,o.color)|0; }
+  S.sL=cl(s[1],2,15,8); S.sW=cl(s[2],2,15,6); S.ropes=!!(f&2); S.margin=Math.round(cl(d.m,0,150,50)/5)*5;
+  custom(TENTS[TENTS.length-1],d.tc);
+  S.tent=TENTS.filter(function(x){ return x.id===t[0]; })[0]||TENTS[1]; S.rot=cl(t[1],-7,7,0); S.tx=cl(t[2],-30,30,0); S.tz=cl(t[3],-30,30,0);
+  buildTent1(); placeTent();
+  var t2=A(d.t2); if(t2[0]){ custom(CUSTOM2,d.t2c); var tt=TENTS.concat([CUSTOM2]).filter(function(x){ return x.id===t2[0]; })[0];
+    if(tt){ slot2.tent=tt; slot2.rot=cl(t2[1],-7,7,0); slot2.tx=cl(t2[2],-30,30,0); slot2.tz=cl(t2[3],-30,30,0); swapS(slot2); try{ buildTent1(); placeTent(); } finally{ swapS(slot2); } } }
+  var a=A(d.a),ac=A(d.ac),tc=TARPS[TARPS.length-1]; if(ac.length>=3){ tc.L=cl(ac[0],150,900,tc.L); tc.W=cl(ac[1],150,900,tc.W); if(ac[2]==='hexa'||ac[2]==='rect') tc.shape=ac[2]; }
+  S.tarp=TARPS.filter(function(x){ return x.id===a[0]; })[0]||null;
+  if(S.tarp){ var tp=S.tarp,v=cl(a[4],150,320,tp.H),dd=tp.H2?tp.H-tp.H2:0; tp.color=cl(a[5],0,0xffffff,tp.color)|0; tp.H=v; if(tp.H2) tp.H2=Math.max(120,v-dd); S.trot=cl(a[1],-7,7,0); S.ttx=cl(a[2],-30,30,0); S.ttz=cl(a[3],-30,30,0); buildTarp1(); placeTarp(); TP=tarpParams(tp);
+    if(tarpMeshes[0]){ cloth=tarpMeshes[0]; clothBase=Float32Array.from(cloth.geometry.attributes.position.array); TARP.W=TP.W; } }
+  var cr=A(d.c); if(CARS[cr[0]]){ var cg=car(cr[0]),cx=cr[1]==null?Math.min(-S.sL/2+2.3,0):+cr[1],cz=cr[2]==null?S.sW/2+3.2:+cr[2]; cg.position.set(cx,0,cz); cg.rotation.y=-cl(cr[3],-7,7,0); propG.add(cg); }
+  if(f&8){ var pp=A(d.p); S.pg=pp[0]==='f'?'f':'m'; S.ph=Math.round(cl(pp[1],90,210,170)); buildPerson(); var px=pp[2]==null?S.sL/2+.5:+pp[2],pz=pp[3]==null?S.sW/2+.75:+pp[3]; personG.position.set(px,0,pz); personG.rotation.y=pp[4]==null?Math.atan2(-px,-pz):+pp[4]; }
+  var o=d.o&&typeof d.o==='object'?d.o:{};
+  Object.keys(PROPS).forEach(function(k){ var p=PROPS[k],v=A(o[k]); p.on=v.length>0; p.x=p.z=p.ry=null;
+    if(p.on){ var sizes=p.kind==='chair'?CHAIR_SIZE:p.kind==='table'?TABLE_SIZE:null; if(sizes&&sizes[v[0]]) p.size=v[0]; if(p.kind!=='fire') p.color=cl(v[1],0,0xffffff,p.color)|0; p.x=nn(v[2]); p.z=nn(v[3]); p.ry=nn(v[4]); }
+    buildProp(k);
+    if(p.on&&p.kind!=='lamp') ITEMS.push({n:p.name,o:p.g,h:p.kind==='table'?(TABLE_SIZE[p.size]||{h:.7}).h:p.kind==='chair'?.45:.5,k:p.kind}); });
+  if(slot2.tent) DOORS.push({n:'帳篷 2 門口',g:slot2.g,t:slot2.tent});
+  [outlineMat,zoneMat,tarpOutMat,slot2.outlineMat,slot2.zoneMat].forEach(function(m){ if(m) m.visible=false; });
+  var hl=S.sL/2,hw=S.sW/2,pts=[P(-hl,.02,-hw),P(hl,.02,-hw),P(hl,.02,hw),P(-hl,.02,hw),P(-hl,.02,-hw)]; zoneG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.7})));
+  FLAGP={x:hl+1.1,z:hw+1.1};
+}
+function buildGenericOrLayout(){
+  if(LAY&&typeof LAY==='object'){ buildLayout(LAY); var pole=limb(P(FLAGP.x,0,FLAGP.z),P(FLAGP.x,3.2,FLAGP.z),.02,.02,std(0x8d9296,{metalness:.6}),8); propG.add(pole); flag.position.set(FLAGP.x,3.15,FLAGP.z); propG.add(flag); buildCompass(); }
+  DOORS.unshift({n:'門口',g:tentG,t:S.tent});
+}
+
+/* ---------- 門口朝向 and judgements in world space ---------- */
+var V3=THREE.Vector3;
+function bearingOf(dx,dz){ return (Math.atan2(dx,-dz)*180/Math.PI+360)%360; }
+function angDiff(a,b){ return Math.abs(((a-b)%360+540)%360-180); }
+function doorInfo(d){ var c=d.g.localToWorld(new V3(0,0,0)),e=d.g.localToWorld(new V3(d.t.L/200,0,0)); d.b=bearingOf(e.x-c.x,e.z-c.z); var u=e.clone().sub(c).normalize(); d.pw=e.clone().addScaledVector(u,.35); d.pw.y=0; d.c=c; return d; }
+function setOri(B){
+  ORI=((Math.round(B)%360)+360)%360; layG.rotation.y=0; layG.updateMatrixWorld(true);
+  var b0=doorInfo(DOORS[0]).b; layG.rotation.y=(b0-ORI)*Math.PI/180; layG.updateMatrixWorld(true); refreshItems(); fitCam(); redraw();
+}
+var WR=6;
+function fitCam(){
+  var pts=[]; DOORS.forEach(function(d){ pts.push(d.c,d.pw); }); ITEMS.forEach(function(it){ if(it.k!=='fire') pts.push(it.pw); }); if(TP) pts.push(tarpG.getWorldPosition(new V3()));
+  if(!pts.length) return; var x0=1e9,x1=-1e9,z0=1e9,z1=-1e9; pts.forEach(function(p){ x0=Math.min(x0,p.x); x1=Math.max(x1,p.x); z0=Math.min(z0,p.z); z1=Math.max(z1,p.z); });
+  var cx=(x0+x1)/2,cz=(z0+z1)/2,sz=Math.max(x1-x0,z1-z0,3); cam.target.set(cx,1,cz); cam.base=Math.min(30,Math.max(15,sz*1.4+9)); cam.r=camera.aspect<.95?cam.base*1.25:cam.base;
+  var d=DOORS[0]; if(d){ var v=d.pw.clone().sub(d.c); cam.az=Math.atan2(v.x,v.z)+.65; }
+  WR=Math.max(6,Math.hypot(S.sL,S.sW)/2+1.2); buildCompass();
+}
+function refreshItems(){ ITEMS.forEach(function(it){ it.pw=it.o.getWorldPosition(new V3()); it.pw.y=0; }); DOORS.forEach(doorInfo); }
+function inTarp(pw){ if(!TP) return false; var q=tarpG.worldToLocal(pw.clone()),hl=TP.L/2,hw=TP.W/2,a=Math.abs(q.x); if(a>hl*.97) return false; var w=TP.hexa?(a<=TP.cxp?hw:hw*(hl-a)/(hl-TP.cxp)):hw; return Math.abs(q.z)<=w*.95; }
+function rainSlope(h){ return Math.min(15,h.ws||0)/7; }
+function wetAt(pw,top,h){ if(!TP) return true; var s=rainSlope(h),to=((h.wd||0)+180)*Math.PI/180,dh=Math.max(0,TP.He-top),q=pw.clone(); q.x-=Math.sin(to)*s*dh; q.z+=Math.cos(to)*s*dh; return !inTarp(q); }
+function shadeAt(pw,top,h){ if(!TP) return false; if(h.sun<=2) return true; var k=Math.max(0,TP.He-top)/Math.tan(h.sun*Math.PI/180),az=h.az*Math.PI/180,q=pw.clone(); q.x+=Math.sin(az)*k; q.z-=Math.cos(az)*k; return inTarp(q); }
+function rainHour(h){ return h&&!h.miss&&(h.mm>=.3||h.maybe); }
+function sunHour(h){ return h&&!h.miss&&h.sun>3&&h.sun<45&&(h.cc==null||h.cc<60)&&h.mm<.1&&+h.k.slice(11,13)>=12; }
+function wetList(h){ var out=[]; if(!rainHour(h)) return out; ITEMS.forEach(function(it){ if(it.k!=='fire'&&wetAt(it.pw,it.h,h)) out.push(it.n); }); DOORS.forEach(function(d){ if(wetAt(d.pw,1.0,h)) out.push(d.n); }); return out; }
+function sunList(h){ var out=[]; if(!sunHour(h)) return out; ITEMS.forEach(function(it){ if((it.k==='table'||it.k==='chair')&&!shadeAt(it.pw,it.h,h)) out.push(it.n); }); return out; }
+function doorWind(h){ var d=DOORS[0]; if(!d||h.wd==null||h.ws==null) return null; var x=angDiff(d.b,h.wd); return x<=45?2:x<=100?1:0; }
+
+/* labels drawn on the scene for the selected hour */
+var judgeG=new THREE.Group(); scene.add(judgeG);
+function buildJudge(h){
+  clearG(judgeG); if(!h||h.miss) return;
+  if(rainHour(h)){ ITEMS.forEach(function(it){ if(it.k!=='fire'&&wetAt(it.pw,it.h,h)){ var l=label('💧 淋到',1.1,'rgba(47,127,184,.95)'); l.position.set(it.pw.x,it.h+.75,it.pw.z); judgeG.add(l); } });
+    DOORS.forEach(function(d){ if(wetAt(d.pw,1,h)){ var l=label('💧 '+d.n+'淋到',1.1,'rgba(47,127,184,.95)'); l.position.set(d.pw.x,1.5,d.pw.z); judgeG.add(l); } }); }
+  var dw=doorWind(h),gw=Math.max(h.ws||0,h.wg||0); if(dw===2&&gw>=5){ var d=DOORS[0],l=label('⚠ 門口迎風',1.15,'rgba(184,71,42,.95)'); l.position.set(d.pw.x,2.1,d.pw.z); judgeG.add(l); }
+  if(sunHour(h)) ITEMS.forEach(function(it){ if((it.k==='table'||it.k==='chair')&&!shadeAt(it.pw,it.h,h)){ var l=label('☀ 曬到',1.05,'rgba(168,106,18,.95)'); l.position.set(it.pw.x,it.h+.75,it.pw.z); judgeG.add(l); } });
+}
+
+/* moon: low-precision position and phase (good to a degree or two) */
+function moonInfo(ms,lat,lon){
+  var rad=Math.PI/180,d=ms/864e5-10957.5,L=(218.316+13.176396*d)*rad,M=(134.963+13.064993*d)*rad,F=(93.272+13.229350*d)*rad,l=L+6.289*rad*Math.sin(M),b=5.128*rad*Math.sin(F),e=23.4397*rad;
+  var ra=Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l)),dec=Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l));
+  var gmst=((18.697374558+24.06570982441908*d)%24+24)%24,ha=(gmst*15+lon)*rad-ra,la=lat*rad;
+  var alt=Math.asin(Math.sin(la)*Math.sin(dec)+Math.cos(la)*Math.cos(dec)*Math.cos(ha)),az=Math.atan2(-Math.sin(ha),Math.tan(dec)*Math.cos(la)-Math.sin(la)*Math.cos(ha));
+  var g=(357.529+.98560028*d)*rad,ls=(280.459+.98564736*d)*rad+1.915*rad*Math.sin(g)+.02*rad*Math.sin(2*g),el=Math.atan2(Math.sin(l-ls),Math.cos(l-ls)),frac=(1-Math.cos(el))/2,wax=el>0;
+  var nm=frac<.04?'新月':frac>.96?'滿月':frac<.35?(wax?'眉月':'殘月'):frac<.65?(wax?'上弦月':'下弦月'):(wax?'盈凸月':'虧凸月');
+  return {alt:alt/rad,az:((az/rad)%360+360)%360,frac:frac,wax:wax,name:nm};
+}
+var moonCv=document.createElement('canvas'); moonCv.width=moonCv.height=128; var moonTex=new THREE.CanvasTexture(moonCv),moonKey='';
+var moon=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex,transparent:true,fog:false,depthWrite:false})); moon.scale.set(9,9,1); scene.add(moon);
+function drawMoon(m){ var k=Math.round(m.frac*40)+(m.wax?'w':'n'); if(k===moonKey) return; moonKey=k; var g=moonCv.getContext('2d'),r=50; g.clearRect(0,0,128,128);
+  g.save(); g.translate(64,64); var gl=g.createRadialGradient(0,0,r*.8,0,0,r*1.25); gl.addColorStop(0,'rgba(255,250,225,.35)'); gl.addColorStop(1,'rgba(255,250,225,0)'); g.fillStyle=gl; g.fillRect(-64,-64,128,128);
+  g.fillStyle='rgba(60,66,84,.55)'; g.beginPath(); g.arc(0,0,r,0,TAU); g.fill();
+  g.fillStyle='#fff6d8'; g.beginPath(); var s=m.wax?1:-1,tx=(1-2*m.frac)*r; g.arc(0,0,r,-Math.PI/2,Math.PI/2,s<0); g.ellipse(0,0,Math.abs(tx),r,0,Math.PI/2,-Math.PI/2,(tx>0)===(s>0)); g.fill(); g.restore(); moonTex.needsUpdate=true; }
+
+/* dew drops on the tent shells (shown when the air is close to its dew point) */
+var dewPts=null;
+function buildDew(){
+  layG.updateMatrixWorld(true); var pos=[],r=rnd(31),v=new V3();
+  tentMeshes.concat(slot2.meshes||[]).forEach(function(m){ if(!m.geometry||!m.geometry.attributes||!m.geometry.attributes.position||!m.visible) return; var a=m.geometry.attributes.position,n=a.count,step=Math.max(1,Math.floor(n/260)),i;
+    for(i=0;i<n;i+=step){ v.fromBufferAttribute(a,i); m.localToWorld(v); if(v.y<.12) continue; pos.push(v.x+(r()-.5)*.03,v.y+.01,v.z+(r()-.5)*.03); } });
+  if(!pos.length) return; var g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  dewPts=new THREE.Points(g,new THREE.PointsMaterial({color:0xe9f7ff,size:.045,transparent:true,opacity:0,depthWrite:false})); dewPts.visible=false; layG.add(dewPts);
 }
 
 /* wind arrow on the ground */
@@ -699,7 +965,7 @@ var windG=new THREE.Group(); scene.add(windG);
 function buildWind(h){
   clearG(windG); if(!h||h.wd==null||h.ws==null||h.ws<.8) return;
   var to=(h.wd+180)*Math.PI/180,dx=Math.sin(to),dz=-Math.cos(to),len=1.4+Math.min(4,h.ws*.35),am=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85});
-  var c=P(-dz*5.6,.06,dx*5.6),s=c.clone().add(P(-dx*len/2,0,-dz*len/2)),e=c.clone().add(P(dx*len/2,0,dz*len/2));
+  var c=P(cam.target.x-dz*WR,.06,cam.target.z+dx*WR),s=c.clone().add(P(-dx*len/2,0,-dz*len/2)),e=c.clone().add(P(dx*len/2,0,dz*len/2));
   windG.add(limb(s,e,.05,.05,am,6)); var hd=new THREE.Mesh(new THREE.ConeGeometry(.18,.45,10),am); hd.position.copy(e); hd.quaternion.setFromUnitVectors(P(0,1,0),e.clone().sub(s).normalize()); windG.add(hd);
   var wl=label(dirName(h.wd)+'風 '+bft(h.ws)+' 級',1.8,'rgba(40,50,70,.85)'); wl.position.copy(s).setY(.55); windG.add(wl);
 }
@@ -735,12 +1001,18 @@ function applyHour(h){
   sun.castShadow=sun.intensity>.12;
   var night=1-day; lamp.intensity=night*1.5; if(lamp.userData.bulb) lamp.userData.bulb.visible=night>.3;
   stars.material.opacity=Math.max(0,night-.2)*(1-oc)*(h.mm>=.3?0:1);
+  var mi=h.k?moonInfo(keyMs(h.k)+1800e3,PL?PL.lat:24,PL?PL.lon:121):{alt:-90,az:0,frac:0,wax:true,name:''}; h.moon=mi; drawMoon(mi);
+  if(mi.alt>-2){ var ma=Math.max(mi.alt,2)*Math.PI/180,mz=mi.az*Math.PI/180; moon.position.set(Math.sin(mz)*Math.cos(ma)*150,Math.sin(ma)*150,-Math.cos(mz)*Math.cos(ma)*150); moon.visible=true; moon.material.opacity=Math.min(1,(.25+.75*night))*(1-oc*.85)*(h.mm>=.3?.2:1); }
+  else moon.visible=false;
+  if(h.sun<=-2&&mi.alt>0){ var ma2=mi.alt*Math.PI/180,mz2=mi.az*Math.PI/180; sun.position.set(Math.sin(mz2)*Math.cos(ma2)*40,Math.max(4,Math.sin(ma2)*40),-Math.cos(mz2)*Math.cos(ma2)*40); sun.intensity=.06+.32*mi.frac*(1-oc); sun.color.set(0xb9cbff); sun.castShadow=sun.intensity>.15; }
+  var nw=h.sun<-2?'night':h.sun<6?'dusk':'sunny'; if(nw!==S.wx){ S.wx=nw; if(PROPS.lamp.on) buildProp('lamp'); if(PROPS.fire.on) buildProp('fire'); }
+  var dr=dewRisk(h); if(dewPts){ dewPts.visible=dr>=1&&h.sun<8&&h.mm<.3; dewPts.material.opacity=dr>=2?.9:.5; }
   /* wet ground */
   groundMat.color.copy(groundBase).multiplyScalar(1-.28*wetness);
   /* rain */
   rainN=Math.round(Math.min(RMAX,h.mm>=.1?Math.max(260,h.mm*900):h.maybe?Math.round(RMAX*.08):0)); rainMat.opacity=h.mm>=.1?.62:.32; rainGeo.setDrawRange(0,rainN*2);
-  var to=((h.wd||0)+180)*Math.PI/180,wsp=Math.min(14,h.ws||0)*.55; rainV={x:Math.sin(to)*wsp,y:-9,z:-Math.cos(to)*wsp};
-  buildWind(h); redraw();
+  var to=((h.wd||0)+180)*Math.PI/180,wsp=rainSlope(h)*9; rainV={x:Math.sin(to)*wsp,y:-9,z:-Math.cos(to)*wsp};
+  buildWind(h); buildJudge(h); redraw();
 }
 function tick(dt,t){
   var h=cur; if(!h) return;
@@ -756,9 +1028,26 @@ function tick(dt,t){
   /* flag points downwind and waves; hangs down when calm */
   var fp=flag.geometry.attributes.position.array,fb=flagBase,lift=Math.min(1,ws/8),wave=.04+Math.min(.12,wg*.012);
   for(k=0;k<fp.length;k+=3){ var u=fb[k]/.9; fp[k]=fb[k]*(lift*.95+.05); fp[k+1]=fb[k+1]-u*.9*(1-lift)*.85; fp[k+2]=Math.sin(u*5-t*(5+wg*.6))*wave*u; }
-  flag.geometry.attributes.position.needsUpdate=true; flag.geometry.computeVertexNormals(); flag.rotation.y=Math.atan2(-dz,dx);
+  flag.geometry.attributes.position.needsUpdate=true; flag.geometry.computeVertexNormals(); flag.rotation.y=Math.atan2(-dz,dx)-layG.rotation.y;
   /* trees sway */
   var sw=Math.min(.09,wg*.006); trees.forEach(function(g){ var s=sw*(.6+.4*Math.sin(t*1.6+g.userData.ph)); g.rotation.x=dz*s; g.rotation.z=-dx*s; });
+}
+
+/* ---------- 你的配置 panel ---------- */
+var DIR8=[[0,'北'],[45,'東北'],[90,'東'],[135,'東南'],[180,'南'],[225,'西南'],[270,'西'],[315,'西北']];
+function bestDoor(){ var sx=0,sz=0,w=0; HRS.forEach(function(h){ if(h.miss||h.wd==null||h.ws==null||h.ws<1.5) return; var g=Math.max(h.ws,h.wg||0),k=g*g,a=h.wd*Math.PI/180; sx+=Math.sin(a)*k; sz+=Math.cos(a)*k; w+=k; });
+  if(!w) return null; var R=Math.hypot(sx,sz)/w; if(R<.3) return {weak:true}; var from=(Math.atan2(sx,sz)*180/Math.PI+360)%360; return {from:from,door:Math.round(((from+180)%360)/45)%8*45}; }
+function drawCfg(){
+  var c=$('cfg'),gen=!(LAY&&typeof LAY==='object'),bd=HRS.length?bestDoor():null,h='';
+  if(LAY==='area') h+='<p>包區包場的配置目前還不支援，先用通用的帳篷和天幕示意。可以在搭設模擬切到「單一營位」再分享過來。</p>';
+  else if(LAY===false) h+='<p>這個配置連結讀不到，可能在傳送時被截斷了。先用通用的帳篷和天幕示意。</p>';
+  if(gen) h+='<p>目前是<b>通用的圓頂帳＋方形天幕</b>示意。想用你自己的配置：在<a href="index.html">搭設模擬</a>擺好單一營位，按「分享」裡的 <b>☔ 看這個配置的週末天氣</b>。</p>';
+  else h+='<p><b>'+esc(S.tent.brand&&S.tent.brand!=='自訂'?S.tent.brand+' '+S.tent.name:S.tent.name)+'</b>'+(slot2.tent?' ＋ 第 2 頂帳篷':'')+(TP?'、'+esc(TP.name):'、沒有天幕')+(ITEMS.length?'、'+ITEMS.map(function(i){ return i.n; }).join('、'):'')+'</p>';
+  h+='<small>帳篷門口朝哪個方位？（在營地現場看指北針，或照營區配置圖）</small><div class="dirs" role="group" aria-label="門口朝向">'+DIR8.map(function(d){ return '<button type="button" data-b="'+d[0]+'" aria-pressed="'+(ORI===d[0])+'" class="'+(bd&&!bd.weak&&bd.door===d[0]?'best':'')+'" title="門口朝'+d[1]+'">'+d[1]+'</button>'; }).join('')+'</div>';
+  h+='<small>'+(bd&&!bd.weak?'★ 依這個週末的風向，門口朝<b>'+DIR8[bd.door/45][1]+'</b>最背風（風多半從'+dirName(bd.from)+'方來）。':bd&&bd.weak?'這個週末風向不定，門口朝向影響不大。':'')+'</small>';
+  if(!gen) h+='<div class="row"><a href="index.html#s='+LAYRAW+'">🔧 回到搭設模擬調整</a><a href="weather.html'+esc(location.search)+'">用通用示意</a></div>';
+  c.innerHTML=h;
+  Array.prototype.forEach.call(c.querySelectorAll('.dirs button'),function(b){ b.onclick=function(){ setOri(+b.dataset.b); drawCfg(); drawHour(); drawTips(); setURL(); }; });
 }
 
 /* ---------- side panel ---------- */
@@ -788,7 +1077,7 @@ function drawAll(){
   $('bars').innerHTML=HRS.map(function(h,i){ var ht=h.miss?0:h.mm>=.1?Math.max(8,Math.sqrt(h.mm/mx)*100):h.maybe?18:0; return '<i class="'+(h.sun<-3?'n':'')+(i===CUR?' on':'')+(h.k.slice(11,13)==='00'?' d0':'')+'" data-i="'+i+'" title="'+kLabel(h.k)+(h.miss?'':' · '+(h.mm>=.1?'雨 '+h.mm+' mm':h.maybe?'部分模型有雨':'無雨'))+'">'+(ht?'<s class="'+(h.mm>=.3?'':h.mm>=.1?'l':'m')+'" style="height:'+ht+'%"></s>':'')+'</i>'; }).join('');
   var ax=[];HRS.forEach(function(h,i){ var hh=h.k.slice(11,13); if(hh==='00'||hh==='12'||i===0) ax.push('<span class="'+(hh==='00'?'h0':'h12')+'" style="left:'+((i+.5)/HRS.length*100)+'%'+(i===0?';transform:none':'')+'">'+(hh==='00'||i===0?'週'+WDN[kDow(h.k)]+' ':'')+hh+':00</span>'); });
   $('ax').innerHTML=ax.join(''); $('slider').max=HRS.length-1;
-  drawHour(); drawTips();
+  drawHour(); drawTips(); drawCfg();
 }
 function setHour(i,quiet){ CUR=Math.max(0,Math.min(HRS.length-1,i)); $('slider').value=CUR; Array.prototype.forEach.call($('bars').children,function(e,j){ e.classList.toggle('on',j===CUR); });
   var d=HRS[CUR].k.slice(0,10); Array.prototype.forEach.call($('days').children,function(b){ b.classList.toggle('on',b.dataset.d===d); }); drawHour(); if(!quiet) setURL(); }
@@ -797,6 +1086,7 @@ function drawHour(){
   var h=HRS[CUR]; if(!h) return; if(h.miss) applyHour(h);
   $('tlNow').textContent=kLabel(h.k)+(h.miss?'':' · '+(h.mm>=.3?'下雨 '+h.mm+' mm':h.maybe?'可能下雨':wlabel(h.code)));
   if(h.miss){ $('hour').innerHTML='<span style="color:var(--muted)">這個時間沒有預報資料。</span>'; $('badge').innerHTML='<b>'+kLabel(h.k)+'</b>'; return; }
+  if(!h.moon) h.moon=moonInfo(keyMs(h.k)+1800e3,PL.lat,PL.lon);
   var d=h.k.slice(0,10),ss=HRS.sun&&HRS.sun[d],dr=dewRisk(h),visT=h.vis==null?'—':h.vis<1000?'起霧（約 '+Math.round(h.vis/100)*100+' m）':h.vis<5000?'稍差（約 '+(Math.round(h.vis/100)/10)+' km）':'良好';
   var lab=h.mm>=.3?wlabel(h.code&&h.code>=51?h.code:61):h.maybe?'可能下雨':wlabel(h.code);
   $('hour').innerHTML='<div class="top"><b>'+(h.temp!=null?Math.round(h.temp)+'°C':'—')+'</b><span>'+wicon(h)+' '+esc(lab)+'</span><span style="color:var(--muted);font-weight:500;font-size:13px">'+kLabel(h.k)+'</span></div><dl>'
@@ -806,8 +1096,12 @@ function drawHour(){
     +'<dt>雲量</dt><dd>'+(h.cc!=null?Math.round(h.cc)+'%':'—')+'</dd>'
     +'<dt>濕度</dt><dd>'+(h.rh!=null?Math.round(h.rh)+'%':'—')+(dr!=null?'，結露 '+['低','中','高'][dr]:'')+'</dd>'
     +'<dt>能見度</dt><dd>'+visT+'</dd>'
+    +(DOORS[0]&&h.wd!=null?'<dt>門口（朝'+dirName(DOORS[0].b)+'）</dt><dd style="color:'+['var(--accent)','var(--amber)','var(--warn)'][doorWind(h)]+'">'+['背風','側風','迎風'][doorWind(h)]+'</dd>':'')
+    +(rainHour(h)?'<dt>會淋到</dt><dd style="color:'+(wetList(h).length?'var(--rain)':'var(--accent)')+'">'+(wetList(h).length?esc(wetList(h).join('、')):'都在天幕下')+'</dd>':'')
+    +(sunHour(h)&&ITEMS.some(function(i){ return i.k==='table'||i.k==='chair'; })?'<dt>日曬</dt><dd>'+(sunList(h).length?esc(sunList(h).join('、'))+'曬得到':'桌椅在陰影下')+'</dd>':'')
+    +(h.sun<0&&h.moon?'<dt>月亮</dt><dd>'+h.moon.name+'（'+Math.round(h.moon.frac*100)+'%）'+(h.moon.alt>0?'，在'+dirName(h.moon.az)+'方':'，還沒升起')+'</dd>':'')
     +'<dt>太陽</dt><dd>'+(h.sun>0?'高度 '+Math.round(h.sun)+'°，在'+dirName(h.az)+'方':'已下山')+(ss&&ss[1]?'（日落 '+ss[1].slice(11,16)+'）':'')+'</dd></dl>';
-  $('badge').innerHTML='<b>'+wicon(h)+' '+(h.temp!=null?Math.round(h.temp)+'°C':'')+'</b> · '+kLabel(h.k)+(h.mm>=.1?' · 雨 '+(Math.round(h.mm*10)/10)+' mm':h.maybe?' · 部分模型有雨':'')+(h.wg!=null?' · 陣風 '+bft(h.wg)+' 級':'');
+  $('badge').innerHTML='<b>'+wicon(h)+' '+(h.temp!=null?Math.round(h.temp)+'°C':'')+'</b> · '+kLabel(h.k)+(h.mm>=.1?' · 雨 '+(Math.round(h.mm*10)/10)+' mm':h.maybe?' · 部分模型有雨':'')+(h.wg!=null?' · 陣風 '+bft(h.wg)+' 級':'')+(dewRisk(h)>=1&&h.sun<8&&h.mm<.3?' · 💧 帳篷結露':'');
   /* wetness: rain in the last 3 hours */
   var w=0; for(var j=Math.max(0,CUR-3);j<=CUR;j++){ var x=HRS[j]; if(x&&!x.miss) w=Math.max(w,x.mm>=.3?1:x.maybe?.4:0)*(j===CUR?1:.8); } wetness=w; applyHour(h);
 }
@@ -830,6 +1124,35 @@ function drawTips(){
   var fri=dayKeys()[0],ss=HRS.sun&&HRS.sun[fri]; if(ss&&ss[1]){ var si=HRS.findIndex(function(h){ return h.k===ss[1].slice(0,13)+':00'; }); tip('','🌇 週五日落 '+ss[1].slice(11,16),'山區天黑得更早，最好在日落前一小時搭好帳篷。',si>=0?si:null); }
   var sun=dayKeys()[2],sm=HRS.filter(function(h){ return h.k.indexOf(sun)===0&&+h.k.slice(11,13)<=11&&!h.miss; });
   if(sm.length){ var wetS=sm.some(function(h){ return h.mm>=.3; }),wasWet=rs.length||ms.length; tip(wetS?'md':'ok',wetS?'🧺 週日上午有雨，準備濕收':'☀ 週日上午適合'+(wasWet?'晾乾再收':'乾收'),wetS?'帶大塑膠袋與抹布，回家後記得把帳篷晾乾。':wasWet?'雨停後先把帳篷、天幕和地布晾乾，再收進袋子。':'早上收帳，回家不用再晾。',HRS.indexOf(sm[0])); }
+  /* ---- judgements that depend on your layout and 門口朝向 ---- */
+  var LT=[];
+  function ltip(cls,title,body,i){ LT.push('<div class="tip '+cls+(i!=null?' go':'')+'"'+(i!=null?' data-i="'+i+'" tabindex="0" role="button"':'')+'><b>'+title+'</b>'+body+'</div>'); }
+  var D0=DOORS[0],bd=bestDoor();
+  if(D0){ var bad=-1,bg=0,side=-1; HRS.forEach(function(h,i){ if(h.miss||h.wd==null) return; var g=Math.max(h.ws||0,h.wg||0),x=angDiff(D0.b,h.wd); if(x<=45&&g>=6&&g>bg){ bg=g; bad=i; } if(x<=60&&rainHour(h)&&(h.ws||0)>=2&&side<0) side=i; });
+    var better=bd&&!bd.weak?'門口改朝'+DIR8[bd.door/45][1]+'（按「你的配置」裡的方位看看）':'門口換個方向';
+    if(bad>=0){ var b=HRS[bad]; ltip('wr','🚪 門口朝'+dirName(D0.b)+'會迎風',kLabel(b.k).slice(0,-3)+' 時'+dirName(b.wd)+'風陣風 '+(Math.round(bg*10)/10)+' m/s（'+bft(bg)+' 級）直接灌進門口。建議'+better+'，或把車子、天幕擋在'+dirName(b.wd)+'邊。',bad); }
+    else if(side>=0){ var sd=HRS[side]; ltip('md','🚪 下雨時雨會吹向門口',kLabel(sd.k).slice(0,-3)+' 時'+dirName(sd.wd)+'風帶著雨吹向門口，進出時拉好前庭或門簾。',side); }
+    else ltip('ok','🚪 門口朝'+dirName(D0.b)+'，這個週末大多背風或側風','強風時段風都不是正面灌進門口。',null); }
+  var rainIdx=[]; HRS.forEach(function(h,i){ if(rainHour(h)) rainIdx.push(i); });
+  if(rainIdx.length){
+    if(!TP) ltip('wr','☂ 沒有天幕',spanText([rainIdx[0],rainIdx[0]])+'起會下雨，桌椅和門口都會淋到。可以在搭設模擬加一張天幕再看一次。',rainIdx[0]);
+    else{ var worst=null,wi=-1; rainIdx.forEach(function(i){ var w=wetList(HRS[i]); if(w.length&&(!worst||w.length>worst.length||(w.length===worst.length&&HRS[i].mm>HRS[wi].mm))){ worst=w; wi=i; } });
+      if(worst){ var hw=HRS[wi],mv=Math.max(.5,Math.round(rainSlope(hw)*TP.He*2)/2); ltip('wr','💧 '+kLabel(hw.k).slice(0,-3)+' 時斜雨會淋到'+worst.join('、'),(hw.ws!=null&&hw.ws>=1?dirName(hw.wd)+'風把雨吹斜了。天幕往'+dirName(hw.wd)+'邊移約 '+mv+' m，或把'+dirName(hw.wd)+'側放低。':'淋到的東西不在天幕下面，移進天幕底下。'),wi); }
+      else ltip('ok','✓ 下雨時桌椅和門口都在天幕下','連風吹斜的雨也算進去了。',rainIdx[0]); } }
+  if(TP&&ITEMS.some(function(i){ return i.k==='table'||i.k==='chair'; })){ var sunI=[]; HRS.forEach(function(h,i){ if(sunList(h).length) sunI.push(i); });
+    var anySun=HRS.some(sunHour);
+    if(sunI.length>=2){ var s0=HRS[sunI[0]]; ltip('md','☀ '+kLabel(s0.k).slice(0,-3)+' 時起午後陽光曬到'+sunList(s0).join('、'),'太陽在'+dirName(s0.az)+'方、仰角約 '+Math.round(s0.sun)+'°，天幕影子落在旁邊。天幕往'+dirName(s0.az)+'邊挪，或把那一側放低遮陽。',sunI[0]); }
+    else if(anySun) ltip('ok','✓ 午後出太陽時桌椅在天幕陰影下','',HRS.findIndex(sunHour)); }
+  if(PROPS.fire&&PROPS.fire.on){ var fp=PROPS.fire.g.getWorldPosition(new V3()); fp.y=0;
+    if(inTarp(fp)) ltip('wr','🔥 焚火台在天幕下面','火星和熱氣會燒壞天幕，焚火台要離天幕至少 3 公尺。',null);
+    var fi=-1,ftg=''; HRS.forEach(function(h,i){ if(fi>=0||h.miss||h.wd==null||(h.ws||0)<2) return; var hh=+h.k.slice(11,13); if(hh<15&&hh>1) return; var dn=(h.wd+180)%360;
+      DOORS.forEach(function(d){ var v=d.c.clone().sub(fp),dist=Math.hypot(v.x,v.z); if(dist<6&&angDiff(bearingOf(v.x,v.z),dn)<=35){ fi=i; ftg=d.n==='門口'?'帳篷':d.n.replace(' 門口',''); } });
+      if(fi<0&&TP){ var tc=tarpG.getWorldPosition(new V3()),v2=tc.sub(fp),d2=Math.hypot(v2.x,v2.z); if(d2<6&&angDiff(bearingOf(v2.x,v2.z),dn)<=35){ fi=i; ftg='天幕'; } } });
+    if(fi>=0){ var fh=HRS[fi]; ltip('wr','🔥 '+kLabel(fh.k).slice(0,-3)+' 時火星會飄向'+ftg,dirName(fh.wd)+'風把火星往'+ftg+'的方向吹。把焚火台移到'+ftg+'的'+dirName(fh.wd)+'邊（上風處），或那段時間先別生火。',fi); }
+    var fg=HRS.filter(function(h){ var hh=+h.k.slice(11,13); return !h.miss&&(hh>=16||hh<=1)&&(h.wg||0)>=10; }); if(fg.length) ltip('md','🔥 晚上陣風大','有 '+fg.length+' 個小時陣風超過 10 m/s，生火要特別小心，備好滅火的水。',HRS.indexOf(fg[0])); }
+  var star=-1; HRS.forEach(function(h,i){ if(star<0&&!h.miss&&h.sun<-12&&(h.cc==null||h.cc<30)&&h.mm<.1) star=i; });
+  if(star>=0){ var st=HRS[star],mo=moonInfo(keyMs(st.k)+1800e3,PL.lat,PL.lon); ltip('ok','🌌 '+kLabel(st.k).slice(0,-3)+' 時天空晴朗',mo.name+'（亮面 '+Math.round(mo.frac*100)+'%）'+(mo.frac<.4||mo.alt<0?'，月光不強，適合看星星。':'，月光比較亮，暗一點的星星會看不清楚。'),star); }
+  T=LT.concat(T);
   $('tips').innerHTML=T.join('');
   Array.prototype.forEach.call($('tips').querySelectorAll('.go'),function(e){ var go=function(){ setHour(+e.dataset.i); }; e.onclick=go; e.onkeydown=function(ev){ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); go(); } }; });
   var v=$('verdict'); v.hidden=false; v.className='verdict'+(lv===2?' bad':lv===1?' mid':''); v.querySelector('b').textContent=['適合露營','普通，要注意','不建議'][lv]; v.querySelector('span').textContent=why.length?why.join('、'):'天氣穩定，好好享受吧';
@@ -870,15 +1193,15 @@ $('nowBtn').addEventListener('click',function(){ stopPlay(); var n=msKey(Date.no
 
 /* ---------- url + share ---------- */
 function setURL(){ if(!PL||!HRS[CUR]) return; try{ var u=new URL(location.href); u.searchParams.delete('camp'); u.searchParams.delete('hot'); u.searchParams.delete('h');
-  if(PL.kind==='camp') u.searchParams.set('camp',PL.idx); else u.searchParams.set('hot',PL.t); u.searchParams.set('h',HRS[CUR].k.slice(5,13).replace('T','-')); history.replaceState(null,'',u.pathname+u.search); }catch(e){ } }
-function shareURL(){ var b='https://sleepoutside.github.io/tent-planner/weather.html'; if(!PL) return b; return b+'?'+(PL.kind==='camp'?'camp='+PL.idx:'hot='+encodeURIComponent(PL.t))+(HRS[CUR]?'&h='+HRS[CUR].k.slice(5,13).replace('T','-'):''); }
+  if(PL.kind==='camp') u.searchParams.set('camp',PL.idx); else u.searchParams.set('hot',PL.t); u.searchParams.set('h',HRS[CUR].k.slice(5,13).replace('T','-')); u.searchParams.set('o',String(ORI)); history.replaceState(null,'',u.pathname+u.search+(LAYRAW?'#s='+LAYRAW:'')); }catch(e){ } }
+function shareURL(){ var b='https://sleepoutside.github.io/tent-planner/weather.html'; if(!PL) return b; return b+'?'+(PL.kind==='camp'?'camp='+PL.idx:'hot='+encodeURIComponent(PL.t))+(HRS[CUR]?'&h='+HRS[CUR].k.slice(5,13).replace('T','-'):'')+'&o='+ORI+(LAYRAW?'#s='+LAYRAW:''); }
 $('share').addEventListener('click',function(){ var u=shareURL(); if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function(){ toast('已複製連結'); },function(){ prompt('複製這個連結',u); }); else prompt('複製這個連結',u); });
 function hFromURL(v){ if(!v||!/^\d\d-\d\d-\d\d$/.test(v)) return null; var y=new Date(Date.now()+8*3600e3).getUTCFullYear(); return y+'-'+v.slice(0,5)+'T'+v.slice(6,8)+':00'; }
 
 /* ---------- camera + pointer ---------- */
 var cam={az:.62,el:.42,r:17,target:new THREE.Vector3(0,1,.8)};
 function applyCam(){ var ce=Math.cos(cam.el); camera.position.set(cam.target.x+cam.r*ce*Math.sin(cam.az),cam.target.y+cam.r*Math.sin(cam.el),cam.target.z+cam.r*ce*Math.cos(cam.az)); camera.lookAt(cam.target); }
-function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?21:17; redraw(); }
+function resize(){ var w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); cam.r=camera.aspect<.95?(cam.base||17)*1.25:(cam.base||17); redraw(); }
 if(window.ResizeObserver) new ResizeObserver(resize).observe(canvas.parentElement); else window.addEventListener('resize',resize);
 var ptrs=new Map(),mode=null,last={x:0,y:0},pinch={d:1,r:1};
 function pdist(){ var a=Array.from(ptrs.values()); return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1; }
@@ -892,8 +1215,8 @@ canvas.addEventListener('wheel',function(e){ e.preventDefault(); cam.r=Math.min(
 window.addEventListener('keydown',function(e){ if(!HRS.length||/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')) return; if(e.key==='ArrowRight'){ setHour(CUR+1); } else if(e.key==='ArrowLeft'){ setHour(CUR-1); } });
 
 /* ---------- start ---------- */
-buildScene(); resize();
-applyHour({sun:30,az:160,cc:30,mm:0,ws:2,wd:200,wg:3,vis:24000});
+buildScene(); (function(){ var o=+new URLSearchParams(location.search).get('o'); setOri(isFinite(o)&&new URLSearchParams(location.search).get('o')!==null?o:180); })(); resize();
+applyHour({k:msKey(Date.now()),sun:30,az:160,cc:30,mm:0,ws:2,wd:200,wg:3,vis:24000});
 showMsg('🔮 準備中……');
 var lastT=0,still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 (function loop(t){ var now=(t||0)/1000,dt=Math.min(.05,now-lastT); lastT=now; if(!still){ tick(dt,now); dirty=true; } else if(dirty) tick(0,1.3); if(dirty){ dirty=false; applyCam(); renderer.render(scene,camera); } requestAnimationFrame(loop); })();

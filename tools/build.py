@@ -72,5 +72,14 @@ t = rd(TPL, 'tarps.html'); assert t.count('/*BUILDERS*/') == 1
 page('tarps', t.replace('/*BUILDERS*/', NOTE + funcs(BASE + ['buildPerson', 'car']) + '\n' + block('var CARS=') + ';'))
 # weather.html
 t = rd(TPL, 'weather.html'); assert t.count('/*BUILDERS*/') == 1
-page('weather', t.replace('/*BUILDERS*/', NOTE + funcs(BASE + ['buildPerson', 'car']) + '\n' + block('var CARS=') + ';'))
+def arr(start):
+    i = js.index(start); j = js.index('\n];', i) + 3
+    return js[i:j]
+def line(start):
+    i = js.index(start); j = js.index('\n', i)
+    return js[i:j]
+page('weather', t.replace('/*BUILDERS*/', NOTE + funcs(BASE + ['buildPerson', 'car', 'buildTarp1', 'buildProp', 'placeProp', 'swapS',
+                                                              'b64u', 'unb64u', 'r2', 'nn', 'cl']) + '\n' + block('var CARS=') + ';\n'
+     + '/* data copied from index.html */\n' + arr('var TENTS=[') + '\n' + arr('var TARPS=[') + '\n' + line('var CHAIR_SIZE=') + '\n'
+     + line('var TABLE_SIZE=') + '\n' + block('var PROPS=') + ';\nvar FIRE_IN=3,FIRE_OUT=4.5;\n' + block('var CUSTOM2=') + ';'))
 print('generated types.html, fire.html, sleep.html, tarps.html, weather.html')

@@ -1538,7 +1538,7 @@ function shareModal(){
     var h3=document.createElement('h3'),p=document.createElement('p'),inp=document.createElement('input'),row=document.createElement('div');
     h3.textContent=ok?'已複製分享連結':'分享連結'; p.textContent=ok?'貼給朋友即可，對方打開會看到同一份配置。':'無法自動複製，請長按或全選下面這串網址手動複製。';
     inp.type='text'; inp.readOnly=true; inp.value=url; inp.setAttribute('aria-label','分享連結'); inp.style.cssText='width:100%;margin:4px 0 12px'; inp.addEventListener('focus',function(){ inp.select(); });
-    row.className='mrow'; row.appendChild(mbtn('關閉',true,close));
+    row.className='mrow'; if(!isArea()) row.appendChild(mbtn('☔ 看這個配置的週末天氣',false,function(){ close(); window.open('weather.html#s='+b64u(JSON.stringify(singleData())),'_blank','noopener'); })); row.appendChild(mbtn('關閉',true,close));
     c.appendChild(h3); c.appendChild(p); c.appendChild(inp); c.appendChild(row); if(!ok){ inp.focus(); inp.select(); } }); }
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(function(){ show(true); },function(){ show(false); }); else show(false);
 }
