@@ -195,6 +195,7 @@
     <li>太陽位置依營地經緯度與時間計算；雨量多寡、風吹的幅度、霧的濃淡是為了好懂而做的換算，不是精確的物理模擬。</li>
     <li>出發前請再確認<a href="https://www.cwa.gov.tw/" target="_blank" rel="noopener">中央氣象署</a>的警特報、<a href="https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html" target="_blank" rel="noopener">颱風警報</a>與<a href="https://168.thb.gov.tw/" target="_blank" rel="noopener">公路局省道即時路況</a>，並以營區公告為準。</li>
   </ul>
+  <p><b>本站整理全球數值模式與中央氣象署公開資料，非氣象署發布之預報，請以氣象署預報及警特報為準。</b></p>
   <p><b>設計/Sleepoutside Camp</b> *非營利使用　資訊僅供參考，請依官方資訊為準。</p>
 </div>
 <div class="toast" id="toast"></div>
@@ -218,7 +219,7 @@ function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&
 function bft(v){ var t=[.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7],i=0; while(i<t.length&&v>=t[i]) i++; return i; }
 function dirName(deg){ return DIRN[Math.round(((deg%360)+360)%360/45)%8]; }
 function wlabel(c){ c=+c; if(c===0) return '晴'; if(c===1) return '晴時多雲'; if(c===2) return '多雲'; if(c===3) return '陰'; if(c===45||c===48) return '霧';
-  if(c>=51&&c<=57) return '毛毛雨'; if(c===61||c===80) return '小雨'; if(c===63||c===81) return '中雨'; if(c===65||c===82) return '大雨'; if(c>=66&&c<=67) return '凍雨'; if(c>=71&&c<=77) return '雪'; if(c>=95) return '雷雨'; return '多雲'; }
+  if(c>=51&&c<=57) return '毛毛雨'; if(c===61||c===80) return '小雨'; if(c===63||c===81) return '中雨'; if(c===65||c===82) return '雨勢強'; if(c>=66&&c<=67) return '凍雨'; if(c>=71&&c<=77) return '雪'; if(c>=95) return '雷雨'; return '多雲'; }
 function wicon(h){ if(!h) return '·'; if(h.mm>=.3||h.code>=51) return h.code>=95?'⛈':'🌧'; if(h.code===45||h.code===48||(h.vis!=null&&h.vis<1000)) return '🌫'; if(h.sun<-3) return h.cc<50?'🌙':'☁'; if(h.cc>=85||h.code===3) return '☁'; if(h.cc>=40||h.code===2) return '⛅'; return '☀'; }
 /* Taipei wall clock helpers: keys are "YYYY-MM-DDTHH:00" in Asia/Taipei */
 function keyMs(k){ return Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10),+k.slice(11,13)-8); }
