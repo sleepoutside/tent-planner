@@ -190,12 +190,20 @@
 <div class="wide">
   <h2>這頁的資料與限制</h2>
   <ul>
-    <li><b>天氣資料</b>：每小時的氣溫、雨量、風向風速、雲量、濕度與能見度來自 <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（CC BY 4.0），並以營地的海拔修正氣溫。「部分模型有雨」是比對歐洲、美國、日本、德國、中國五個全球模型，有兩個以上預報下雨的時段。每天的天氣概況另外附上<a href="https://www.cwa.gov.tw/" target="_blank" rel="noopener">中央氣象署</a>的鄉鎮預報。營地清單與熱門鄉鎮和「<a href="https://sleepoutside.github.io/hero-camping-map/" target="_blank" rel="noopener">全台熱點地圖</a>」共用。</li>
+    <li><b>天氣資料</b>：每小時的氣溫、雨量、風向風速、雲量、濕度與能見度來自 <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（CC BY 4.0），並以營地的海拔修正氣溫。「部分模型有雨」是比對歐洲、美國、日本、德國、中國五個全球模型，有兩個以上預報下雨的時段。每天的天氣概況另外附上中央氣象署開放資料的鄉鎮預報（出處：<a href="https://www.cwa.gov.tw/Data/data_catalog/1-1-1.pdf" target="_blank" rel="noopener">氣象署鄉鎮預報產品說明</a>）。營地清單與熱門鄉鎮和「<a href="https://sleepoutside.github.io/hero-camping-map/" target="_blank" rel="noopener">全台熱點地圖</a>」共用。</li>
+    <li><b>判斷依據</b>：頁面上的判定與「勇者的提醒」，都是把右側列出的預報數字套用下面的固定規則換算出來的，不另做研判，不是氣象署發布的預報或警特報。
+      <ul>
+        <li><b>會下雨／可能下雨</b>：Open-Meteo 每小時雨量 0.3 mm 以上算「會下雨」；它說沒雨，但五個模型中有兩個以上預報 0.3 mm 以上，算「可能下雨」。</li>
+        <li><b>不建議</b>：週末雨量合計 30 mm 以上、陣風 17 m/s 以上，或夜間最低溫 0°C 以下。<b>普通</b>：有會下雨或可能下雨的時段、陣風 12 m/s 以上，或夜間最低溫 5°C 以下。其他為<b>適合</b>。</li>
+        <li><b>結露</b>：預報氣溫與露點相差 1°C 以內為「高」、2.5°C 以內為「中」，兩個數字都列在「這個小時」。<b>起霧</b>：預報能見度低於 1 公里。</li>
+        <li><b>門口迎風</b>：風從門口朝向左右 45 度內吹來、且風速或陣風 3 m/s 以上；100 度內為側風。</li>
+        <li><b>斜雨會不會淋到</b>：假設雨滴每落下 1 公尺被風吹偏「風速 ÷ 7」公尺，從天幕高度往上風回推，看是否落在天幕範圍外。<b>日曬</b>：依太陽方位與仰角推算天幕影子。<b>焚火台</b>：下風 35 度、6 公尺內有帳篷或天幕就提醒。這些都是簡化的幾何換算。</li>
+      </ul></li>
     <li><b>3D 畫面是依預報畫出的情境示意</b>，不是現場實況。全球模型的網格大約 9 到 25 公里，看不出山谷、樹林這些營地尺度的小地形；山區午後雷陣雨、局部濃霧也常常比預報來得突然。</li>
     <li>太陽位置依營地經緯度與時間計算；雨量多寡、風吹的幅度、霧的濃淡是為了好懂而做的換算，不是精確的物理模擬。</li>
     <li>出發前請再確認<a href="https://www.cwa.gov.tw/" target="_blank" rel="noopener">中央氣象署</a>的警特報、<a href="https://www.cwa.gov.tw/V8/C/P/Typhoon/TY_WARN.html" target="_blank" rel="noopener">颱風警報</a>與<a href="https://168.thb.gov.tw/" target="_blank" rel="noopener">公路局省道即時路況</a>，並以營區公告為準。</li>
   </ul>
-  <p><b>本站整理全球數值模式與中央氣象署公開資料，非氣象署發布之預報，請以氣象署預報及警特報為準。</b></p>
+  <p><b>本站整理全球數值模式與中央氣象署公開資料，非氣象署發布之預報。以上資訊僅提供參考與學術討論之用，氣象預報應以中央氣象署為準。</b></p>
   <p><b>設計/Sleepoutside Camp</b> *非營利使用　資訊僅供參考，請依官方資訊為準。</p>
 </div>
 <div class="toast" id="toast"></div>
@@ -599,7 +607,7 @@ function drawHour(){
     +(h.mods?'<dt>各模型</dt><dd class="mdl">'+h.mods.map(function(m){ return '<span class="'+(m[1]>=.3?'w':'')+'" title="'+m[0]+'模型 '+(m[1]==null?'—':m[1]+' mm')+'">'+m[0][0]+(m[1]==null?'—':Math.round(m[1]*10)/10)+'</span>'; }).join('')+'</dd>':'')
     +'<dt>風</dt><dd>'+(h.wd!=null?dirName(h.wd)+'風 ':'')+(h.ws!=null?(Math.round(h.ws*10)/10)+' m/s':'—')+(h.wg!=null?'，陣風 '+(Math.round(h.wg*10)/10)+' m/s（'+bft(h.wg)+' 級）':'')+'</dd>'
     +'<dt>雲量</dt><dd>'+(h.cc!=null?Math.round(h.cc)+'%':'—')+'</dd>'
-    +'<dt>濕度</dt><dd>'+(h.rh!=null?Math.round(h.rh)+'%':'—')+(dr!=null?'，結露 '+['低','中','高'][dr]:'')+'</dd>'
+    +'<dt>濕度</dt><dd>'+(h.rh!=null?Math.round(h.rh)+'%':'—')+(dr!=null?'，結露 '+['低','中','高'][dr]:'')+(h.temp!=null&&h.td!=null?'<br><small style="color:var(--muted);font-weight:500">氣溫 '+(Math.round(h.temp*10)/10)+'°C、露點 '+(Math.round(h.td*10)/10)+'°C</small>':'')+'</dd>'
     +'<dt>能見度</dt><dd>'+visT+'</dd>'
     +(DOORS[0]&&h.wd!=null?'<dt>門口（朝'+dirName(DOORS[0].b)+'）</dt><dd style="color:'+(['var(--accent)','var(--amber)','var(--warn)'][doorWind(h)]||'inherit')+'">'+doorTxt(doorWind(h))+'</dd>':'')
     +(rainHour(h)?'<dt>會淋到</dt><dd style="color:'+(wetList(h).length?'var(--rain)':'var(--accent)')+'">'+(wetList(h).length?esc(wetList(h).join('、')):'都在天幕下')+'</dd>':'')
@@ -714,7 +722,7 @@ function recFrame(){
   g.fillStyle='#b8472a'; g.fillRect(x0+CUR*cw,y1-bh-4*k,Math.max(2,cw),bh+8*k);
   /* credit */
   g.font='700 '+Math.round(20*k)+'px '+F; g.textAlign='right'; g.fillStyle='rgba(255,255,255,.92)'; g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=6*k;
-  g.fillText('你的露營天氣online',W-24*k,H-66*k-bh); g.font='600 '+Math.round(16*k)+'px '+F; g.fillText('依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',W-24*k,H-66*k-bh-26*k);
+  g.fillText('你的露營天氣online',W-24*k,H-66*k-bh); g.font='600 '+Math.round(16*k)+'px '+F; g.fillText('依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',W-24*k,H-66*k-bh-26*k); g.fillText('僅供參考與學術討論，氣象預報應以中央氣象署為準',W-24*k,H-66*k-bh-50*k);
   g.shadowBlur=0; g.textAlign='left';
 }
 function recFrameV(R,h){
@@ -730,7 +738,7 @@ function recFrameV(R,h){
   if(!h.miss){
     t(60,y0+270,(h.temp!=null?Math.round(h.temp)+'°':'—'),130,'#22302a',900); g.font='900 130px '+F; var tw=g.measureText(h.temp!=null?Math.round(h.temp)+'°':'—').width;
     t(80+tw,y0+232,wicon(h),70,'#22302a',400); t(80+tw,y0+272,'雨 '+(Math.round(h.mm*10)/10)+' mm',34,h.mm>=.1?'#2f7fb8':'#66736b',700);
-    var rows=[['風',h.wd!=null?dirName(h.wd)+'風 '+bft(Math.max(h.ws||0,h.wg||0))+' 級'+(h.wg!=null?'（陣風 '+Math.round(h.wg)+' m/s）':''):'—'],['濕度',(h.rh!=null?Math.round(h.rh)+'%':'—')+(dewRisk(h)!=null?'，結露 '+['低','中','高'][dewRisk(h)]:'')]];
+    var rows=[['風',h.wd!=null?dirName(h.wd)+'風 '+bft(Math.max(h.ws||0,h.wg||0))+' 級'+(h.wg!=null?'（陣風 '+Math.round(h.wg)+' m/s）':''):'—'],['濕度',(h.rh!=null?Math.round(h.rh)+'%':'—')+(dewRisk(h)!=null?'，結露 '+['低','中','高'][dewRisk(h)]+'（溫差 '+(Math.round((h.temp-h.td)*10)/10)+'°）':'')]];
     if(DOORS[0]&&h.wd!=null) rows.push(['門口（朝'+dirName(DOORS[0].b)+'）',doorTxt(doorWind(h))]);
     if(rainHour(h)) rows.push(['會淋到',wetList(h).length?wetList(h).join('、'):'都在天幕下']);
     else if(sunHour(h)&&ITEMS.some(function(i){ return i.k==='table'||i.k==='chair'; })) rows.push(['日曬',sunList(h).length?sunList(h).join('、')+'曬得到':'桌椅在陰影下']);
@@ -744,7 +752,7 @@ function recFrameV(R,h){
     var v=q.miss?0:q.mm>=.1?Math.max(.12,Math.sqrt(q.mm/mx)):q.maybe?.2:0; if(v){ g.fillStyle=q.mm>=.3?'#2f7fb8':q.mm>=.1?'rgba(47,127,184,.45)':'rgba(47,127,184,.3)'; g.fillRect(x+.5,yb-bh*v,cw-1,bh*v); }
     if(q.k.slice(11,13)==='00'||i===0){ t(x+4,yb+36,'週'+WDN[kDow(q.k)],26,'#66736b',700); g.fillStyle='#b9b2a0'; g.fillRect(x,yb-bh,1.5,bh); } });
   g.fillStyle='#b8472a'; g.fillRect(x0+CUR*cw-1,yb-bh-8,Math.max(4,cw+2),bh+16);
-  t(W/2,1920-34,'你的露營天氣online · 依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',24,'#66736b',600,'center'); g.textAlign='left';
+  t(W/2,1920-58,'你的露營天氣online · 依預報的情境示意 · 資料 Open-Meteo / 中央氣象署',22,'#66736b',600,'center'); t(W/2,1920-24,'以上資訊僅提供參考與學術討論之用，氣象預報應以中央氣象署為準',22,'#a86a12',700,'center'); g.textAlign='left';
 }
 function recStop(save){
   var R=REC; if(!R) return; REC=null; clearInterval(R.t); canvas.style.objectFit=''; if(renderer.getPixelRatio()!==R.pr) renderer.setPixelRatio(R.pr); resize(); if(HRS[CUR]) buildWind(HRS[CUR]); var b=$('rec'); b.classList.remove('on'); b.textContent='🎬 錄成影片'; $('play').disabled=false;
